@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Allnspyre Hearing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body style="margin:0;font-family:system-ui;background:#f9fafb;">
+
+<div id="app" style="padding:40px;text-align:center;">
+  <h2>Loading...</h2>
+</div>
+
+<script>
+(async function () {
+  const qs = new URLSearchParams(location.search);
+  const plan = qs.get("plan");
+
+  if (!plan || (plan !== "explorer" && plan !== "connoisseur")) {
+    document.getElementById("app").innerHTML = `
+      <h2>Invalid access</h2>
+      <p>plan=explorer or plan=connoisseur required.</p>
+    `;
+    return;
+  }
+
+  try {
+    const res = await fetch("https://allnspyre-api.vercel.app/api/recommend");
+    const data = await res.json();
+
+    if (!data.success) {
+      throw new Error("API error");
+    }
+
+    const shops = data.shops;
+
+    let html = "<h2>Your Selection</h2>";
+    html += "<div style='max-width:800px;margin:40px auto;text-align:left;'>";
+
+    shops.forEach(s => {
+      html += `
+        <div style="background:white;padding:20px;margin-bottom:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+          <h3 style="margin:0 0 8px 0;">${s.shop_name}</h3>
+          <p style="margin:0;color:#555;">
+            ${s.area_group} / ${s.area_detail}
+          </p>
+        </div>
+      `;
+    });
+
+    html += "</div>";
+    document.getElementById("app").innerHTML = html;
+
+  } catch (e) {
+    document.getElementById("app").innerHTML = `
+      <h2>Error</h2>
+      <p>Failed to load recommendations.</p>
+    `;
+  }
+})();
+</script>
+
+</body>
+</html>
