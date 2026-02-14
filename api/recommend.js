@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     const apiKey = process.env.AIRTABLE_API_KEY;
 
     const response = await fetch(
-      `https://api.airtable.com/v0/${baseId}/explorer_only?view=explorer_only`,
+      `https://api.airtable.com/v0/${baseId}/Imported%20table?view=explorer_only`,
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -27,6 +27,7 @@ export default async function handler(req, res) {
       count: data.records.length,
       records: data.records,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
