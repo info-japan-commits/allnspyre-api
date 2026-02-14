@@ -21,8 +21,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Airtable: テーブル名 explorer_only / view=explorer_only を指定
-    const url = `https://api.airtable.com/v0/${baseId}/explorer_only?view=explorer_only`;
+    // ✅ 正しい指定：テーブル名 = Imported table / view=explorer_only
+    // explorer_only は「テーブル名」ではなく「View名」
+    const url = `https://api.airtable.com/v0/${baseId}/Imported%20table?view=explorer_only`;
 
     const response = await fetch(url, {
       headers: {
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
       success: true,
       count: data.records.length,
       records: data.records,
-      version: "2026-02-14-aaa", // ← これが返ってきたら「最新コード」が動いてる確定
+      version: "2026-02-14-aaa",
     });
   } catch (error) {
     return res.status(500).json({
