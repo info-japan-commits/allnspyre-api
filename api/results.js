@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 const AIRTABLE_BASE = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 
