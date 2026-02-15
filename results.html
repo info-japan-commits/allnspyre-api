@@ -2,228 +2,216 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Allnspyre | Results</title>
   <style>
-    :root{--bg:#faf8f3;--card:#fff;--ink:#111;--muted:#6b6b6b;--line:#e8e2d9;}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{max-width:980px;margin:0 auto;padding:32px 16px 56px}
-    .topline{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-bottom:12px;flex-wrap:wrap}
-    .h1{font-family:Georgia,"Times New Roman",serif;font-size:56px;line-height:1.0;margin:6px 0 8px}
-    .sub{margin:0 0 18px;color:var(--muted)}
-    .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0}
-    .btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:650}
-    .btnPrimary{border-color:#111}
-    .state{
-      border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;color:var(--muted);
-      margin:10px 0 18px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px
-    }
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    .card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px 14px}
-    .title{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 6px}
-    .meta{color:var(--muted);font-size:12px;margin:0 0 10px}
-    .desc{margin:0;color:#222;line-height:1.55}
-    .tagRow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-    .tag{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.6)}
-    a{color:inherit}
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; background:#faf9f7; color:#111; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 80px; }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
+    .meta { font-size: 12px; color:#555; display:flex; gap:18px; flex-wrap:wrap; }
+    .meta b { color:#111; font-weight:600; }
+    h1 { font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: 56px; letter-spacing:-0.02em; margin: 10px 0 4px; }
+    .sub { color:#666; margin-bottom:18px; }
+    .actions { display:flex; gap:10px; }
+    .btn { padding:10px 14px; border-radius: 999px; border:1px solid #ddd; background:#fff; cursor:pointer; font-weight:600; }
+    .btn.primary { background:#111; color:#fff; border-color:#111; }
+    .state { margin-top:14px; padding:12px 14px; border-radius: 12px; background:#fff; border:1px solid #eee; font-size:13px; white-space:pre-wrap; }
+    .state.bad { border-color:#f1b1b1; background:#fff5f5; color:#8b0000; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px; margin-top:18px; }
+    @media (max-width: 740px){ .grid{ grid-template-columns: 1fr; } h1{font-size:42px;} }
+    .card { background:#fff; border:1px solid #eee; border-radius: 18px; overflow:hidden; box-shadow: 0 8px 24px rgba(0,0,0,.04); }
+    .img { aspect-ratio: 16 / 10; background:#f3f2ee; }
+    .card .in { padding:14px 14px 16px; }
+    .name { font-weight:800; font-size:18px; margin:0 0 6px; }
+    .desc { margin:0 0 10px; color:#444; line-height:1.5; }
+    .tags { display:flex; flex-wrap:wrap; gap:8px; }
+    .tag { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #eee; background:#fafafa; color:#333; }
+    .debug { margin-top:18px; font-size:12px; color:#666; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topline">
-      <div><b>PLAN:</b> <span id="plan">—</span></div>
-      <div><b>AREAS:</b> <span id="areas">—</span></div>
-      <div><b>Storage key:</b> allnspyre_hearing</div>
-    </div>
-
-    <div class="h1">Your 7 picks.</div>
-    <p class="sub">Where locals actually eat — before the world finds out.</p>
-
-    <div class="bar">
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btnPrimary" id="btnRetry">Retry</button>
+    <div class="top">
+      <div class="meta" id="meta"></div>
+      <div class="actions">
+        <button class="btn" id="btnRetry">Retry</button>
         <button class="btn" id="btnBack">Back to Hearing</button>
       </div>
-      <div style="color:var(--muted); font-size:12px" id="smallNote"></div>
     </div>
 
-    <div class="state" id="state">Loading…</div>
-    <div class="grid" id="grid"></div>
+    <h1>Your 7 picks.</h1>
+    <div class="sub">Where locals actually eat — before the world finds out.</div>
+
+    <div id="state" class="state">Loading…</div>
+    <div id="grid" class="grid"></div>
+
+    <div class="debug" id="debug"></div>
   </div>
 
 <script>
-(() => {
-  const STORAGE_KEY = "allnspyre_hearing";
-  const API_BASE = location.origin; // https://allnspyre-api.vercel.app
+  const API_BASE = location.origin; // allnspyre-api.vercel.app
+  const $ = (id) => document.getElementById(id);
 
-  const elPlan = document.getElementById("plan");
-  const elAreas = document.getElementById("areas");
-  const elState = document.getElementById("state");
-  const elGrid = document.getElementById("grid");
-  const elNote = document.getElementById("smallNote");
-
-  const btnRetry = document.getElementById("btnRetry");
-  const btnBack  = document.getElementById("btnBack");
-
-  function qsPlan() {
-    const q = new URLSearchParams(location.search);
-    return (q.get("plan") || "").toLowerCase();
+  function getPlanFromQuery() {
+    const p = new URLSearchParams(location.search).get("plan");
+    return (p || "").toLowerCase() || "explorer";
   }
 
-  function setState(msg, isError=false) {
-    elState.style.borderColor = isError ? "#b00020" : "var(--line)";
-    elState.textContent = msg;
-  }
-
-  function renderCards(records) {
-    elGrid.innerHTML = "";
-    records.forEach((r, idx) => {
-      const c = document.createElement("div");
-      c.className = "card";
-
-      const t = document.createElement("div");
-      t.className = "title";
-      t.textContent = `${idx+1}. ${r.shop_name || r.name || "Untitled"}`;
-
-      const m = document.createElement("div");
-      m.className = "meta";
-      const g = r.genre ? `Genre: ${r.genre}` : "";
-      const a = r.area_group ? `Area: ${r.area_group}` : (r.area_detail ? `Area: ${r.area_detail}` : "");
-      m.textContent = [g,a].filter(Boolean).join(" · ");
-
-      const d = document.createElement("p");
-      d.className = "desc";
-      d.textContent = r.short_desc || r.desc || r.note || "";
-
-      const tags = document.createElement("div");
-      tags.className = "tagRow";
-      if (r.area_detail) {
-        const tg = document.createElement("span");
-        tg.className = "tag";
-        tg.textContent = r.area_detail;
-        tags.appendChild(tg);
-      }
-      if (r.photo_status) {
-        const tg = document.createElement("span");
-        tg.className = "tag";
-        tg.textContent = `photo: ${r.photo_status}`;
-        tags.appendChild(tg);
-      }
-
-      c.appendChild(t);
-      c.appendChild(m);
-      c.appendChild(d);
-      if (tags.childNodes.length) c.appendChild(tags);
-
-      elGrid.appendChild(c);
-    });
-  }
-
-  function loadPayload() {
-    // ✅ ここが今回の確定修正：hearingData ではなく allnspyre_hearing を読む
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-
-    try {
-      const obj = JSON.parse(raw);
-      // URLのplanがあればそれを優先（事故防止）
-      const qp = qsPlan();
-      if (qp) obj.plan = qp;
-      return obj;
-    } catch (e) {
-      console.error(e);
-      return null;
+  // localStorageのキー揺れ吸収（今後の事故防止）
+  function readHearingPayload() {
+    const keys = [
+      "hearingData",
+      "allnspyre_hearing",
+      "allnspyre hearing",
+      "hearing",
+    ];
+    for (const k of keys) {
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      try { return JSON.parse(raw); } catch (e) {}
     }
+    return null;
   }
 
-  async function fetchResults(payload) {
+  // ✅ここが本丸：api/results が必須にしてる areaDetails を必ず作る
+  function normalizeForApi(payload) {
+    const plan = (payload?.plan || getPlanFromQuery() || "explorer").toLowerCase();
+
+    const prefs = Array.isArray(payload?.prefs) ? payload.prefs : [];
+    const who = payload?.who || "";
+    const mood = payload?.mood || "";
+    const avoid = Array.isArray(payload?.avoid) ? payload.avoid : [];
+
+    // hearing側のUIは "Tokyo Urban" みたいな「広域グループ」を選ばせてる
+    // それをサーバー側の必須パラメータ areaDetails として送る（名前合わせ）
+    const areaGroups =
+      Array.isArray(payload?.areas) ? payload.areas :
+      Array.isArray(payload?.areaGroups) ? payload.areaGroups :
+      Array.isArray(payload?.areaDetails) ? payload.areaDetails :
+      [];
+
+    const areaDetails = areaGroups; // ✅必須
+
+    return { plan, prefs, areaDetails, who, mood, avoid };
+  }
+
+  function setMeta({plan, prefs, areaDetails}) {
+    const areasText = (areaDetails || []).join(" / ");
+    const prefsText = (prefs || []).join(" / ");
+    $("meta").innerHTML = `
+      <div><b>PLAN:</b> ${escapeHtml(plan || "")}</div>
+      <div><b>PREFS:</b> ${escapeHtml(prefsText || "-")}</div>
+      <div><b>AREAS:</b> ${escapeHtml(areasText || "-")}</div>
+    `;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+
+  async function fetchResults(apiPayload) {
     const url = `${API_BASE}/api/results`;
     const res = await fetch(url, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(apiPayload),
     });
 
-    const ct = (res.headers.get("content-type") || "");
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`API ${res.status} ${res.statusText}\n\n${text}`);
-    }
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch(e) {}
 
-    if (!ct.includes("application/json")) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`API returned non-JSON.\n\n${text}`);
-    }
+    return { ok: res.ok, status: res.status, text, json };
+  }
 
-    return await res.json();
+  function renderCards(records) {
+    const grid = $("grid");
+    grid.innerHTML = "";
+    for (const r of records) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="img"></div>
+        <div class="in">
+          <p class="name">${escapeHtml(r.shop_name || r.name || "Store")}</p>
+          <p class="desc">${escapeHtml(r.short_desc || r.desc || "")}</p>
+          <div class="tags">
+            ${r.genre ? `<span class="tag">${escapeHtml(r.genre)}</span>` : ""}
+            ${r.area_group ? `<span class="tag">${escapeHtml(r.area_group)}</span>` : ""}
+            ${r.area_detail ? `<span class="tag">${escapeHtml(r.area_detail)}</span>` : ""}
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
   }
 
   async function run() {
-    elGrid.innerHTML = "";
+    $("state").className = "state";
+    $("state").textContent = "Loading…";
 
-    const payload = loadPayload();
-    if (!payload) {
-      const qp = qsPlan() || "connoisseur";
-      elPlan.textContent = qp;
-      elAreas.textContent = "—";
-      setState(
+    const rawPayload = readHearingPayload();
+    if (!rawPayload) {
+      $("state").className = "state bad";
+      $("state").textContent =
         "No hearing data found.\n\n" +
-        "This usually means:\n" +
-        "1) You opened results directly without completing hearing\n" +
-        "2) localStorage was cleared\n\n" +
-        "Fix: go back to hearing and select again.",
-        true
-      );
+        "Fix:\n" +
+        "1) Go back to hearing and select again.\n" +
+        "2) Make sure you are on the same domain (allnspyre-api.vercel.app)\n";
+      setMeta({ plan: getPlanFromQuery(), prefs: [], areaDetails: [] });
       return;
     }
 
-    elPlan.textContent = payload.plan || "—";
-    elAreas.textContent = (payload.areas && payload.areas.length) ? payload.areas.join(" / ") : "—";
+    const apiPayload = normalizeForApi(rawPayload);
+    setMeta(apiPayload);
 
-    // 軽い検証（壊れてたら即止める）
-    if (!payload.plan || !payload.prefs || !Array.isArray(payload.prefs) || payload.prefs.length === 0) {
-      setState("Payload is missing required fields (plan/prefs).", true);
+    // ✅ areaDetails が空ならサーバーが必ず落とすので、先に止める
+    if (!apiPayload.areaDetails || apiPayload.areaDetails.length === 0) {
+      $("state").className = "state bad";
+      $("state").textContent =
+        "Missing areas.\n\n" +
+        "You must pick at least 1 area group on hearing.\n";
+      $("debug").innerHTML = `<div class="mono">payload=${escapeHtml(JSON.stringify(apiPayload, null, 2))}</div>`;
       return;
     }
-    if (!payload.areas || !Array.isArray(payload.areas) || payload.areas.length === 0) {
-      setState("Payload is missing required fields (areas).", true);
-      return;
-    }
 
-    setState("Calling API…");
-    elNote.textContent = `${API_BASE}/api/results`;
+    const out = await fetchResults(apiPayload);
 
-    try {
-      const json = await fetchResults(payload);
-
-      const records = json.records || json.items || [];
-      if (!records.length) {
-        setState("API returned no records.\n\n" + JSON.stringify(json, null, 2), true);
-        return;
+    if (!out.ok) {
+      $("state").className = "state bad";
+      // サーバーが返すJSONエラーをそのまま見せる
+      if (out.json && out.json.error) {
+        $("state").textContent = `Failed ❌\nAPI ${out.status}\n${out.json.error}`;
+      } else {
+        $("state").textContent = `Failed ❌\nAPI ${out.status}\n(non-JSON or non-200)\n\n${out.text.slice(0, 300)}`;
       }
-
-      renderCards(records.slice(0, 7));
-      setState(
-        "OK ✅\n\n" +
-        `records: ${records.length}\n` +
-        (json.version ? `version: ${json.version}\n` : "") +
-        "\n(You can now style the cards freely.)"
-      );
-    } catch (e) {
-      console.error(e);
-      setState("Failed ❌\n\n" + (e.message || String(e)), true);
+      $("debug").innerHTML = `<div class="mono">payload=${escapeHtml(JSON.stringify(apiPayload, null, 2))}</div>`;
+      return;
     }
+
+    const json = out.json || {};
+    const records = Array.isArray(json.records) ? json.records : (Array.isArray(json) ? json : []);
+    if (!records.length) {
+      $("state").className = "state bad";
+      $("state").textContent = "API returned no records.";
+      $("debug").innerHTML = `<div class="mono">response=${escapeHtml(out.text.slice(0, 500))}</div>`;
+      return;
+    }
+
+    renderCards(records);
+    $("state").className = "state";
+    $("state").textContent = `OK ✅\nrecords: ${records.length}`;
+    $("debug").innerHTML = "";
   }
 
-  btnRetry.addEventListener("click", run);
-  btnBack.addEventListener("click", () => {
-    const p = qsPlan() || (loadPayload() && loadPayload().plan) || "connoisseur";
-    location.href = `${API_BASE}/hearing.html?plan=${encodeURIComponent(p)}`;
+  $("btnRetry").addEventListener("click", run);
+  $("btnBack").addEventListener("click", () => {
+    const plan = getPlanFromQuery();
+    location.href = `${API_BASE}/hearing.html?plan=${encodeURIComponent(plan)}`;
   });
 
   run();
-})();
 </script>
 </body>
 </html>
