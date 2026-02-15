@@ -1,76 +1,73 @@
-// /api/areas.js
-// GET /api/areas?pref=Tokyo
-// Returns unique area_detail values for the given prefecture keyword.
-
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-
-// ★最優先：テーブルID（tbl〜）で叩く。無ければ名前にフォールバック
-const AIRTABLE_TABLE_ID = process.env.AIRTABLE_TABLE_ID; // e.g. "tblRTY6o0o0GqrXXW"
-const TABLE_FALLBACK_NAME = "explorer_only";
-
-function json(res, status, data) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(data, null, 2));
-}
-
-function airtableQuote(value) {
-  return String(value ?? "").replace(/"/g, '\\"');
-}
-
-function normalizePref(raw) {
-  const v = String(raw ?? "").trim();
-  if (!v) return "";
-  const map = {
-    Tokyo: "Tokyo", 東京: "Tokyo",
-    Kanagawa: "Kanagawa", 神奈川: "Kanagawa",
-    Osaka: "Osaka", 大阪: "Osaka",
-    Kyoto: "Kyoto", 京都: "Kyoto",
-    Hyogo: "Hyogo", 兵庫: "Hyogo",
-    Nara: "Nara", 奈良: "Nara",
-    Fukuoka: "Fukuoka", 福岡: "Fukuoka",
-    Ishikawa: "Ishikawa", 石川: "Ishikawa",
+// api/areas.js
+export default async function handler(req, res) {
+  const json = (status, body) => {
+    res.status(status);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.end(JSON.stringify(body));
   };
-  return map[v] || v;
-}
 
-module.exports = async (req, res) => {
   try {
-    if (!AIRTABLE_TOKEN) return json(res, 500, { ok: false, error: "Missing AIRTABLE_TOKEN" });
-    if (!AIRTABLE_BASE_ID) return json(res, 500, { ok: false, error: "Missing AIRTABLE_BASE_ID" });
+    const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+    const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+    // 今の実装に合わせてテーブル名を使う（explorer_only が見えてるので）
+    const AIRTABLE_TABLE = process.env.AIRTABLE_TABLE_AREAS || "explorer_only";
 
-    const prefRaw = req.query?.pref;
-    const pref = normalizePref(prefRaw);
-    if (!pref) return json(res, 400, { ok: false, error: "Missing pref" });
+    if (!AIRTABLE_TOKEN) return json(500, { ok: false, error: "Missing AIRTABLE_TOKEN" });
+    if (!AIRTABLE_BASE_ID) return json(500, { ok: false, error: "Missing AIRTABLE_BASE_ID" });
 
-    const tableRef = AIRTABLE_TABLE_ID || TABLE_FALLBACK_NAME;
+    const prefRaw = (req.query.pref || "").toString().trim();
+    if (!prefRaw) return json(400, { ok: false, error: "Missing pref" });
 
-    const prefQ = airtableQuote(pref);
-    const formula = `AND(FIND("${prefQ}", {area_group})>0, {status}="active")`;
+    // ✅ pref→ area_groupに含まれうるキーワードへ変換（表記ゆれ吸収）
+    // ここを増やせばエリアが増える
+    const PREF_KEYWORDS = {
+      Tokyo: ["Tokyo"],
+      Kanagawa: ["Kanagawa", "Yokohama"],     // ← Kanagawaが出ない主因を救う
+      Osaka: ["Osaka"],
+      Kyoto: ["Kyoto"],
+      Hyogo: ["Hyogo", "Kobe", "Akashi", "Awaji"],
+      Nara: ["Nara", "Ikoma"],
+      Fukuoka: ["Fukuoka", "Tenjin", "Hakata", "Nishijin", "Itoshima", "Dazaifu"],
+      Ishikawa: ["Ishikawa", "Kanazawa", "Nonoichi"],
+    };
+
+    // 入力が "tokyo" みたいな時も正規化
+    const prefNormalized =
+      Object.keys(PREF_KEYWORDS).find(k => k.toLowerCase() === prefRaw.toLowerCase()) || prefRaw;
+
+    const keywords = PREF_KEYWORDS[prefNormalized] || [prefNormalized];
+
+    // AirtableのfilterByFormulaを作る
+    // OR(FIND("Yokohama",{area_group})>0, FIND("Kanagawa",{area_group})>0, ...)
+    const esc = (s) => String(s).replace(/"/g, '\\"');
+    const findParts = keywords.map(k => `FIND("${esc(k)}",{area_group})>0`);
+    const formula = `AND(OR(${findParts.join(",")}), {status}="active")`;
 
     const url =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableRef)}` +
-      `?pageSize=100` +
-      `&filterByFormula=${encodeURIComponent(formula)}` +
-      `&fields%5B%5D=area_detail` +
-      `&fields%5B%5D=area_group` +
-      `&fields%5B%5D=status`;
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}` +
+      `?pageSize=100&filterByFormula=${encodeURIComponent(formula)}` +
+      `&fields%5B%5D=area_detail&fields%5B%5D=area_group&fields%5B%5D=status`;
 
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
+    const r = await fetch(url, {
+      headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+    });
+
     const text = await r.text();
 
     if (!r.ok) {
-      return json(res, r.status, {
+      return json(r.status, {
         ok: false,
         error: "Airtable request failed",
         status: r.status,
-        details: text.slice(0, 500),
+        details: text.slice(0, 600),
         debug: {
-          tableRef,
-          prefRaw,
-          prefNormalized: pref,
+          table: AIRTABLE_TABLE,
+          pref: prefRaw,
+          prefNormalized,
+          keywords,
           formula,
+          url,
         },
       });
     }
@@ -78,16 +75,23 @@ module.exports = async (req, res) => {
     const data = JSON.parse(text);
     const records = Array.isArray(data.records) ? data.records : [];
 
+    // area_detail をユニークに
     const set = new Set();
     for (const rec of records) {
       const v = rec?.fields?.area_detail;
       if (typeof v === "string" && v.trim()) set.add(v.trim());
     }
-
     const areaDetails = Array.from(set).sort((a, b) => a.localeCompare(b));
 
-    return json(res, 200, { ok: true, pref, count: areaDetails.length, areaDetails });
-  } catch (err) {
-    return json(res, 500, { ok: false, error: "Server error", message: String(err?.message || err) });
+    return json(200, {
+      ok: true,
+      pref: prefRaw,
+      prefNormalized,
+      keywords,
+      count: areaDetails.length,
+      areaDetails,
+    });
+  } catch (e) {
+    return json(500, { ok: false, error: "Server error", message: String(e?.message || e) });
   }
-};
+}
