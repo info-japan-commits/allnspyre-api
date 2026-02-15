@@ -1,131 +1,54 @@
-// api/results.js
-// POST /api/results
-// body: { areaIds: string[] }
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Allnspyre Results</title>
+</head>
+<body>
+  <h2>Your 7 Matches</h2>
+  <div id="result">Loading...</div>
 
-const AIRTABLE_BASE =
-  process.env.AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE || "";
-const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_TOKEN ||
-  process.env.AIRTABLE_API_KEY ||
-  process.env.AIRTABLE_KEY ||
-  "";
+  <script>
+    async function loadResults() {
+      const params = new URLSearchParams(window.location.search);
+      const areaIds = params.get("areaIds");
 
-const TABLE_NAME = "shops_master"; // ← Airtableのテーブル名が違うならここだけ変更
+      if (!areaIds) {
+        document.getElementById("result").innerText = "No area selected.";
+        return;
+      }
 
-function json(res, status, payload) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(payload));
-}
-
-// Airtableの文字列を安全にシングルクォートで囲う
-function airtableQuote(str) {
-  // Airtableの式では ' を \' でエスケープ
-  return String(str).replace(/'/g, "\\'");
-}
-
-export default async function handler(req, res) {
-  // CORS（同一ドメインなら不要だけど、念のため）
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return json(res, 200, { ok: true });
-
-  if (!AIRTABLE_BASE || !AIRTABLE_TOKEN) {
-    return json(res, 500, {
-      error: "Missing Airtable env vars",
-      needed: ["AIRTABLE_BASE_ID", "AIRTABLE_TOKEN"],
-      got: {
-        AIRTABLE_BASE_ID: Boolean(process.env.AIRTABLE_BASE_ID),
-        AIRTABLE_TOKEN: Boolean(process.env.AIRTABLE_TOKEN),
-        AIRTABLE_API_KEY: Boolean(process.env.AIRTABLE_API_KEY),
-      },
-    });
-  }
-
-  try {
-    let areaIds = [];
-
-    if (req.method === "POST") {
-      // Vercel Node runtime: JSON body はそのまま req.body に入る想定
-      // （もし入らない場合は results.html 側が原因）
-      areaIds = (req.body && req.body.areaIds) || [];
-    } else if (req.method === "GET") {
-      // テスト用: /api/results?areaIds=A,B,C
-      const qs = new URL(req.url, "https://dummy.local").searchParams;
-      const raw = qs.get("areaIds") || "";
-      areaIds = raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
-    } else {
-      return json(res, 405, { error: "Method not allowed" });
-    }
-
-    if (!Array.isArray(areaIds) || areaIds.length === 0) {
-      return json(res, 400, { error: "No area selected" });
-    }
-
-    // ===== ここが重要：Airtableの {area_detail} と完全一致で引く =====
-    // OR({area_detail}='Tokyo 23 Wards', {area_detail}='Fushimi-Momoyama', ...)
-    const conditions = areaIds.map(
-      (id) => `{area_detail}='${airtableQuote(id)}'`
-    );
-    const formula = `OR(${conditions.join(",")})`;
-
-    const url =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(
-        TABLE_NAME
-      )}` +
-      `?filterByFormula=${encodeURIComponent(formula)}` +
-      `&maxRecords=100`;
-
-    const airtableRes = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      },
-    });
-
-    if (!airtableRes.ok) {
-      const text = await airtableRes.text();
-      return json(res, 500, {
-        error: "Airtable request failed",
-        status: airtableRes.status,
-        details: text,
-        urlPreview: url.slice(0, 180) + "...",
+      const res = await fetch("/api/results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          areaIds: areaIds.split(",")
+        })
       });
+
+      const data = await res.json();
+
+      if (!data.shops || data.shops.length === 0) {
+        document.getElementById("result").innerText = "No shops returned.";
+        return;
+      }
+
+      let html = "";
+      data.shops.forEach(shop => {
+        html += `
+          <div style="margin-bottom:20px;padding:10px;border:1px solid #ccc;">
+            <h3>${shop.shop_name}</h3>
+            <p>${shop.area_detail}</p>
+            <p>${shop.genre}</p>
+            <p>${shop.short_desc}</p>
+          </div>
+        `;
+      });
+
+      document.getElementById("result").innerHTML = html;
     }
 
-    const data = await airtableRes.json();
-    const records = Array.isArray(data.records) ? data.records : [];
-
-    // 7件だけ返す（必要なら将来 recommend ロジック入れる）
-    const shops = records.slice(0, 7).map((r) => {
-      const f = r.fields || {};
-      return {
-        shop_id: f.shop_id || "",
-        shop_name: f.shop_name || "",
-        area_group: f.area_group || "",
-        area_detail: f.area_detail || "",
-        genre: f.genre || "",
-        short_desc: f.short_desc || "",
-        photo_status: f.photo_status || "",
-        source_note: f.source_note || "",
-        status: f.status || "",
-      };
-    });
-
-    return json(res, 200, {
-      ok: true,
-      count: shops.length,
-      shops,
-      debug: {
-        usedFormula: formula,
-        usedAreas: areaIds,
-      },
-    });
-  } catch (err) {
-    return json(res, 500, {
-      error: "Server error",
-      message: err?.message || String(err),
-    });
-  }
-}
+    loadResults();
+  </script>
+</body>
+</html>
