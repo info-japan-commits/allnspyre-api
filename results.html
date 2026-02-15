@@ -1,171 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Allnspyre — Results</title>
-  <style>
-    :root{
-      --bg:#f7f8fb;
-      --card:#fff;
-      --ink:#0f172a;
-      --muted:#475569;
-      --line:rgba(15,23,42,.10);
-      --shadow:0 10px 30px rgba(2,6,23,.08);
-      --radius:18px;
-      --accent:#1d4ed8;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--ink);
-      background:
-        radial-gradient(900px 500px at 20% -10%, rgba(14,165,233,.18), transparent 60%),
-        radial-gradient(800px 500px at 90% 10%, rgba(29,78,216,.15), transparent 60%),
-        linear-gradient(180deg, #ffffff 0%, var(--bg) 55%, #ffffff 100%);
-    }
-    .wrap{max-width:980px;margin:0 auto;padding:28px 18px 60px;}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-    .dot{width:10px;height:10px;border-radius:50%;background:#0ea5e9;box-shadow:0 0 0 6px rgba(14,165,233,.12);}
-    .pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(15,23,42,.08);background:rgba(15,23,42,.06);color:var(--muted);font-size:12px;}
-    .hero{
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      background:rgba(255,255,255,.92);
-      box-shadow:var(--shadow);
-      padding:18px;
-      margin-bottom:14px;
-    }
-    h1{margin:0 0 6px;font-size:28px;line-height:1.12;}
-    .sub{margin:0;color:var(--muted);}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px;}
-    .card{
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      background:var(--card);
-      box-shadow:var(--shadow);
-      padding:14px;
-    }
-    .name{font-weight:800;font-size:16px;margin:0 0 4px;}
-    .meta{color:var(--muted);font-size:12px;margin:0 0 8px;}
-    .note{color:rgba(15,23,42,.85);font-size:13px;margin:0;}
-    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
-    .btn{
-      appearance:none;border:none;cursor:pointer;
-      padding:11px 14px;border-radius:14px;
-      background:linear-gradient(90deg,#1d4ed8 0%, #0ea5e9 100%);
-      color:#fff;font-weight:800;
-    }
-    .ghost{
-      background:transparent;border:1px solid rgba(15,23,42,.16);
-      color:rgba(15,23,42,.85);
-    }
-    .err{
-      display:none;margin-top:12px;
-      background:rgba(239,68,68,.08);
-      border:1px solid rgba(239,68,68,.22);
-      color:rgba(127,29,29,.95);
-      padding:10px 12px;border-radius:14px;font-size:13px;
-    }
-    .tiny{font-size:12px;color:var(--muted);margin-top:10px;}
-    code{background:rgba(15,23,42,.06);padding:2px 6px;border-radius:8px;}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand"><span class="dot"></span> Allnspyre</div>
-      <div class="pill" id="statusPill">Loading…</div>
-    </div>
+// api/results.js
+// POST /api/results
+// body: { areaIds: string[] }
 
-    <div class="hero">
-      <h1>Your Selection</h1>
-      <p class="sub" id="summary">We’re generating your results…</p>
-      <div class="btnrow">
-        <button class="btn ghost" id="reloadBtn" type="button">Reload</button>
-      </div>
-      <div class="err" id="errBox"></div>
-      <div class="tiny" id="debug"></div>
-    </div>
+const AIRTABLE_BASE =
+  process.env.AIRTABLE_BASE_ID || process.env.AIRTABLE_BASE || "";
+const AIRTABLE_TOKEN =
+  process.env.AIRTABLE_TOKEN ||
+  process.env.AIRTABLE_API_KEY ||
+  process.env.AIRTABLE_KEY ||
+  "";
 
-    <div class="grid" id="list"></div>
-  </div>
+const TABLE_NAME = "shops_master"; // ← Airtableのテーブル名が違うならここだけ変更
 
-  <script>
-    function qs(name){ return new URLSearchParams(location.search).get(name); }
-    function el(id){ return document.getElementById(id); }
-    function showErr(msg){
-      const box = el("errBox");
-      box.textContent = msg;
-      box.style.display = msg ? "block" : "none";
+function json(res, status, payload) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(payload));
+}
+
+// Airtableの文字列を安全にシングルクォートで囲う
+function airtableQuote(str) {
+  // Airtableの式では ' を \' でエスケープ
+  return String(str).replace(/'/g, "\\'");
+}
+
+export default async function handler(req, res) {
+  // CORS（同一ドメインなら不要だけど、念のため）
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return json(res, 200, { ok: true });
+
+  if (!AIRTABLE_BASE || !AIRTABLE_TOKEN) {
+    return json(res, 500, {
+      error: "Missing Airtable env vars",
+      needed: ["AIRTABLE_BASE_ID", "AIRTABLE_TOKEN"],
+      got: {
+        AIRTABLE_BASE_ID: Boolean(process.env.AIRTABLE_BASE_ID),
+        AIRTABLE_TOKEN: Boolean(process.env.AIRTABLE_TOKEN),
+        AIRTABLE_API_KEY: Boolean(process.env.AIRTABLE_API_KEY),
+      },
+    });
+  }
+
+  try {
+    let areaIds = [];
+
+    if (req.method === "POST") {
+      // Vercel Node runtime: JSON body はそのまま req.body に入る想定
+      // （もし入らない場合は results.html 側が原因）
+      areaIds = (req.body && req.body.areaIds) || [];
+    } else if (req.method === "GET") {
+      // テスト用: /api/results?areaIds=A,B,C
+      const qs = new URL(req.url, "https://dummy.local").searchParams;
+      const raw = qs.get("areaIds") || "";
+      areaIds = raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    } else {
+      return json(res, 405, { error: "Method not allowed" });
     }
 
-    const sessionId = qs("session_id");
-    el("reloadBtn").onclick = () => location.reload();
-
-    async function main(){
-      if(!sessionId){
-        el("statusPill").textContent = "Missing session_id";
-        showErr("This page requires ?session_id=CHECKOUT_SESSION_ID");
-        el("debug").textContent = "";
-        return;
-      }
-
-      el("statusPill").textContent = "Generating…";
-      el("summary").textContent = "Hold tight. Matching shops to your answers.";
-
-      try{
-        const res = await fetch("/api/results?session_id=" + encodeURIComponent(sessionId), {
-          method: "GET",
-          headers: { "Accept": "application/json" }
-        });
-
-        const data = await res.json();
-        if(!res.ok || !data.success){
-          throw new Error(data?.error || "Failed to generate results");
-        }
-
-        el("statusPill").textContent = "Ready";
-        el("summary").textContent = `${data.plan.toUpperCase()} • ${data.count} shops selected`;
-
-        // Optional debug
-        el("debug").textContent = data.debug ? ("debug: " + data.debug) : "";
-
-        const list = el("list");
-        list.innerHTML = "";
-
-        data.shops.forEach(s => {
-          const card = document.createElement("div");
-          card.className = "card";
-
-          // NOTE: shop_name is revealed post-purchase, OK.
-          card.innerHTML = `
-            <div class="name">${escapeHtml(s.shop_name || "Unknown")}</div>
-            <div class="meta">${escapeHtml(s.area_group || "")} / ${escapeHtml(s.area_detail || "")}</div>
-            ${s.short_desc ? `<p class="note">${escapeHtml(s.short_desc)}</p>` : ""}
-          `;
-          list.appendChild(card);
-്
-        });
-
-      }catch(err){
-        el("statusPill").textContent = "Error";
-        showErr(String(err?.message || err));
-      }
+    if (!Array.isArray(areaIds) || areaIds.length === 0) {
+      return json(res, 400, { error: "No area selected" });
     }
 
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    // ===== ここが重要：Airtableの {area_detail} と完全一致で引く =====
+    // OR({area_detail}='Tokyo 23 Wards', {area_detail}='Fushimi-Momoyama', ...)
+    const conditions = areaIds.map(
+      (id) => `{area_detail}='${airtableQuote(id)}'`
+    );
+    const formula = `OR(${conditions.join(",")})`;
+
+    const url =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(
+        TABLE_NAME
+      )}` +
+      `?filterByFormula=${encodeURIComponent(formula)}` +
+      `&maxRecords=100`;
+
+    const airtableRes = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      },
+    });
+
+    if (!airtableRes.ok) {
+      const text = await airtableRes.text();
+      return json(res, 500, {
+        error: "Airtable request failed",
+        status: airtableRes.status,
+        details: text,
+        urlPreview: url.slice(0, 180) + "...",
+      });
     }
 
-    main();
-  </script>
-</body>
-</html>
+    const data = await airtableRes.json();
+    const records = Array.isArray(data.records) ? data.records : [];
+
+    // 7件だけ返す（必要なら将来 recommend ロジック入れる）
+    const shops = records.slice(0, 7).map((r) => {
+      const f = r.fields || {};
+      return {
+        shop_id: f.shop_id || "",
+        shop_name: f.shop_name || "",
+        area_group: f.area_group || "",
+        area_detail: f.area_detail || "",
+        genre: f.genre || "",
+        short_desc: f.short_desc || "",
+        photo_status: f.photo_status || "",
+        source_note: f.source_note || "",
+        status: f.status || "",
+      };
+    });
+
+    return json(res, 200, {
+      ok: true,
+      count: shops.length,
+      shops,
+      debug: {
+        usedFormula: formula,
+        usedAreas: areaIds,
+      },
+    });
+  } catch (err) {
+    return json(res, 500, {
+      error: "Server error",
+      message: err?.message || String(err),
+    });
+  }
+}
