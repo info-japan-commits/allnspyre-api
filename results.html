@@ -5,249 +5,168 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Results</title>
   <style>
-    :root{
-      --bg:#f7f5f1;
-      --card:#fff;
-      --text:#111;
-      --muted:#6b6b6b;
-      --line:#e8e5df;
-      --radius:18px;
-    }
+    :root{--bg:#faf8f3;--card:#fff;--ink:#111;--muted:#6b6b6b;--line:#e8e2d9;}
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
-      color:var(--text);
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:980px;margin:0 auto;padding:32px 16px 56px}
+    .topline{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-bottom:12px;flex-wrap:wrap}
+    .h1{font-family:Georgia,"Times New Roman",serif;font-size:56px;line-height:1.0;margin:6px 0 8px}
+    .sub{margin:0 0 18px;color:var(--muted)}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0}
+    .btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:650}
+    .btnPrimary{border-color:#111}
+    .state{
+      border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;color:var(--muted);
+      margin:10px 0 18px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px
     }
-    .wrap{max-width:980px;margin:0 auto;padding:28px 16px 72px}
-    h1{
-      font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-      font-size:44px; line-height:1.05;
-      margin:10px 0 8px;
-      letter-spacing:-.02em;
-    }
-    .sub{color:var(--muted);margin:0 0 18px;font-size:15px}
-    .pill{
-      display:inline-block;
-      font-size:12px;
-      padding:7px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:rgba(255,255,255,.65);
-      backdrop-filter: blur(6px);
-      color:#222;
-      margin-right:8px;
-    }
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:999px;
-      padding:10px 12px;
-      cursor:pointer;
-      font-size:13px;
-    }
-    .grid{display:grid;grid-template-columns: 1fr 1fr;gap:14px;margin-top:18px}
-    @media (max-width:840px){ .grid{grid-template-columns:1fr} h1{font-size:38px} }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.04);
-    }
-    .title{font-weight:750;font-size:18px;margin:0 0 8px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px 14px}
+    .title{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 6px}
     .meta{color:var(--muted);font-size:12px;margin:0 0 10px}
     .desc{margin:0;color:#222;line-height:1.55}
-    .tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .tag{border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px;color:#333;background:#fff}
-    .state{
-      margin-top:16px;
-      padding:14px 14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.7);
-      color:var(--muted);
-      font-size:13px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .danger{color:#c62828}
+    .tagRow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .tag{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.6)}
+    a{color:inherit}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <div>
-        <span class="pill" id="planPill">PLAN: —</span>
-        <span class="pill" id="areaPill">AREAS: —</span>
-      </div>
-      <div>
-        <button class="btn" id="btnRetry">Retry</button>
-        <button class="btn" id="btnBack">Back to Hearing</button>
-      </div>
+    <div class="topline">
+      <div><b>PLAN:</b> <span id="plan">—</span></div>
+      <div><b>AREAS:</b> <span id="areas">—</span></div>
+      <div><b>Storage key:</b> allnspyre_hearing</div>
     </div>
 
-    <h1>Your 7 picks.</h1>
+    <div class="h1">Your 7 picks.</div>
     <p class="sub">Where locals actually eat — before the world finds out.</p>
 
-    <div id="grid" class="grid"></div>
+    <div class="bar">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btnPrimary" id="btnRetry">Retry</button>
+        <button class="btn" id="btnBack">Back to Hearing</button>
+      </div>
+      <div style="color:var(--muted); font-size:12px" id="smallNote"></div>
+    </div>
 
-    <div id="stateBox" class="state">Loading…</div>
+    <div class="state" id="state">Loading…</div>
+    <div class="grid" id="grid"></div>
   </div>
 
 <script>
 (() => {
-  // ✅ ここ固定：相対パス事故を潰す
-  const API_BASE = "https://allnspyre-api.vercel.app";
-
-  const grid = document.getElementById("grid");
-  const stateBox = document.getElementById("stateBox");
-  const planPill = document.getElementById("planPill");
-  const areaPill = document.getElementById("areaPill");
-
-  // hearingで保存したキー（この名前で統一）
   const STORAGE_KEY = "allnspyre_hearing";
+  const API_BASE = location.origin; // https://allnspyre-api.vercel.app
 
-  function setState(text, isError=false){
-    stateBox.textContent = text;
-    stateBox.className = "state" + (isError ? " danger" : "");
+  const elPlan = document.getElementById("plan");
+  const elAreas = document.getElementById("areas");
+  const elState = document.getElementById("state");
+  const elGrid = document.getElementById("grid");
+  const elNote = document.getElementById("smallNote");
+
+  const btnRetry = document.getElementById("btnRetry");
+  const btnBack  = document.getElementById("btnBack");
+
+  function qsPlan() {
+    const q = new URLSearchParams(location.search);
+    return (q.get("plan") || "").toLowerCase();
   }
 
-  function safeJsonParse(s){
-    try { return JSON.parse(s); } catch(e){ return null; }
+  function setState(msg, isError=false) {
+    elState.style.borderColor = isError ? "#b00020" : "var(--line)";
+    elState.textContent = msg;
   }
 
-  function getPlanFromQuery(){
-    const qs = new URLSearchParams(location.search);
-    const p = (qs.get("plan") || "").toLowerCase();
-    if (p === "connoisseur") return "connoisseur";
-    return "explorer";
-  }
-
-  function getHearingPayload(){
-    // ① URLにpayloadが載ってる場合（あれば優先）
-    const qs = new URLSearchParams(location.search);
-    const raw = qs.get("payload");
-    if (raw) {
-      const decoded = decodeURIComponent(raw);
-      const parsed = safeJsonParse(decoded);
-      if (parsed) return parsed;
-    }
-
-    // ② localStorage（通常はこれ）
-    const s = localStorage.getItem(STORAGE_KEY);
-    const parsed = safeJsonParse(s || "");
-    if (parsed) return parsed;
-
-    return null;
-  }
-
-  function renderCards(records){
-    grid.innerHTML = "";
+  function renderCards(records) {
+    elGrid.innerHTML = "";
     records.forEach((r, idx) => {
-      const fields = r.fields || r;
+      const c = document.createElement("div");
+      c.className = "card";
 
-      const name = fields.shop_name || fields.name || `Pick ${idx+1}`;
-      const short = fields.short_desc || fields.why_picked || fields.note || "";
-      const genre = fields.genre || "";
-      const area = fields.area_detail || fields.area_group || "";
+      const t = document.createElement("div");
+      t.className = "title";
+      t.textContent = `${idx+1}. ${r.shop_name || r.name || "Untitled"}`;
 
-      const card = document.createElement("div");
-      card.className = "card";
+      const m = document.createElement("div");
+      m.className = "meta";
+      const g = r.genre ? `Genre: ${r.genre}` : "";
+      const a = r.area_group ? `Area: ${r.area_group}` : (r.area_detail ? `Area: ${r.area_detail}` : "");
+      m.textContent = [g,a].filter(Boolean).join(" · ");
 
-      const h = document.createElement("div");
-      h.className = "title";
-      h.textContent = name;
+      const d = document.createElement("p");
+      d.className = "desc";
+      d.textContent = r.short_desc || r.desc || r.note || "";
 
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = [area, genre].filter(Boolean).join(" • ");
+      const tags = document.createElement("div");
+      tags.className = "tagRow";
+      if (r.area_detail) {
+        const tg = document.createElement("span");
+        tg.className = "tag";
+        tg.textContent = r.area_detail;
+        tags.appendChild(tg);
+      }
+      if (r.photo_status) {
+        const tg = document.createElement("span");
+        tg.className = "tag";
+        tg.textContent = `photo: ${r.photo_status}`;
+        tags.appendChild(tg);
+      }
 
-      const desc = document.createElement("p");
-      desc.className = "desc";
-      desc.textContent = short;
+      c.appendChild(t);
+      c.appendChild(m);
+      c.appendChild(d);
+      if (tags.childNodes.length) c.appendChild(tags);
 
-      const tagrow = document.createElement("div");
-      tagrow.className = "tagrow";
-
-      // Allnspyreらしい軽いタグ
-      const tags = [];
-      if (fields.time_slot) tags.push(fields.time_slot);
-      if (Array.isArray(fields.best_with) && fields.best_with.length) tags.push(fields.best_with[0]);
-      if (Array.isArray(fields.best_vibe) && fields.best_vibe.length) tags.push(fields.best_vibe[0]);
-
-      tags.slice(0,3).forEach(t => {
-        const tag = document.createElement("span");
-        tag.className = "tag";
-        tag.textContent = t;
-        tagrow.appendChild(tag);
-      });
-
-      card.appendChild(h);
-      card.appendChild(meta);
-      if (short) card.appendChild(desc);
-      if (tags.length) card.appendChild(tagrow);
-
-      grid.appendChild(card);
+      elGrid.appendChild(c);
     });
   }
 
-  async function fetchResults(payload){
-    // planはURLのplan優先（保険）
-    const urlPlan = getPlanFromQuery();
-    payload.plan = payload.plan || urlPlan || "explorer";
+  function loadPayload() {
+    // ✅ ここが今回の確定修正：hearingData ではなく allnspyre_hearing を読む
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
 
-    // APIへ渡す形（area_groupでOK。サーバー側で変換/抽出）
-    const body = {
-      plan: payload.plan,
-      prefs: payload.prefs || [],
-      areas: payload.areas || [],      // area_group
-      who: payload.who || null,
-      moods: payload.moods || [],
-      frictions: payload.frictions || payload.avoid || [],
-    };
+    try {
+      const obj = JSON.parse(raw);
+      // URLのplanがあればそれを優先（事故防止）
+      const qp = qsPlan();
+      if (qp) obj.plan = qp;
+      return obj;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
 
-    setState("Calling /api/results …\n" + JSON.stringify(body, null, 2));
-
-    const res = await fetch(`${API_BASE}/api/results`, {
+  async function fetchResults(payload) {
+    const url = `${API_BASE}/api/results`;
+    const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(body),
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
     });
 
-    const json = await res.json().catch(()=>null);
-
-    if (!res.ok || !json) {
-      throw new Error("API error (non-JSON or non-200)");
-    }
-    if (json.ok === false) {
-      throw new Error(json.error || "API returned ok:false");
+    const ct = (res.headers.get("content-type") || "");
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`API ${res.status} ${res.statusText}\n\n${text}`);
     }
 
-    // records: Airtable風でもOK、配列でもOK
-    const records = Array.isArray(json.records) ? json.records
-                   : Array.isArray(json.data) ? json.data
-                   : Array.isArray(json.shops) ? json.shops
-                   : [];
+    if (!ct.includes("application/json")) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`API returned non-JSON.\n\n${text}`);
+    }
 
-    return { json, records };
+    return await res.json();
   }
 
-  function updateTop(payload){
-    const plan = (payload?.plan || getPlanFromQuery() || "explorer").toUpperCase();
-    planPill.textContent = `PLAN: ${plan}`;
+  async function run() {
+    elGrid.innerHTML = "";
 
-    const areas = Array.isArray(payload?.areas) ? payload.areas : [];
-    areaPill.textContent = `AREAS: ${areas.length ? areas.join(" / ") : "—"}`;
-  }
-
-  async function run(){
-    grid.innerHTML = "";
-    const payload = getHearingPayload();
-
+    const payload = loadPayload();
     if (!payload) {
+      const qp = qsPlan() || "connoisseur";
+      elPlan.textContent = qp;
+      elAreas.textContent = "—";
       setState(
         "No hearing data found.\n\n" +
         "This usually means:\n" +
@@ -256,40 +175,51 @@
         "Fix: go back to hearing and select again.",
         true
       );
-      updateTop({ plan: getPlanFromQuery(), areas: [] });
       return;
     }
 
-    updateTop(payload);
+    elPlan.textContent = payload.plan || "—";
+    elAreas.textContent = (payload.areas && payload.areas.length) ? payload.areas.join(" / ") : "—";
+
+    // 軽い検証（壊れてたら即止める）
+    if (!payload.plan || !payload.prefs || !Array.isArray(payload.prefs) || payload.prefs.length === 0) {
+      setState("Payload is missing required fields (plan/prefs).", true);
+      return;
+    }
+    if (!payload.areas || !Array.isArray(payload.areas) || payload.areas.length === 0) {
+      setState("Payload is missing required fields (areas).", true);
+      return;
+    }
+
+    setState("Calling API…");
+    elNote.textContent = `${API_BASE}/api/results`;
 
     try {
-      const { json, records } = await fetchResults(payload);
+      const json = await fetchResults(payload);
 
+      const records = json.records || json.items || [];
       if (!records.length) {
         setState("API returned no records.\n\n" + JSON.stringify(json, null, 2), true);
         return;
       }
 
-      renderCards(records);
-
+      renderCards(records.slice(0, 7));
       setState(
         "OK ✅\n\n" +
-        "records: " + records.length + "\n" +
-        (json.version ? ("version: " + json.version + "\n") : "") +
+        `records: ${records.length}\n` +
+        (json.version ? `version: ${json.version}\n` : "") +
         "\n(You can now style the cards freely.)"
       );
-
     } catch (e) {
-      setState("Failed ❌\n\n" + (e?.message || String(e)), true);
+      console.error(e);
+      setState("Failed ❌\n\n" + (e.message || String(e)), true);
     }
   }
 
-  document.getElementById("btnRetry").addEventListener("click", run);
-
-  document.getElementById("btnBack").addEventListener("click", () => {
-    // hearingページの場所が違うならここだけ変えてOK
-    const plan = getPlanFromQuery();
-    location.href = `${API_BASE}/hearing.html?plan=${plan}`;
+  btnRetry.addEventListener("click", run);
+  btnBack.addEventListener("click", () => {
+    const p = qsPlan() || (loadPayload() && loadPayload().plan) || "connoisseur";
+    location.href = `${API_BASE}/hearing.html?plan=${encodeURIComponent(p)}`;
   });
 
   run();
