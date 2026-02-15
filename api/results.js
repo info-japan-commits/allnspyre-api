@@ -1,12 +1,6 @@
-// /api/results.js
-// POST /api/results
-// body: { areaDetails: string[] }  ※ Airtableの area_detail と完全一致させる
-// (テスト用) GET /api/results?areaDetails=Fushimi-Momoyama
-
 const AIRTABLE_BASE = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 
-// あなたのAirtableで実際に存在する「テーブル名」に合わせる（今は explorer_only）
 const TABLE_NAME = "explorer_only";
 
 function json(res, status, payload) {
@@ -15,116 +9,67 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function escapeAirtableString(str) {
-  // Airtable formula 文字列用に " をエスケープ
-  return String(str).replace(/"/g, '\\"');
-}
-
 export default async function handler(req, res) {
-  // CORS（Studioなど別ドメインから叩くなら必要）
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return json(res, 200, { ok: true });
-
-  if (!AIRTABLE_BASE || !AIRTABLE_TOKEN) {
-    return json(res, 500, {
-      ok: false,
-      error: "Missing env vars",
-      needed: ["AIRTABLE_BASE_ID", "AIRTABLE_TOKEN"],
-      got: {
-        AIRTABLE_BASE_ID: Boolean(AIRTABLE_BASE),
-        AIRTABLE_TOKEN: Boolean(AIRTABLE_TOKEN),
-      },
-    });
+  if (req.method !== "GET") {
+    return json(res, 405, { error: "Method not allowed" });
   }
 
   try {
-    let areaDetails = [];
+    const { areaDetails } = req.query;
 
-    // GETテスト対応: ?areaDetails=Fushimi-Momoyama,Kyoto%20City
-    if (req.method === "GET") {
-      const q = req.query?.areaDetails;
-      if (q) {
-        areaDetails = String(q)
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-    } else if (req.method === "POST") {
-      // Vercel Node runtime: JSON bodyはそのまま req.body に入る想定
-      // （もし文字列で来る環境なら自前でJSON.parseが必要だが、今の運用では不要）
-      areaDetails = req.body?.areaDetails || [];
-    } else {
-      return json(res, 405, { ok: false, error: "Method not allowed" });
+    if (!areaDetails) {
+      return json(res, 400, { error: "No area selected" });
     }
 
-    if (!Array.isArray(areaDetails) || areaDetails.length === 0) {
-      return json(res, 400, { ok: false, error: "No areaDetails provided" });
-    }
+    const areas = areaDetails
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
 
-    // Airtable formula:
-    // AND( OR({area_detail}="Fushimi-Momoyama", ...), {status}="active" )
-    const conditions = areaDetails.map(
-      (v) => `{area_detail}="${escapeAirtableString(v)}"`
-    );
-    const formula = `AND(OR(${conditions.join(",")}), {status}="active")`;
+    const conditions = areas
+      .map(a => `{area_detail}="${a}"`)
+      .join(",");
+
+    const formula = `AND(OR(${conditions}), {status}="active")`;
 
     const url =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(
-        TABLE_NAME
-      )}` +
-      `?filterByFormula=${encodeURIComponent(formula)}` +
-      `&maxRecords=100`;
+      `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(TABLE_NAME)}?` +
+      `filterByFormula=${encodeURIComponent(formula)}&maxRecords=7`;
 
     const airtableRes = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      },
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`
+      }
     });
 
     if (!airtableRes.ok) {
       const text = await airtableRes.text();
-      return json(res, 500, {
-        ok: false,
+      return json(res, airtableRes.status, {
         error: "Airtable request failed",
-        status: airtableRes.status,
-        details: text,
-        debug: { table: TABLE_NAME, formula, areaDetails },
+        details: text
       });
     }
 
     const data = await airtableRes.json();
-    const records = Array.isArray(data.records) ? data.records : [];
 
-    // 7件に絞る（必要ならランダム化も後で入れられる）
-    const shops = records.slice(0, 7).map((r) => {
-      const f = r.fields || {};
-      return {
-        shop_id: f.shop_id || "",
-        shop_name: f.shop_name || "",
-        area_group: f.area_group || "",
-        area_detail: f.area_detail || "",
-        genre: f.genre || "",
-        short_desc: f.short_desc || "",
-        photo_status: f.photo_status || "",
-        source_note: f.source_note || "",
-        status: f.status || "",
-      };
-    });
+    const shops = (data.records || []).map(r => ({
+      shop_id: r.fields.shop_id || "",
+      shop_name: r.fields.shop_name || "",
+      area_detail: r.fields.area_detail || "",
+      genre: r.fields.genre || "",
+      short_desc: r.fields.short_desc || ""
+    }));
 
     return json(res, 200, {
       ok: true,
       count: shops.length,
-      shops,
-      debug: { table: TABLE_NAME, formula, areaDetails },
+      shops
     });
+
   } catch (err) {
     return json(res, 500, {
-      ok: false,
       error: "Server error",
-      message: err?.message || String(err),
+      message: err.message
     });
   }
 }
