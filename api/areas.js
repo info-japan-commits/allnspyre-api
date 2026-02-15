@@ -1,58 +1,82 @@
 export default async function handler(req, res) {
   try {
-    const plan = String(req.query.plan || "").toLowerCase() || "explorer";
-    const pref = String(req.query.pref || "");
-    const prefs = pref.split(",").map(s => s.trim()).filter(Boolean);
+    const plan = String(req.query.plan || "explorer").toLowerCase() === "connoisseur"
+      ? "connoisseur"
+      : "explorer";
+
+    const prefParam = String(req.query.pref || "");
+    const prefs = prefParam.split(",").map(s => s.trim()).filter(Boolean);
 
     if (prefs.length === 0) {
-      return res.status(200).json({ ok: true, plan, prefs: [], count: 0, areaGroups: [] });
+      return res.status(200).json({ ok: true, plan, prefs: [], areaGroups: [] });
     }
 
-    const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+    // Env: どっちでも動くように両対応
     const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+    const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_API_KEY;
     const AIRTABLE_TABLE = process.env.AIRTABLE_TABLE || "shops_master";
 
-    if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
-      return res.status(500).json({ ok: false, error: "Missing Airtable env vars" });
+    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
+      return res.status(500).json({ ok: false, error: "Missing env: AIRTABLE_BASE_ID / AIRTABLE_TOKEN(or AIRTABLE_API_KEY)" });
     }
 
-    // Airtable: prefecture が prefs に含まれる active 行の area_group をユニーク抽出
-    // ※ prefecture列名はあなたのAirtableに合わせて調整して（例: pref / prefecture）
-    const PREF_FIELD = "pref";       // ←必要なら "prefecture" に変えて
-    const STATUS_FIELD = "status";
-    const AREA_GROUP_FIELD = "area_group";
+    const FIELD_AREA_GROUP = "area_group";
+    const FIELD_STATUS = "status";
+    const FIELD_TIER = "tier";
 
-    const prefOr = prefs.map(p => `{${PREF_FIELD}}="${escapeFormula(p)}"`).join(",");
-    const formula = `AND({${STATUS_FIELD}}="active", OR(${prefOr}))`;
+    // Prefecture判定は area_group に「Tokyo」等が含まれる前提（これまでの実装の通り）
+    const prefOr = prefs
+      .map(p => `FIND("${escapeFormula(p)}",{${FIELD_AREA_GROUP}})>0`)
+      .join(",");
+
+    // tierフィルタ：Explorerは explorer/free、Connoisseurは全部
+    let tierClause = "";
+    if (plan === "explorer") {
+      tierClause = `AND(OR({${FIELD_TIER}}="explorer",{${FIELD_TIER}}="free",{${FIELD_TIER}}=""),`;
+    }
+
+    const baseFormula = `AND({${FIELD_STATUS}}="active",OR(${prefOr}))`;
+    const filterByFormula = (plan === "explorer")
+      ? `${tierClause}${baseFormula})`
+      : baseFormula;
 
     const url = new URL(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}`);
     url.searchParams.set("pageSize", "100");
-    url.searchParams.set("filterByFormula", formula);
-    url.searchParams.append("fields[]", AREA_GROUP_FIELD);
+    url.searchParams.set("filterByFormula", filterByFormula);
+    url.searchParams.append("fields[]", FIELD_AREA_GROUP);
+    url.searchParams.append("fields[]", FIELD_STATUS);
+    url.searchParams.append("fields[]", FIELD_TIER);
 
     const r = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
     });
 
     const j = await r.json();
+
     if (!r.ok) {
-      return res.status(500).json({ ok: false, error: "Airtable error", detail: j });
+      return res.status(500).json({
+        ok: false,
+        error: "Airtable request failed",
+        status: r.status,
+        details: j
+      });
     }
 
     const set = new Set();
-    (j.records || []).forEach(rec => {
-      const g = rec.fields?.[AREA_GROUP_FIELD];
+    for (const rec of (j.records || [])) {
+      const g = rec?.fields?.[FIELD_AREA_GROUP];
       if (g) set.add(g);
-    });
+    }
 
     const areaGroups = Array.from(set).sort();
-    res.status(200).json({ ok: true, plan, prefs, count: areaGroups.length, areaGroups });
+
+    return res.status(200).json({ ok: true, plan, prefs, areaGroups });
 
   } catch (e) {
-    res.status(500).json({ ok: false, error: String(e) });
+    return res.status(500).json({ ok: false, error: String(e) });
   }
 }
 
 function escapeFormula(s) {
-  return String(s).replace(/"/g, '\\"');
+  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
