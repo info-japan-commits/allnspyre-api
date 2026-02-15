@@ -1,73 +1,91 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Allnspyre — Hearing</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#f6f7fb; }
-    .wrap { max-width: 980px; margin: 24px auto; padding: 0 16px; }
-    .card { background: #fff; border: 1px solid #e7e9f2; border-radius: 16px; padding: 18px; box-shadow: 0 6px 18px rgba(20,30,60,.06); }
-    h1 { margin: 0 0 6px; font-size: 26px; }
-    .muted { color:#6b7280; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
-    select, button { padding: 10px 12px; border-radius: 12px; border: 1px solid #d6d9e6; background:#fff; }
-    button { cursor:pointer; }
-    .right { margin-left:auto; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Your match starts here.</h1>
-      <div class="muted">Select an area that matches Airtable’s <b>area_detail</b> exactly.</div>
+<script>
+(function () {
+  function getPlan() {
+    const qs = new URLSearchParams(location.search);
+    return (qs.get("plan") || "explorer").toLowerCase();
+  }
 
-      <div class="row">
-        <label>
-          <div class="muted">Plan</div>
-          <select id="plan">
-            <option value="explorer">explorer</option>
-            <option value="connoisseur">connoisseur</option>
-          </select>
-        </label>
+  // できるだけ広く「エリアの選択値」を拾う（Select / Radio両対応）
+  function pickAreaDetails() {
+    // 1) よくあるID
+    const byId =
+      document.querySelector("#areaDetails") ||
+      document.querySelector("#area_detail") ||
+      document.querySelector("#areaDetail") ||
+      document.querySelector("#area");
 
-        <label class="right">
-          <div class="muted">Area (area_detail)</div>
-          <select id="areaDetail">
-            <option value="">Select…</option>
-            <!-- 例：Airtableの area_detail と同じ表記を入れる -->
-            <option value="Fushimi-Momoyama">Fushimi-Momoyama</option>
-            <option value="Kyoto City">Kyoto City</option>
-            <option value="Tokyo 23 Wards">Tokyo 23 Wards</option>
-            <option value="Osaka City">Osaka City</option>
-          </select>
-        </label>
-      </div>
+    if (byId && byId.value) return String(byId.value).trim();
 
-      <div class="row" style="margin-top:16px;">
-        <button id="go">Continue</button>
-        <span class="muted" id="hint"></span>
-      </div>
-    </div>
-  </div>
+    // 2) select の name
+    const sel =
+      document.querySelector('select[name="areaDetails"]') ||
+      document.querySelector('select[name="area_detail"]') ||
+      document.querySelector('select[name="area"]');
 
-  <script>
-    const plan = new URLSearchParams(location.search).get("plan") || "explorer";
-    document.getElementById("plan").value = plan;
+    if (sel && sel.value) return String(sel.value).trim();
 
-    document.getElementById("go").addEventListener("click", () => {
-      const p = document.getElementById("plan").value;
-      const areaDetail = document.getElementById("areaDetail").value;
+    // 3) radio の name
+    const radio =
+      document.querySelector('input[type="radio"][name="areaDetails"]:checked') ||
+      document.querySelector('input[type="radio"][name="area_detail"]:checked') ||
+      document.querySelector('input[type="radio"][name="area"]:checked');
 
-      if (!areaDetail) {
-        document.getElementById("hint").textContent = "Pick an area_detail first.";
-        return;
-      }
+    if (radio && radio.value) return String(radio.value).trim();
 
-      // ✅ 絶対にこれ：areaDetails に「表示名そのまま」を入れる
-      const url = `/results.html?plan=${encodeURIComponent(p)}&areaDetails=${encodeURIComponent(areaDetail)}`;
-      location.href = url;
+    // 4) data属性
+    const dataSel =
+      document.querySelector('[data-area-details]') ||
+      document.querySelector('[data-area-detail]');
+
+    if (dataSel) {
+      const v = dataSel.getAttribute("data-area-details") || dataSel.getAttribute("data-area-detail");
+      if (v) return String(v).trim();
+    }
+
+    return "";
+  }
+
+  // 「次へ」ボタンっぽいものを拾う（IDが違っても動く）
+  function findSubmitButton() {
+    return (
+      document.querySelector("#continueBtn") ||
+      document.querySelector("#submitBtn") ||
+      document.querySelector('button[type="submit"]') ||
+      document.querySelector('button[data-submit]') ||
+      document.querySelector('button')
+    );
+  }
+
+  function goCheckout() {
+    const plan = getPlan();
+    const areaDetails = pickAreaDetails();
+
+    if (!areaDetails) {
+      alert("Please select an area.");
+      return;
+    }
+
+    // ✅ hearing完了後は pay.html に送る（ここが肝）
+    const url = `/pay.html?plan=${encodeURIComponent(plan)}&areaDetails=${encodeURIComponent(areaDetails)}`;
+    location.href = url;
+  }
+
+  // ボタンにクリックを紐づける
+  const btn = findSubmitButton();
+  if (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      goCheckout();
     });
-  </script>
-</body>
-</html>
+  }
+
+  // form submit でも拾う（スマホのEnter等）
+  const form = document.querySelector("form");
+  if (form) {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      goCheckout();
+    });
+  }
+})();
+</script>
