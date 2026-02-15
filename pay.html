@@ -2,63 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Redirecting…</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 28px; background:#f7f7fb; }
-    .box { max-width: 760px; margin: 0 auto; background:#fff; border:1px solid #e7e9f2; border-radius:16px; padding:18px 16px; box-shadow:0 10px 30px rgba(0,0,0,.06); }
-    .muted { color:#666; font-size:14px; line-height:1.6; }
-    code { background:#f3f3f3; padding:2px 6px; border-radius:6px; }
-    .btn { display:inline-block; margin-top:12px; padding:10px 14px; border-radius:12px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+    body{margin:0;background:#fafafa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111}
+    .wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+    h1{margin:0 0 10px;font-size:32px}
+    .sub{margin:0 0 22px;color:#666;line-height:1.6}
+    .card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px 18px;margin:14px 0}
+    .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .k{color:#666}
+    .v{font-weight:700}
+    .btn{width:100%;border:1px solid rgba(0,0,0,.12);background:#111;color:#fff;border-radius:14px;padding:14px 16px;font-weight:800;cursor:pointer;font-size:16px}
+    .btn.secondary{background:#fff;color:#111;margin-top:10px}
+    .mini{font-size:12px;color:#777;margin-top:10px;line-height:1.5}
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Redirecting to checkout…</h2>
-    <p class="muted" id="msg">Preparing your checkout.</p>
-    <div id="fallback" style="display:none;">
-      <p class="muted">
-        Area is missing. Please go back to hearing and select an area.
-      </p>
-      <button class="btn" id="backBtn">Back to hearing</button>
+  <div class="wrap">
+    <h1>Almost there.</h1>
+    <p class="sub">Confirm your intent, then proceed to secure checkout.</p>
+
+    <div class="card">
+      <div class="row"><div class="k">Plan</div><div class="v" id="plan"></div></div>
+      <div class="row"><div class="k">Prefecture</div><div class="v" id="pref"></div></div>
+      <div class="row"><div class="k">Area</div><div class="v" id="areas"></div></div>
+      <div class="row"><div class="k">Who</div><div class="v" id="who"></div></div>
+      <div class="row"><div class="k">Mood</div><div class="v" id="mood"></div></div>
+      <div class="row"><div class="k">Avoid</div><div class="v" id="avoid"></div></div>
+      <div class="mini" id="note"></div>
     </div>
+
+    <button class="btn" id="go">Proceed to checkout →</button>
+    <button class="btn secondary" id="back" type="button">Back to hearing</button>
+
+    <p class="mini">After purchase, you’ll be redirected to your results page automatically.</p>
   </div>
 
   <script>
-    // ====== Stripe Payment Links（社長の確定URL） ======
-    const STRIPE_LINKS = {
+    const qp = new URLSearchParams(location.search);
+    const plan = (qp.get("plan") || "explorer").toLowerCase();
+
+    // ✅ ここをあなたのStripe Payment Linkに置換
+    const STRIPE_LINK = {
       explorer: "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01",
-      connoisseur: "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02"
+      connoisseur: "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02",
     };
 
-    const qs = new URLSearchParams(location.search);
-    const plan = (qs.get("plan") || "explorer").toLowerCase();
-    const areaDetails = (qs.get("areaDetails") || "").trim();
+    const noPref = qp.get("noPref") === "1";
+    const areaDetails = (qp.get("areaDetails") || "").split(",").map(s=>s.trim()).filter(Boolean);
 
-    // areaDetailsが無いなら hearing に戻す（事故防止）
-    if (!areaDetails) {
-      document.getElementById("msg").innerHTML =
-        `Missing <code>areaDetails</code>. Cannot proceed to checkout.`;
-      document.getElementById("fallback").style.display = "block";
-      document.getElementById("backBtn").onclick = () => {
-        location.href = `/hearing.html?plan=${encodeURIComponent(plan)}`;
-      };
-      throw new Error("areaDetails missing");
+    function text(id, v){ document.getElementById(id).textContent = v; }
+
+    text("plan", plan === "connoisseur" ? "Connoisseur" : "Explorer");
+
+    if(noPref){
+      text("pref", "—");
+      text("areas", "Pick for me");
+      text("who", "—");
+      text("mood", "—");
+      text("avoid", "—");
+      text("note", "You chose “No preference — pick for me.” We’ll handle it.");
+    } else {
+      text("pref", qp.get("pref") || "—");
+      text("areas", areaDetails.join(", ") || "—");
+      text("who", qp.get("who") || "—");
+      text("mood", (qp.get("mood") || "").split(",").filter(Boolean).join(", ") || "—");
+      text("avoid", (qp.get("avoid") || "").split(",").filter(Boolean).join(", ") || "—");
+      text("note", "These choices shape the ordering & filtering after purchase.");
     }
 
-    // ✅ 保存（Stripeから戻ったresultsが拾う）
-    localStorage.setItem("allnspyre_plan", plan);
-    localStorage.setItem("allnspyre_areaDetails", areaDetails);
+    document.getElementById("go").onclick = ()=>{
+      // Stripeへ飛ぶ（完了後のRedirectは Stripe側で results.html?plan=...&session_id=... へ）
+      location.href = STRIPE_LINK[plan] || STRIPE_LINK.explorer;
+    };
 
-    const stripeUrl = STRIPE_LINKS[plan] || STRIPE_LINKS.explorer;
-
-    document.getElementById("msg").textContent =
-      `Saved selection. Redirecting to checkout…`;
-
-    // 体感一瞬でStripeへ
-    setTimeout(() => {
-      location.href = stripeUrl;
-    }, 250);
+    document.getElementById("back").onclick = ()=>{
+      location.href = "/hearing.html?plan=" + encodeURIComponent(plan);
+    };
   </script>
 </body>
 </html>
