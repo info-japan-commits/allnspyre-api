@@ -2,473 +2,535 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Hearing</title>
   <style>
     :root{
-      --bg:#f7f7f4;
+      --bg:#f6f6f3;
       --card:#ffffffcc;
-      --text:#111;
+      --text:#0f0f0f;
       --muted:#6b6b6b;
-      --border:#e6e6e6;
-      --ring:#111;
-      --danger:#c62828;
+      --line:#e8e8e2;
+      --chip:#ffffff;
+      --chipOn:#0f0f0f;
+      --chipOnText:#fff;
+      --danger:#c0392b;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
-      background:var(--bg);
-      padding:24px 14px 56px;
+      background: radial-gradient(1200px 600px at 70% 0%, #ffffff 0%, var(--bg) 65%);
     }
-    .wrap{max-width:900px;margin:0 auto}
-    h1{font-size:42px;letter-spacing:-0.02em;margin:0 0 8px}
-    .sub{color:var(--muted);margin:0 0 18px;font-size:16px}
-    .planBadge{
-      position:fixed;top:14px;right:14px;
-      background:#fff;border:1px solid var(--border);
-      padding:8px 10px;border-radius:999px;
-      font-size:12px;color:#333;
+    .wrap{max-width:980px;margin:0 auto;padding:44px 16px 80px}
+    h1{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-size:46px; line-height:1.05; margin:0 0 10px;
+      letter-spacing:-.02em;
     }
+    .sub{color:var(--muted);margin:0 0 28px;font-size:15px}
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;color:var(--muted);
+      background:#fff;
+    }
+    .toprow{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
     .card{
       background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:18px;
-      backdrop-filter: blur(8px);
-      margin:14px 0;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      padding:22px;
+      backdrop-filter: blur(6px);
     }
-    .row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
-    .stepNo{
-      width:34px;height:34px;border-radius:10px;
-      border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
-      font-weight:600;color:#333;background:#fff;
-      flex:0 0 auto;
-    }
-    .stepTitle{font-weight:700;margin:0 0 2px}
-    .stepHint{margin:0;color:var(--muted);font-size:13px}
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
-    }
-    @media (max-width:640px){
-      h1{font-size:36px}
-      .grid{grid-template-columns: 1fr 1fr;}
-    }
-    .btn{
+    .section{margin-top:16px}
+    .secTitle{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+    .secTitle .n{font-weight:600}
+    .secTitle .t{font-weight:700}
+    .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:720px){ .grid2{grid-template-columns:1fr} h1{font-size:40px} }
+    .chip{
       width:100%;
+      border:1px solid var(--line);
+      background:var(--chip);
       padding:14px 14px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:#fff;
+      border-radius:14px;
       text-align:left;
       font-size:16px;
       cursor:pointer;
-      transition:transform .03s ease, border-color .12s ease;
-      user-select:none;
+      transition: .12s ease;
+      color:var(--text);
     }
-    .btn:active{transform:scale(.99)}
-    .btn.selected{
-      border:2px solid var(--ring);
-      padding:13px 13px; /* keep size */
+    .chip:hover{transform: translateY(-1px)}
+    .chip.on{
+      border-color:#0f0f0f;
+      box-shadow: 0 0 0 1px #0f0f0f inset;
     }
-    .divider{height:1px;background:var(--border);margin:16px 0}
-    .danger{color:var(--danger);font-weight:600;margin-top:10px}
-    .muted{color:var(--muted)}
-    .count{
-      margin-left:auto;
-      color:var(--muted);
-      font-size:12px;
-      align-self:center;
+    .chip.onStrong{
+      background:var(--chipOn);
+      color:var(--chipOnText);
+      border-color:var(--chipOn);
+      box-shadow:none;
     }
-    .pillRow{
-      display:flex;gap:10px;flex-wrap:wrap;margin-top:12px
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px}
+    .counter{color:var(--muted);font-size:12px}
+    .divider{height:1px;background:var(--line);margin:18px 0}
+    .error{color:var(--danger);font-size:13px;margin-top:8px}
+    .ok{color:#2e7d32;font-size:13px;margin-top:8px}
+    .footerBar{
+      position: sticky;
+      bottom: 0;
+      margin-top: 22px;
+      padding-top: 14px;
+      background: linear-gradient(to top, rgba(246,246,243,.98), rgba(246,246,243,.75), rgba(246,246,243,0));
+      backdrop-filter: blur(6px);
     }
-    .pill{
-      padding:12px 14px;border-radius:999px;border:1px solid var(--border);background:#fff;
-      cursor:pointer;font-size:14px;
+    .cta{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:16px 18px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#0f0f0f;
+      color:#fff;
+      cursor:pointer;
+      font-size:16px;
+      font-weight:600;
     }
-    .pill.selected{border:2px solid var(--ring);padding:11px 13px}
-    .footerSpace{height:40px}
+    .cta:disabled{
+      background:#a9a9a9;
+      cursor:not-allowed;
+      border-color:#a9a9a9;
+    }
+    .small{font-size:12px;color:var(--muted);margin-top:8px}
+    .tagline{color:var(--muted);font-size:12px;margin-top:8px}
   </style>
 </head>
-<body>
-  <div class="planBadge" id="planBadge">PLAN: —</div>
 
+<body>
   <div class="wrap">
+    <div class="toprow">
+      <div class="pill" id="planPill">PLAN: —</div>
+      <div class="pill" id="envPill">Allnspyre</div>
+    </div>
+
     <h1>Tell me your vibe.</h1>
     <p class="sub">A few quick choices — then we’ll take you to checkout.</p>
 
     <!-- STEP 1 -->
-    <div class="card" id="step1">
-      <div class="row">
-        <div class="stepNo">1</div>
-        <div>
-          <p class="stepTitle" id="whereTitle">Where</p>
-          <p class="stepHint" id="whereHint">Choose one prefecture</p>
-        </div>
-        <div class="count" id="prefCount"></div>
-      </div>
+    <div class="card section" id="step1">
+      <div class="secTitle"><span class="n">1</span><span class="t">Where</span></div>
+      <div class="hint" id="prefHint">Choose one prefecture.</div>
 
-      <div class="grid" id="prefGrid"></div>
+      <div class="grid2" id="prefGrid"></div>
 
       <div class="divider"></div>
 
-      <div class="row">
-        <div style="flex:1 1 auto">
-          <p class="stepTitle" style="margin:0">Now choose your area</p>
-          <p class="stepHint" id="areaHint">Pick one area — focused and fast.</p>
-          <p class="stepHint muted" style="margin-top:6px">Areas are shown as broad groups (easy for travelers).</p>
-        </div>
-        <div class="count" id="areaCount"></div>
-      </div>
+      <div class="secTitle" style="margin-top:0"><span class="t">Now choose your area.</span></div>
+      <div class="hint" id="areaHint">Pick your broad areas — we’ll build a richer route.</div>
 
-      <div class="grid" id="areaGrid" style="margin-top:14px"></div>
-      <div class="danger" id="areaError" style="display:none"></div>
+      <div class="grid2" id="areaGrid"></div>
+      <div class="row">
+        <div class="counter" id="areaCounter">0/0</div>
+        <div class="counter" id="areaLoading"></div>
+      </div>
+      <div class="error" id="areaError" style="display:none;"></div>
+      <div class="tagline">Areas are shown as broad groups (easy for travelers).</div>
     </div>
 
     <!-- STEP 2 -->
-    <div class="card">
-      <div class="row">
-        <div class="stepNo">2</div>
-        <div>
-          <p class="stepTitle" style="margin:0">Who</p>
-          <p class="stepHint" style="margin:2px 0 0">Who are you eating with?</p>
-        </div>
-      </div>
-      <div class="grid" id="whoGrid" style="margin-top:14px"></div>
+    <div class="card section">
+      <div class="secTitle"><span class="n">2</span><span class="t">Who</span></div>
+      <div class="hint">Who are you eating with?</div>
+      <div class="grid2" id="whoGrid"></div>
     </div>
 
     <!-- STEP 3 -->
-    <div class="card">
+    <div class="card section">
+      <div class="secTitle"><span class="n">3</span><span class="t">Time & Mood</span></div>
+      <div class="hint">What kind of time do you want? <b>Choose up to 2.</b></div>
+      <div class="grid2" id="moodGrid"></div>
       <div class="row">
-        <div class="stepNo">3</div>
-        <div>
-          <p class="stepTitle" style="margin:0">Time & Mood</p>
-          <p class="stepHint" style="margin:2px 0 0">What kind of time do you want? <b>Choose up to 2.</b></p>
-        </div>
+        <div class="counter" id="moodCounter">0/2</div>
       </div>
-      <div class="grid" id="moodGrid" style="margin-top:14px"></div>
     </div>
 
     <!-- STEP 4 -->
-    <div class="card">
-      <div class="row">
-        <div class="stepNo">4</div>
-        <div>
-          <p class="stepTitle" style="margin:0">Friction control</p>
-          <p class="stepHint" style="margin:2px 0 0">Prefer to avoid? (Optional)</p>
-        </div>
-      </div>
-      <div class="grid" id="avoidGrid" style="margin-top:14px"></div>
+    <div class="card section">
+      <div class="secTitle"><span class="n">4</span><span class="t">Friction control</span></div>
+      <div class="hint">Prefer to avoid? <span style="color:var(--muted)">(Optional)</span></div>
+      <div class="grid2" id="avoidGrid"></div>
     </div>
 
-    <div class="footerSpace"></div>
+    <!-- footer CTA -->
+    <div class="footerBar">
+      <button class="cta" id="continueBtn" disabled>
+        <span>Continue to checkout</span>
+        <span>→</span>
+      </button>
+      <div class="small" id="ctaNote">Select your prefecture and area to continue.</div>
+    </div>
   </div>
 
-  <script>
-    // -----------------------------
-    // Config
-    // -----------------------------
-    const API_BASE = ""; // same origin (allnspyre-api.vercel.app)
-    const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+<script>
+(() => {
+  // ----------------------------
+  // Config
+  // ----------------------------
+  const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
 
-    // If you want to show broad areas as area_group (you requested this), we use API's areaGroups.
-    // API returns: { ok, plan, prefs:[...], count, areaGroups:[...] }  (or older: areaDetails)
-    const qs = new URLSearchParams(location.search);
-    const plan = (qs.get("plan") || "explorer").toLowerCase(); // explorer | connoisseur
-    const isConnoisseur = plan === "connoisseur";
+  // Values you store / pass
+  const WHO = [
+    { id:"solo", label:"Solo" },
+    { id:"partner", label:"Partner" },
+    { id:"friends", label:"Friends" },
+    { id:"family", label:"Family" }
+  ];
+  const MOODS = [
+    { id:"quiet_reflective", label:"Quiet & reflective" },
+    { id:"slow_indulgent", label:"Slow & indulgent" },
+    { id:"deeply_local", label:"Deeply local" },
+    { id:"lively_social", label:"Lively & social" }
+  ];
+  const AVOIDS = [
+    { id:"long_lines", label:"Long lines" },
+    { id:"tourist_heavy", label:"Tourist-heavy places" },
+    { id:"very_noisy", label:"Very noisy spots" }
+  ];
 
-    // Limits
-    const PREF_LIMIT = isConnoisseur ? 3 : 1;
-    const AREA_LIMIT = isConnoisseur ? 4 : 1;
+  // Plan from URL: ?plan=explorer or ?plan=connoisseur
+  const qs = new URLSearchParams(location.search);
+  const plan = (qs.get("plan") || "explorer").toLowerCase();
+  const isConnoisseur = plan === "connoisseur";
 
-    // State
-    let selectedPrefs = [];   // array of prefecture names
-    let selectedAreas = [];   // array of area_group strings
-    let selectedWho = null;
-    let selectedMoods = [];
-    let selectedAvoid = [];
+  // Limits
+  const PREF_LIMIT = isConnoisseur ? 3 : 1;          // Connoisseur: up to 3 prefectures, Explorer: 1
+  const AREA_LIMIT = isConnoisseur ? 4 : 1;          // Connoisseur: up to 4 broad areas, Explorer: 1 broad area
 
-    // Elements
-    const planBadge = document.getElementById("planBadge");
-    const whereHint = document.getElementById("whereHint");
-    const prefCount = document.getElementById("prefCount");
-    const prefGrid = document.getElementById("prefGrid");
-    const areaGrid = document.getElementById("areaGrid");
-    const areaError = document.getElementById("areaError");
-    const areaCount = document.getElementById("areaCount");
-    const areaHint = document.getElementById("areaHint");
+  // ----------------------------
+  // State
+  // ----------------------------
+  const state = {
+    prefs: [],           // ["Osaka", "Tokyo", ...]
+    areaGroups: [],      // available area_group list from API
+    areas: [],           // selected area_group(s)
+    who: null,
+    moods: [],
+    avoids: []
+  };
 
-    // -----------------------------
-    // UI helpers
-    // -----------------------------
-    function setText(el, txt){ el.textContent = txt; }
-    function show(el){ el.style.display = ""; }
-    function hide(el){ el.style.display = "none"; }
+  // ----------------------------
+  // Elements
+  // ----------------------------
+  const planPill = document.getElementById("planPill");
+  const prefHint = document.getElementById("prefHint");
+  const areaHint = document.getElementById("areaHint");
+  const prefGrid = document.getElementById("prefGrid");
+  const areaGrid = document.getElementById("areaGrid");
+  const areaCounter = document.getElementById("areaCounter");
+  const areaLoading = document.getElementById("areaLoading");
+  const areaError = document.getElementById("areaError");
+  const whoGrid = document.getElementById("whoGrid");
+  const moodGrid = document.getElementById("moodGrid");
+  const moodCounter = document.getElementById("moodCounter");
+  const avoidGrid = document.getElementById("avoidGrid");
+  const continueBtn = document.getElementById("continueBtn");
+  const ctaNote = document.getElementById("ctaNote");
 
-    function updateCounters(){
-      if (PREF_LIMIT === 1){
-        setText(prefCount, selectedPrefs.length ? "selected" : "");
+  // ----------------------------
+  // UI builders
+  // ----------------------------
+  function chip(label, on, onClick, strong=false){
+    const b = document.createElement("button");
+    b.className = "chip" + (on ? (strong ? " onStrong" : " on") : "");
+    b.type = "button";
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderPrefs(){
+    prefGrid.innerHTML = "";
+    PREFS.forEach(p => {
+      const selected = state.prefs.includes(p);
+      const b = chip(p, selected, () => togglePref(p));
+      prefGrid.appendChild(b);
+    });
+
+    // Copy
+    if (isConnoisseur){
+      prefHint.textContent = "Choose up to 3 prefectures (recommended).";
+    } else {
+      prefHint.textContent = "Choose one prefecture.";
+    }
+  }
+
+  function renderAreas(){
+    areaGrid.innerHTML = "";
+    const list = state.areaGroups || [];
+
+    if (!list.length && state.prefs.length){
+      areaError.style.display = "block";
+      areaError.textContent = "No areas found for this selection.";
+    } else {
+      areaError.style.display = "none";
+      areaError.textContent = "";
+    }
+
+    list.forEach(a => {
+      const selected = state.areas.includes(a);
+      const b = chip(a, selected, () => toggleArea(a));
+      areaGrid.appendChild(b);
+    });
+
+    // Copy (limit)
+    areaHint.textContent = isConnoisseur
+      ? "Pick up to 4 broad areas — we’ll build a richer route."
+      : "Pick one area — focused and fast.";
+
+    areaCounter.textContent = `${state.areas.length}/${AREA_LIMIT}`;
+  }
+
+  function renderWho(){
+    whoGrid.innerHTML = "";
+    WHO.forEach(w => {
+      const selected = state.who === w.id;
+      const b = chip(w.label, selected, () => { state.who = w.id; sync(); }, selected);
+      whoGrid.appendChild(b);
+    });
+  }
+
+  function renderMoods(){
+    moodGrid.innerHTML = "";
+    MOODS.forEach(m => {
+      const selected = state.moods.includes(m.id);
+      const b = chip(m.label, selected, () => toggleMood(m.id));
+      moodGrid.appendChild(b);
+    });
+    moodCounter.textContent = `${state.moods.length}/2`;
+  }
+
+  function renderAvoids(){
+    avoidGrid.innerHTML = "";
+    AVOIDS.forEach(a => {
+      const selected = state.avoids.includes(a.id);
+      const b = chip(a.label, selected, () => toggleAvoid(a.id));
+      avoidGrid.appendChild(b);
+    });
+  }
+
+  // ----------------------------
+  // Toggle handlers
+  // ----------------------------
+  async function togglePref(p){
+    const selected = state.prefs.includes(p);
+
+    if (!isConnoisseur){
+      // Explorer: single select prefecture
+      state.prefs = selected ? [] : [p];
+    } else {
+      // Connoisseur: up to 3
+      if (selected){
+        state.prefs = state.prefs.filter(x => x !== p);
       } else {
-        setText(prefCount, `${selectedPrefs.length}/${PREF_LIMIT}`);
+        if (state.prefs.length >= PREF_LIMIT) return; // hard cap
+        state.prefs = [...state.prefs, p];
       }
-      setText(areaCount, `${selectedAreas.length}/${AREA_LIMIT}`);
     }
 
-    function clearAreasUI(){
-      areaGrid.innerHTML = "";
-      hide(areaError);
-      setText(areaError, "");
-      selectedAreas = [];
-      updateCounters();
-    }
+    // When prefs change: reset area selections and refetch area groups
+    state.areas = [];
+    state.areaGroups = [];
+    renderPrefs();
+    renderAreas();
+    await fetchAreaGroups();
+    sync();
+  }
 
-    function renderButtons(container, items, { selectedSet, onClick, twoCol=true } = {}){
-      container.innerHTML = "";
-      items.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (selectedSet && selectedSet.has(label)) b.classList.add("selected");
-        b.addEventListener("click", ()=>onClick(label));
-        container.appendChild(b);
-      });
-    }
+  function toggleArea(a){
+    const selected = state.areas.includes(a);
 
-    function renderAreaButtons(areaGroups){
-      areaGrid.innerHTML = "";
-      const setSel = new Set(selectedAreas);
-
-      areaGroups.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (setSel.has(label)) b.classList.add("selected");
-
-        b.addEventListener("click", ()=>{
-          const exists = selectedAreas.includes(label);
-
-          if (exists){
-            selectedAreas = selectedAreas.filter(x=>x!==label);
-          } else {
-            if (selectedAreas.length >= AREA_LIMIT) return; // hard limit
-            selectedAreas = [...selectedAreas, label];
-          }
-          renderAreaButtons(areaGroups);
-          updateCounters();
-        });
-
-        areaGrid.appendChild(b);
-      });
-    }
-
-    // -----------------------------
-    // Fetch areas (CRITICAL FIX)
-    // - Explorer: selectedPrefs[0] only
-    // - Connoisseur: fetch per pref and union
-    // - Accepts response keys: areaGroups or areaDetails
-    // -----------------------------
-    async function fetchAreasForPref(pref){
-      const url = `${API_BASE}/api/areas?pref=${encodeURIComponent(pref)}&plan=${encodeURIComponent(plan)}`;
-      const r = await fetch(url, { cache:"no-store" });
-      const data = await r.json().catch(()=>null);
-      if (!data || data.ok !== true) return { ok:false, areaGroups:[], raw:data };
-
-      const arr = Array.isArray(data.areaGroups) ? data.areaGroups
-                : Array.isArray(data.areaDetails) ? data.areaDetails
-                : [];
-      return { ok:true, areaGroups:arr, raw:data };
-    }
-
-    async function refreshAreas(){
-      clearAreasUI();
-
-      // No prefecture chosen
-      if (selectedPrefs.length === 0){
-        hide(areaError);
-        return;
-      }
-
-      // Explorer: exactly 1 pref
-      if (!isConnoisseur){
-        const pref = selectedPrefs[0];
-        const res = await fetchAreasForPref(pref);
-
-        if (!res.ok){
-          show(areaError);
-          setText(areaError, "Failed to load areas.");
-          return;
-        }
-
-        const unique = Array.from(new Set(res.areaGroups)).sort((a,b)=>a.localeCompare(b));
-        if (unique.length === 0){
-          show(areaError);
-          setText(areaError, "No areas found for this selection.");
-          return;
-        }
-
-        renderAreaButtons(unique);
-        updateCounters();
-        return;
-      }
-
-      // Connoisseur: union across selectedPrefs
-      // NOTE: This is the bugfix for your mobile screenshot (0 areas).
-      const results = await Promise.all(selectedPrefs.map(p=>fetchAreasForPref(p)));
-
-      const all = [];
-      for (const res of results){
-        if (res.ok) all.push(...res.areaGroups);
-      }
-
-      const unique = Array.from(new Set(all)).sort((a,b)=>a.localeCompare(b));
-
-      if (unique.length === 0){
-        show(areaError);
-        setText(areaError, "No areas found for this selection.");
-        return;
-      }
-
-      renderAreaButtons(unique);
-      updateCounters();
-    }
-
-    // -----------------------------
-    // Pref selection logic
-    // -----------------------------
-    function togglePref(pref){
-      const exists = selectedPrefs.includes(pref);
-
-      if (PREF_LIMIT === 1){
-        // Explorer: single select, allow reselect/change freely
-        selectedPrefs = [pref];
+    if (!isConnoisseur){
+      // Explorer: single select
+      state.areas = selected ? [] : [a];
+    } else {
+      // Connoisseur: up to 4
+      if (selected){
+        state.areas = state.areas.filter(x => x !== a);
       } else {
-        // Connoisseur: multi select up to limit
-        if (exists){
-          selectedPrefs = selectedPrefs.filter(x=>x!==pref);
-        } else {
-          if (selectedPrefs.length >= PREF_LIMIT) return;
-          selectedPrefs = [...selectedPrefs, pref];
-        }
+        if (state.areas.length >= AREA_LIMIT) return;
+        state.areas = [...state.areas, a];
       }
+    }
+    renderAreas();
+    sync();
+  }
 
-      // Re-render pref UI
-      renderPrefUI();
+  function toggleMood(id){
+    const selected = state.moods.includes(id);
+    if (selected){
+      state.moods = state.moods.filter(x => x !== id);
+    } else {
+      if (state.moods.length >= 2) return;
+      state.moods = [...state.moods, id];
+    }
+    renderMoods();
+    sync();
+  }
 
-      // Refresh areas for new pref selection
-      refreshAreas();
+  function toggleAvoid(id){
+    const selected = state.avoids.includes(id);
+    state.avoids = selected ? state.avoids.filter(x => x !== id) : [...state.avoids, id];
+    renderAvoids();
+    sync();
+  }
+
+  // ----------------------------
+  // API: fetch broad area groups
+  // ----------------------------
+  async function fetchJson(url){
+    const r = await fetch(url, { cache: "no-store" });
+    const text = await r.text();
+    try { return JSON.parse(text); } catch(e){ return { ok:false, error:"Invalid JSON", raw:text }; }
+  }
+
+  async function fetchAreaGroups(){
+    areaLoading.textContent = "";
+    areaError.style.display = "none";
+    areaError.textContent = "";
+
+    if (!state.prefs.length){
+      renderAreas();
+      return;
     }
 
-    function renderPrefUI(){
-      prefGrid.innerHTML = "";
+    areaLoading.textContent = "Loading areas…";
 
-      PREFS.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (selectedPrefs.includes(label)) b.classList.add("selected");
-        b.addEventListener("click", ()=>togglePref(label));
-        prefGrid.appendChild(b);
-      });
+    // ---- Primary attempt: /api/areas?plan=...&prefs=Tokyo,Osaka
+    const prefsParam = encodeURIComponent(state.prefs.join(","));
+    const url1 = `/api/areas?plan=${encodeURIComponent(plan)}&prefs=${prefsParam}`;
 
-      // Copy
-      if (isConnoisseur){
-        setText(whereHint, "Choose up to 3 prefectures (recommended)");
-        setText(areaHint, "Pick up to 4 broad areas — we’ll build a richer route.");
-      } else {
-        setText(whereHint, "Choose one prefecture");
-        setText(areaHint, "Pick one area — focused and fast.");
-      }
+    let data = await fetchJson(url1);
 
-      updateCounters();
+    // ---- Fallback: /api/areas?plan=...&pref=Tokyo (older shape)
+    if (!data || data.ok !== true){
+      const url2 = `/api/areas?plan=${encodeURIComponent(plan)}&pref=${encodeURIComponent(state.prefs[0])}`;
+      data = await fetchJson(url2);
     }
 
-    // -----------------------------
-    // Other steps (simple UI only; your existing logic can be wired later)
-    // -----------------------------
-    function renderWho(){
-      const items = ["Solo","Partner","Friends","Family"];
-      const container = document.getElementById("whoGrid");
-      container.innerHTML = "";
-      items.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (selectedWho === label) b.classList.add("selected");
-        b.addEventListener("click", ()=>{
-          selectedWho = label;
-          renderWho();
-        });
-        container.appendChild(b);
-      });
+    // Expected newer shape: { ok:true, areaGroups:[...] }
+    // Older shape might be: { ok:true, areaDetails:[...] } -> we don't want it, but keep safe fallback
+    if (data && data.ok === true){
+      const groups = Array.isArray(data.areaGroups) ? data.areaGroups
+                   : Array.isArray(data.area_details) ? data.area_details
+                   : Array.isArray(data.areaDetails) ? data.areaDetails
+                   : [];
+
+      // unique + sort
+      const uniq = Array.from(new Set(groups.map(x => String(x).trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+      state.areaGroups = uniq;
+      areaLoading.textContent = "";
+      renderAreas();
+      return;
     }
 
-    function renderMood(){
-      const items = [
-        "Quiet & reflective",
-        "Slow & indulgent",
-        "Deeply local",
-        "Lively & social"
-      ];
-      const container = document.getElementById("moodGrid");
-      container.innerHTML = "";
-      items.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (selectedMoods.includes(label)) b.classList.add("selected");
-        b.addEventListener("click", ()=>{
-          const exists = selectedMoods.includes(label);
-          if (exists) selectedMoods = selectedMoods.filter(x=>x!==label);
-          else {
-            if (selectedMoods.length >= 2) return;
-            selectedMoods = [...selectedMoods, label];
-          }
-          renderMood();
-        });
-        container.appendChild(b);
-      });
-    }
+    // error
+    areaLoading.textContent = "";
+    state.areaGroups = [];
+    renderAreas();
 
-    function renderAvoid(){
-      const items = ["Long lines","Tourist-heavy places","Very noisy spots","No preference — pick for me"];
-      const container = document.getElementById("avoidGrid");
-      container.innerHTML = "";
-      items.forEach(label=>{
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.type = "button";
-        b.textContent = label;
-        if (selectedAvoid.includes(label)) b.classList.add("selected");
-        b.addEventListener("click", ()=>{
-          const exists = selectedAvoid.includes(label);
-          if (exists) selectedAvoid = selectedAvoid.filter(x=>x!==label);
-          else selectedAvoid = [...selectedAvoid, label];
-          renderAvoid();
-        });
-        container.appendChild(b);
-      });
-    }
+    areaError.style.display = "block";
+    const msg = (data && (data.error || data.message)) ? (data.error || data.message) : "Failed to load areas.";
+    areaError.textContent = msg + (data && data.details ? ` (${data.details})` : "");
+  }
 
-    // -----------------------------
-    // Init
-    // -----------------------------
-    (function init(){
-      setText(planBadge, `PLAN: ${isConnoisseur ? "CONNOISSEUR" : "EXPLORER"}`);
-      renderPrefUI();
-      renderWho();
-      renderMood();
-      renderAvoid();
-    })();
-  </script>
+  // ----------------------------
+  // Continue -> pay.html (checkout)
+  // ----------------------------
+  function canContinue(){
+    const hasPref = state.prefs.length >= 1;
+    const hasArea = state.areas.length >= 1;
+    // Who/moods are not mandatory for moving to checkout (you can make them mandatory later)
+    return hasPref && hasArea;
+  }
+
+  function updateCta(){
+    const ok = canContinue();
+    continueBtn.disabled = !ok;
+
+    if (!state.prefs.length){
+      ctaNote.textContent = "Select your prefecture to continue.";
+    } else if (!state.areas.length){
+      ctaNote.textContent = "Select your area to continue.";
+    } else {
+      ctaNote.textContent = "Ready. We’ll take you to checkout.";
+    }
+  }
+
+  function buildPayload(){
+    return {
+      plan,
+      prefs: state.prefs,
+      areas: state.areas,      // area_group list (what you asked)
+      who: state.who,
+      moods: state.moods,
+      avoid: state.avoids,
+      v: 1,
+      ts: Date.now()
+    };
+  }
+
+  function goCheckout(){
+    const payload = buildPayload();
+    const q = new URLSearchParams();
+    q.set("plan", plan);
+    // Keep payload compact but safe
+    q.set("payload", encodeURIComponent(JSON.stringify(payload)));
+    // If your pay.html expects different params, change here ONLY.
+    location.href = `/pay.html?${q.toString()}`;
+  }
+
+  continueBtn.addEventListener("click", () => {
+    if (!canContinue()) return;
+    goCheckout();
+  });
+
+  // ----------------------------
+  // Sync (render + state display)
+  // ----------------------------
+  function sync(){
+    planPill.textContent = `PLAN: ${plan.toUpperCase()}`;
+    updateCta();
+  }
+
+  // ----------------------------
+  // Init
+  // ----------------------------
+  renderPrefs();
+  renderAreas();
+  renderWho();
+  renderMoods();
+  renderAvoids();
+  sync();
+
+  // If URL has ?pref=Osaka (optional deep link)
+  const deepPref = qs.get("pref");
+  if (deepPref && PREFS.includes(deepPref)){
+    state.prefs = isConnoisseur ? [deepPref] : [deepPref];
+    renderPrefs();
+    fetchAreaGroups().then(sync);
+  }
+})();
+</script>
 </body>
 </html>
