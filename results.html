@@ -1,123 +1,93 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Your 7 Matches</title>
-<style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f6f6f6;
-  padding: 40px;
-  max-width: 1000px;
-  margin: auto;
-}
-
-h1 {
-  font-size: 32px;
-  margin-bottom: 40px;
-}
-
-.card {
-  background: white;
-  padding: 28px;
-  margin-bottom: 28px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-  transition: 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 40px rgba(0,0,0,0.08);
-}
-
-.area {
-  font-size: 12px;
-  color: #888;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-}
-
-.name {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.genre {
-  font-size: 13px;
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: #f0f0f0;
-  margin-bottom: 14px;
-}
-
-.desc {
-  font-size: 15px;
-  color: #444;
-  line-height: 1.6;
-}
-
-.footer {
-  margin-top: 16px;
-  font-size: 12px;
-  color: #aaa;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Your 7 Matches</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fafafa;padding:40px;max-width:980px;margin:auto;color:#111;}
+    h1{font-size:28px;margin:0 0 12px;}
+    .hint{color:#666;font-size:13px;margin-bottom:18px;}
+    .card{background:#fff;padding:22px;margin:18px 0;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.08);}
+    .area{font-size:12px;color:#777;margin-bottom:6px;}
+    .name{font-size:20px;font-weight:700;margin:0;}
+    .tag{display:inline-block;font-size:12px;padding:4px 10px;border-radius:999px;background:#f3f3f3;margin-top:10px;}
+    .desc{margin-top:10px;font-size:14px;color:#333;line-height:1.6;white-space:pre-wrap;}
+    .meta{margin-top:10px;font-size:12px;color:#777;}
+    .error{background:#fff3f3;border:1px solid #ffd0d0;color:#a40000;padding:14px;border-radius:12px;}
+    .btn{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer;}
+  </style>
 </head>
-
 <body>
-
-<h1>Your 7 Matches</h1>
-<div id="results">Loading...</div>
+  <h1>Your 7 Matches</h1>
+  <div class="hint" id="hint"></div>
+  <div id="results"></div>
 
 <script>
-async function loadResults() {
-  const params = new URLSearchParams(window.location.search);
-  const area = params.get("areaDetails");
+(function(){
+  const qs = new URLSearchParams(location.search);
 
-  if (!area) {
-    document.getElementById("results").innerHTML = "No area selected.";
+  const plan = (qs.get("plan") || localStorage.getItem("allnspyre_plan") || "explorer").toLowerCase();
+
+  // ✅ URLに無ければ localStorage から復元（Stripeがsession_idしか返さなくてもOK）
+  const areaDetails = (qs.get("areaDetails") || localStorage.getItem("allnspyre_areaDetails") || "").trim();
+
+  const hint = document.getElementById("hint");
+  hint.textContent = `plan=${plan} / areaDetails=${areaDetails || "(missing)"} / session_id=${qs.get("session_id") || "(none)"}`;
+
+  if (!areaDetails) {
+    document.getElementById("results").innerHTML = `
+      <div class="error">
+        areaDetails is missing.<br/>
+        Please go back and complete hearing again.
+        <div><button class="btn" onclick="location.href='/hearing.html?plan=${plan}'">Back to hearing</button></div>
+      </div>
+    `;
     return;
   }
 
-  try {
-    const res = await fetch(`/api/results?areaDetails=${encodeURIComponent(area)}`);
-    const data = await res.json();
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
-    if (!data.ok) {
-      document.getElementById("results").innerHTML = "Error loading results.";
-      console.error(data);
+  async function load(){
+    const res = await fetch(`/api/results?areaDetails=${encodeURIComponent(areaDetails)}&plan=${encodeURIComponent(plan)}`);
+    const data = await res.json().catch(()=> ({}));
+
+    if (!data || data.ok !== true) {
+      document.getElementById("results").innerHTML = `
+        <div class="error">
+          Error loading results.<br/><br/>
+          <pre style="white-space:pre-wrap">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+          <button class="btn" onclick="location.reload()">Reload</button>
+        </div>`;
       return;
     }
 
-    const container = document.getElementById("results");
-    container.innerHTML = "";
+    const shops = Array.isArray(data.shops) ? data.shops : [];
+    if (!shops.length) {
+      document.getElementById("results").innerHTML = `<div class="error">No shops returned.</div>`;
+      return;
+    }
 
-    data.shops.forEach(shop => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <div class="area">${shop.area_group} / ${shop.area_detail}</div>
-        <div class="name">${shop.shop_name}</div>
-        ${shop.genre ? `<div class="genre">${shop.genre}</div>` : ""}
-        ${shop.short_desc ? `<div class="desc">${shop.short_desc}</div>` : ""}
-        <div class="footer">ID: ${shop.shop_id}</div>
-      `;
-
-      container.appendChild(card);
-    });
-
-  } catch (err) {
-    document.getElementById("results").innerHTML = "Network error.";
-    console.error(err);
+    document.getElementById("results").innerHTML = shops.map(s => `
+      <div class="card">
+        <div class="area">${escapeHtml((s.area_group||"") + " / " + (s.area_detail||areaDetails))}</div>
+        <div class="name">${escapeHtml(s.shop_name||"")}</div>
+        ${s.genre ? `<div class="tag">${escapeHtml(s.genre)}</div>` : ""}
+        ${s.short_desc ? `<div class="desc">${escapeHtml(s.short_desc)}</div>` : ""}
+        <div class="meta">ID: ${escapeHtml(s.shop_id||"")}</div>
+      </div>
+    `).join("");
   }
-}
 
-loadResults();
+  load();
+})();
 </script>
-
 </body>
 </html>
