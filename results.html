@@ -2,216 +2,173 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Results</title>
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; background:#faf9f7; color:#111; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 80px; }
-    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
-    .meta { font-size: 12px; color:#555; display:flex; gap:18px; flex-wrap:wrap; }
-    .meta b { color:#111; font-weight:600; }
-    h1 { font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: 56px; letter-spacing:-0.02em; margin: 10px 0 4px; }
-    .sub { color:#666; margin-bottom:18px; }
-    .actions { display:flex; gap:10px; }
-    .btn { padding:10px 14px; border-radius: 999px; border:1px solid #ddd; background:#fff; cursor:pointer; font-weight:600; }
-    .btn.primary { background:#111; color:#fff; border-color:#111; }
-    .state { margin-top:14px; padding:12px 14px; border-radius: 12px; background:#fff; border:1px solid #eee; font-size:13px; white-space:pre-wrap; }
-    .state.bad { border-color:#f1b1b1; background:#fff5f5; color:#8b0000; }
-    .grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px; margin-top:18px; }
-    @media (max-width: 740px){ .grid{ grid-template-columns: 1fr; } h1{font-size:42px;} }
-    .card { background:#fff; border:1px solid #eee; border-radius: 18px; overflow:hidden; box-shadow: 0 8px 24px rgba(0,0,0,.04); }
-    .img { aspect-ratio: 16 / 10; background:#f3f2ee; }
-    .card .in { padding:14px 14px 16px; }
-    .name { font-weight:800; font-size:18px; margin:0 0 6px; }
-    .desc { margin:0 0 10px; color:#444; line-height:1.5; }
-    .tags { display:flex; flex-wrap:wrap; gap:8px; }
-    .tag { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #eee; background:#fafafa; color:#333; }
-    .debug { margin-top:18px; font-size:12px; color:#666; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#f7f6f2; color:#111; margin:0; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 26px 18px 60px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 56px; margin: 10px 0 8px; }
+    .sub { color:#555; margin-bottom: 16px; }
+    .topline { display:flex; gap:12px; flex-wrap:wrap; align-items:center; color:#444; font-size: 14px; }
+    .pill { padding: 6px 10px; border-radius:999px; border:1px solid #e9e6dc; background:#fff; }
+    .actions { margin-left:auto; display:flex; gap:10px; }
+    a.btn { text-decoration:none; padding: 10px 12px; border-radius: 999px; border:1px solid #ddd; background:#fff; color:#111; }
+    .card { background:#fff; border:1px solid #e9e6dc; border-radius: 18px; padding: 16px; box-shadow: 0 6px 22px rgba(0,0,0,.05); margin-top: 14px; }
+    .err { border:1px solid #ffd2d2; background:#fff6f6; color:#b00020; padding: 12px; border-radius: 14px; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
+    @media (max-width: 760px){ .grid{ grid-template-columns:1fr; } }
+    .shop { border:1px solid #eee; border-radius: 16px; padding: 14px; }
+    .name { font-family: Georgia, "Times New Roman", serif; font-size: 22px; margin:0 0 6px; }
+    .desc { color:#444; margin:0 0 10px; line-height:1.55; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; color:#666; font-size: 12px; }
+    .tag { border:1px solid #eee; border-radius:999px; padding: 5px 8px; background:#fff; }
+    .hint { color:#666; font-size: 12px; margin-top: 10px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
-      <div class="meta" id="meta"></div>
+    <div class="topline">
+      <div class="pill" id="planPill">PLAN: —</div>
+      <div class="pill" id="prefsPill">PREFS: —</div>
+      <div class="pill" id="areasPill">AREAS: —</div>
       <div class="actions">
-        <button class="btn" id="btnRetry">Retry</button>
-        <button class="btn" id="btnBack">Back to Hearing</button>
+        <a class="btn" href="#" id="retryBtn">Retry</a>
+        <a class="btn" href="/hearing.html" id="backBtn">Back to Hearing</a>
       </div>
     </div>
 
     <h1>Your 7 picks.</h1>
     <div class="sub">Where locals actually eat — before the world finds out.</div>
 
-    <div id="state" class="state">Loading…</div>
-    <div id="grid" class="grid"></div>
+    <div id="status" class="card">Loading…</div>
 
-    <div class="debug" id="debug"></div>
+    <div id="grid" class="grid" style="display:none;"></div>
+
+    <div id="debug" class="card" style="display:none;">
+      <div class="hint">debug</div>
+      <div class="mono" id="debugText"></div>
+    </div>
   </div>
 
 <script>
-  const API_BASE = location.origin; // allnspyre-api.vercel.app
-  const $ = (id) => document.getElementById(id);
+(() => {
+  const API = location.origin;
+  const KEY = "allnspyre_hearing";
 
-  function getPlanFromQuery() {
-    const p = new URLSearchParams(location.search).get("plan");
-    return (p || "").toLowerCase() || "explorer";
+  const qs = new URLSearchParams(location.search);
+  const planFromUrl = (qs.get("plan") || "").toLowerCase(); // Stripe Success URLで ?plan=... が付いてもOK
+
+  const planPill = document.getElementById("planPill");
+  const prefsPill = document.getElementById("prefsPill");
+  const areasPill = document.getElementById("areasPill");
+  const statusEl = document.getElementById("status");
+  const gridEl = document.getElementById("grid");
+  const retryBtn = document.getElementById("retryBtn");
+  const dbg = document.getElementById("debug");
+  const dbgText = document.getElementById("debugText");
+
+  function setStatus(html, isErr=false){
+    statusEl.className = "card" + (isErr ? " err" : "");
+    statusEl.innerHTML = html;
   }
 
-  // localStorageのキー揺れ吸収（今後の事故防止）
-  function readHearingPayload() {
-    const keys = [
-      "hearingData",
-      "allnspyre_hearing",
-      "allnspyre hearing",
-      "hearing",
-    ];
-    for (const k of keys) {
-      const raw = localStorage.getItem(k);
-      if (!raw) continue;
-      try { return JSON.parse(raw); } catch (e) {}
-    }
-    return null;
+  function safeJson(s){
+    try { return JSON.parse(s); } catch { return null; }
   }
 
-  // ✅ここが本丸：api/results が必須にしてる areaDetails を必ず作る
-  function normalizeForApi(payload) {
-    const plan = (payload?.plan || getPlanFromQuery() || "explorer").toLowerCase();
-
-    const prefs = Array.isArray(payload?.prefs) ? payload.prefs : [];
-    const who = payload?.who || "";
-    const mood = payload?.mood || "";
-    const avoid = Array.isArray(payload?.avoid) ? payload.avoid : [];
-
-    // hearing側のUIは "Tokyo Urban" みたいな「広域グループ」を選ばせてる
-    // それをサーバー側の必須パラメータ areaDetails として送る（名前合わせ）
-    const areaGroups =
-      Array.isArray(payload?.areas) ? payload.areas :
-      Array.isArray(payload?.areaGroups) ? payload.areaGroups :
-      Array.isArray(payload?.areaDetails) ? payload.areaDetails :
-      [];
-
-    const areaDetails = areaGroups; // ✅必須
-
-    return { plan, prefs, areaDetails, who, mood, avoid };
+  function loadHearing(){
+    const raw = localStorage.getItem(KEY);
+    const data = safeJson(raw);
+    if(!data) return null;
+    // planはURLが優先（Stripe Success URLが plan固定なので）
+    if(planFromUrl) data.plan = planFromUrl;
+    return data;
   }
 
-  function setMeta({plan, prefs, areaDetails}) {
-    const areasText = (areaDetails || []).join(" / ");
-    const prefsText = (prefs || []).join(" / ");
-    $("meta").innerHTML = `
-      <div><b>PLAN:</b> ${escapeHtml(plan || "")}</div>
-      <div><b>PREFS:</b> ${escapeHtml(prefsText || "-")}</div>
-      <div><b>AREAS:</b> ${escapeHtml(areasText || "-")}</div>
-    `;
+  function renderHeader(data){
+    planPill.textContent = "PLAN: " + (data.plan || "—");
+    prefsPill.textContent = "PREFS: " + ((data.prefs || []).join(" / ") || "—");
+    areasPill.textContent = "AREAS: " + ((data.areaGroups || []).join(" / ") || "—");
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-  }
-
-  async function fetchResults(apiPayload) {
-    const url = `${API_BASE}/api/results`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apiPayload),
-    });
-
-    const text = await res.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch(e) {}
-
-    return { ok: res.ok, status: res.status, text, json };
-  }
-
-  function renderCards(records) {
-    const grid = $("grid");
-    grid.innerHTML = "";
-    for (const r of records) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="img"></div>
-        <div class="in">
-          <p class="name">${escapeHtml(r.shop_name || r.name || "Store")}</p>
-          <p class="desc">${escapeHtml(r.short_desc || r.desc || "")}</p>
-          <div class="tags">
-            ${r.genre ? `<span class="tag">${escapeHtml(r.genre)}</span>` : ""}
-            ${r.area_group ? `<span class="tag">${escapeHtml(r.area_group)}</span>` : ""}
-            ${r.{area_group} ? `<span class="tag">${escapeHtml(r.{area_group})}</span>` : ""}
-          </div>
+  function renderShops(shops){
+    gridEl.innerHTML = "";
+    shops.forEach(s => {
+      const div = document.createElement("div");
+      div.className = "shop";
+      div.innerHTML = `
+        <h3 class="name">${escapeHtml(s.shop_name || "—")}</h3>
+        <p class="desc">${escapeHtml(s.short_desc || "")}</p>
+        <div class="meta">
+          <span class="tag">${escapeHtml(s.area_group || "")}</span>
+          <span class="tag">${escapeHtml(s.genre || "")}</span>
+          <span class="tag">${escapeHtml(s.photo_status || "none")}</span>
         </div>
       `;
-      grid.appendChild(card);
-    }
+      gridEl.appendChild(div);
+    });
+    gridEl.style.display = "grid";
   }
 
-  async function run() {
-    $("state").className = "state";
-    $("state").textContent = "Loading…";
-
-    const rawPayload = readHearingPayload();
-    if (!rawPayload) {
-      $("state").className = "state bad";
-      $("state").textContent =
-        "No hearing data found.\n\n" +
-        "Fix:\n" +
-        "1) Go back to hearing and select again.\n" +
-        "2) Make sure you are on the same domain (allnspyre-api.vercel.app)\n";
-      setMeta({ plan: getPlanFromQuery(), prefs: [], areaDetails: [] });
-      return;
-    }
-
-    const apiPayload = normalizeForApi(rawPayload);
-    setMeta(apiPayload);
-
-    // ✅ areaDetails が空ならサーバーが必ず落とすので、先に止める
-    if (!apiPayload.areaDetails || apiPayload.areaDetails.length === 0) {
-      $("state").className = "state bad";
-      $("state").textContent =
-        "Missing areas.\n\n" +
-        "You must pick at least 1 area group on hearing.\n";
-      $("debug").innerHTML = `<div class="mono">payload=${escapeHtml(JSON.stringify(apiPayload, null, 2))}</div>`;
-      return;
-    }
-
-    const out = await fetchResults(apiPayload);
-
-    if (!out.ok) {
-      $("state").className = "state bad";
-      // サーバーが返すJSONエラーをそのまま見せる
-      if (out.json && out.json.error) {
-        $("state").textContent = `Failed ❌\nAPI ${out.status}\n${out.json.error}`;
-      } else {
-        $("state").textContent = `Failed ❌\nAPI ${out.status}\n(non-JSON or non-200)\n\n${out.text.slice(0, 300)}`;
-      }
-      $("debug").innerHTML = `<div class="mono">payload=${escapeHtml(JSON.stringify(apiPayload, null, 2))}</div>`;
-      return;
-    }
-
-    const json = out.json || {};
-    const records = Array.isArray(json.records) ? json.records : (Array.isArray(json) ? json : []);
-    if (!records.length) {
-      $("state").className = "state bad";
-      $("state").textContent = "API returned no records.";
-      $("debug").innerHTML = `<div class="mono">response=${escapeHtml(out.text.slice(0, 500))}</div>`;
-      return;
-    }
-
-    renderCards(records);
-    $("state").className = "state";
-    $("state").textContent = `OK ✅\nrecords: ${records.length}`;
-    $("debug").innerHTML = "";
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
-  $("btnRetry").addEventListener("click", run);
-  $("btnBack").addEventListener("click", () => {
-    const plan = getPlanFromQuery();
-    location.href = `${API_BASE}/hearing.html?plan=${encodeURIComponent(plan)}`;
-  });
+  async function fetchResults(){
+    gridEl.style.display = "none";
+    setStatus("Loading…");
 
-  run();
+    const data = loadHearing();
+    if(!data){
+      return setStatus(`Failed ✕<br><br>Missing hearing data (localStorage: <b>${KEY}</b>).<br><a href="/hearing.html">Go to hearing</a>`, true);
+    }
+
+    // 必須：prefs と areaGroups（= area_group）
+    if(!(data.prefs||[]).length) return setStatus("Failed ✕<br><br>No prefs provided", true);
+    if(!(data.areaGroups||[]).length) return setStatus("Failed ✕<br><br>No areaGroups provided", true);
+
+    renderHeader(data);
+
+    const body = {
+      plan: data.plan,
+      prefs: data.prefs,
+      areaGroups: data.areaGroups,  // ← ここがポイント（area_detailじゃない）
+      who: data.who || "",
+      mood: data.mood || "",
+      avoid: data.avoid || ""
+    };
+
+    const r = await fetch(API + "/api/results", {
+      method: "POST",
+      headers: { "content-type":"application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const text = await r.text();
+    const j = safeJson(text);
+
+    // debug出す（社長が確認できるように）
+    dbg.style.display = "block";
+    dbgText.textContent = `status=${r.status}\nresponse=${text}`;
+
+    if(!j || !j.ok){
+      return setStatus(`Failed ✕<br><br>API error (non-JSON or non-200)<br><div class="hint">See debug below</div>`, true);
+    }
+
+    if((j.shops||[]).length === 0){
+      setStatus(`API returned no records.<br><div class="hint">See debug below</div>`, true);
+      return;
+    }
+
+    setStatus("Success ✓");
+    renderShops(j.shops || []);
+  }
+
+  retryBtn.addEventListener("click", (e) => { e.preventDefault(); fetchResults(); });
+
+  fetchResults().catch(e => setStatus("Failed ✕<br><br>"+escapeHtml(String(e)), true));
+})();
 </script>
 </body>
 </html>
