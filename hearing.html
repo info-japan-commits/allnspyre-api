@@ -5,219 +5,278 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Hearing</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#f7f6f2; color:#111; margin:0; }
-    .wrap { max-width: 820px; margin: 0 auto; padding: 28px 18px 60px; }
-    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 40px; margin: 18px 0 10px; }
-    .card { background:#fff; border:1px solid #e9e6dc; border-radius: 16px; padding: 18px; box-shadow: 0 6px 22px rgba(0,0,0,.05); margin-top: 14px;}
-    label { display:block; font-weight:600; margin: 12px 0 6px; }
-    select, input { width:100%; padding: 10px 12px; border:1px solid #ddd; border-radius: 10px; font-size: 16px; background:#fff; }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 680px){ .row{ grid-template-columns:1fr; } }
-    .areas { display:flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .chip { border:1px solid #ddd; border-radius:999px; padding:8px 10px; cursor:pointer; user-select:none; background:#fff; }
-    .chip[data-on="1"] { border-color:#111; }
-    .btn { margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap; }
-    button { padding: 12px 14px; border-radius: 12px; border:1px solid #111; background:#111; color:#fff; font-size: 16px; cursor:pointer; }
-    button.secondary { background:#fff; color:#111; border-color:#ddd; }
-    .hint { color:#666; font-size: 13px; margin-top: 8px; }
-    .err { color:#b00020; margin-top: 10px; font-weight:600; }
-    .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; }
-    .pill { font-size: 12px; padding: 6px 10px; border-radius:999px; border:1px solid #e9e6dc; background:#fff; color:#555; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f7f6f2;color:#111;margin:0}
+    .wrap{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+    h1{font-family:Georgia,"Times New Roman",serif;font-size:44px;margin:14px 0 10px}
+    .sub{color:#666;margin:0 0 14px}
+    .card{background:#fff;border:1px solid #e9e6dc;border-radius:18px;padding:18px;box-shadow:0 6px 22px rgba(0,0,0,.05);margin-top:14px}
+    label{display:block;font-weight:700;margin:12px 0 6px}
+    input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fff}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){.row{grid-template-columns:1fr}}
+    .areas-box{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .area-row{display:flex;gap:10px;align-items:center;border:1px solid #eee;border-radius:999px;padding:10px 12px;cursor:pointer;user-select:none}
+    .area-row input{width:auto}
+    .hint{color:#666;font-size:12px;margin-top:8px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    button{padding:12px 14px;border-radius:12px;border:1px solid #111;background:#111;color:#fff;font-size:16px;cursor:pointer}
+    button.secondary{background:#fff;color:#111;border-color:#ddd}
+    .pill{display:inline-block;font-size:12px;border:1px solid #e9e6dc;background:#fff;border-radius:999px;padding:6px 10px;color:#555}
+    .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <div class="pill">Domain: allnspyre-api.vercel.app</div>
-      <div class="pill" id="modePill">Ready</div>
+    <div class="top">
+      <span class="pill">Domain: allnspyre-api.vercel.app</span>
+      <span class="pill" id="selHint">0 selected</span>
     </div>
 
     <h1>Tell me your vibe.</h1>
+    <p class="sub">No cuisine questions. Just who and what kind of time.</p>
 
     <div class="card">
       <div class="row">
         <div>
           <label>Plan</label>
           <select id="plan">
-            <option value="explorer">Explorer</option>
-            <option value="connoisseur">Connoisseur</option>
+            <option value="explorer">Explorer ($19)</option>
+            <option value="connoisseur">Connoisseur ($39)</option>
           </select>
+          <div class="hint">Explorer: select 1 area_group. Connoisseur: up to 4.</div>
         </div>
+
         <div>
-          <label>Prefecture (multi, comma-separated)</label>
-          <input id="prefs" placeholder="Tokyo, Osaka, Hyogo" />
+          <label>Prefecture(s)</label>
+          <select id="prefs" multiple size="8">
+            <option>Tokyo</option>
+            <option>Kanagawa</option>
+            <option>Osaka</option>
+            <option>Kyoto</option>
+            <option>Hyogo</option>
+            <option>Nara</option>
+            <option>Fukuoka</option>
+            <option>Ishikawa</option>
+          </select>
+          <div class="hint">Select one or more prefectures. Then choose area_group(s).</div>
         </div>
       </div>
 
       <label>Areas (area_group)</label>
-      <div class="hint">※ここで選ぶのは <b>area_group</b>（Tokyo Urban / Tokyo Suburban など）</div>
-      <div id="areas" class="areas"></div>
+      <div id="areaGroupsBox" class="areas-box"></div>
+      <div class="hint">These are shown as area_group for clarity (tourists don’t know local districts).</div>
 
       <div class="row">
         <div>
-          <label>Who</label>
+          <label>Who are you eating with?</label>
           <select id="who">
             <option value="">—</option>
-            <option value="solo">Solo</option>
-            <option value="couple">Couple</option>
-            <option value="friends">Friends</option>
-            <option value="family">Family</option>
+            <option value="Solo">Solo</option>
+            <option value="Partner">Partner</option>
+            <option value="Friends">Friends</option>
+            <option value="Family">Family</option>
           </select>
         </div>
         <div>
-          <label>Mood</label>
-          <select id="mood">
-            <option value="">—</option>
-            <option value="quiet">Quiet</option>
-            <option value="lively">Lively</option>
-            <option value="classic">Classic</option>
-            <option value="adventurous">Adventurous</option>
+          <label>Time & Mood (choose up to 2)</label>
+          <select id="vibes" multiple size="4">
+            <option>Quiet & reflective</option>
+            <option>Slow & indulgent</option>
+            <option>Deeply local</option>
+            <option>Lively & social</option>
           </select>
         </div>
       </div>
 
-      <label>Avoid (comma-separated)</label>
-      <input id="avoid" placeholder="queue, spicy, seafood ..." />
+      <label>Prefer to avoid? (optional)</label>
+      <select id="avoid" multiple size="3">
+        <option>Long lines</option>
+        <option>Tourist-heavy places</option>
+        <option>Very noisy spots</option>
+      </select>
 
-      <div class="btn">
-        <button id="continueBtn">Continue →</button>
-        <button class="secondary" id="clearBtn" type="button">Clear</button>
+      <div class="actions">
+        <button id="continueBtn">Continue → Stripe</button>
+        <button class="secondary" id="clearBtn" type="button">Clear saved data</button>
       </div>
 
-      <div id="err" class="err" style="display:none;"></div>
-      <div class="hint">保存キーは <b>allnspyre_hearing</b> で固定。</div>
+      <div class="hint">Saved key: <b>allnspyre_hearing</b> (fixed)</div>
     </div>
   </div>
 
 <script>
 (() => {
-  const API = location.origin;
   const KEY = "allnspyre_hearing";
+
+  // prefecture -> area_group candidates (minimum set)
+  const AREA_GROUPS_BY_PREF = {
+    Tokyo: ["Tokyo Urban", "Tokyo Suburban"],
+    Kanagawa: ["Kanagawa Urban", "Kanagawa Suburban"],
+    Osaka: ["Osaka Urban", "Osaka Suburban"],
+    Kyoto: ["Kyoto Urban", "Kyoto Suburban"],
+    Hyogo: ["Hyogo Urban", "Hyogo Suburban"],
+    Nara: ["Nara Urban", "Nara Suburban"],
+    Fukuoka: ["Fukuoka Urban", "Fukuoka Suburban"],
+    Ishikawa: ["Ishikawa Urban", "Ishikawa Suburban"],
+  };
+
+  const stripeExplorer = "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01";
+  const stripeConnoisseur = "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02";
 
   const el = (id) => document.getElementById(id);
   const planEl = el("plan");
   const prefsEl = el("prefs");
-  const areasWrap = el("areas");
+  const boxEl = el("areaGroupsBox");
   const whoEl = el("who");
-  const moodEl = el("mood");
+  const vibesEl = el("vibes");
   const avoidEl = el("avoid");
-  const errEl = el("err");
-  const modePill = el("modePill");
+  const hintEl = el("selHint");
 
-  let areaGroups = [];
-  let selected = new Set();
-
-  function showErr(msg){
-    errEl.style.display = "block";
-    errEl.textContent = msg;
+  function getPlanFromUrlOrUI(){
+    const p = (new URL(location.href).searchParams.get("plan") || "").toLowerCase();
+    if (p === "connoisseur" || p === "explorer") return p;
+    return (planEl.value || "explorer").toLowerCase();
   }
-  function clearErr(){
-    errEl.style.display = "none";
-    errEl.textContent = "";
-  }
+  function maxAreas(plan){ return plan === "connoisseur" ? 4 : 1; }
 
-  function parsePrefs(){
-    return prefsEl.value.split(",").map(s => s.trim()).filter(Boolean);
+  function uniq(arr){ return [...new Set(arr)]; }
+
+  function getSelectedOptions(selectEl){
+    return Array.from(selectEl.selectedOptions).map(o => o.value);
   }
 
-  function renderChips(){
-    areasWrap.innerHTML = "";
-    areaGroups.forEach(g => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      chip.textContent = g;
-      chip.dataset.on = selected.has(g) ? "1" : "0";
-      chip.onclick = () => {
-        if(selected.has(g)) selected.delete(g); else selected.add(g);
-        chip.dataset.on = selected.has(g) ? "1" : "0";
-      };
-      areasWrap.appendChild(chip);
+  function setHint(){
+    const plan = getPlanFromUrlOrUI();
+    const max = maxAreas(plan);
+    const checked = Array.from(boxEl.querySelectorAll('input[type="checkbox"]:checked')).length;
+    hintEl.textContent = `${checked} / ${max} selected`;
+  }
+
+  function buildCandidates(prefs){
+    const list = [];
+    prefs.forEach(p => {
+      const g = AREA_GROUPS_BY_PREF[p];
+      if (g && g.length) list.push(...g);
     });
-  }
-
-  async function loadAreas(){
-    clearErr();
-    modePill.textContent = "Loading areas...";
-    const plan = planEl.value;
-    const prefs = parsePrefs();
-    if(prefs.length === 0){
-      areaGroups = [];
-      selected = new Set();
-      renderChips();
-      modePill.textContent = "Ready";
-      return;
-    }
-    const url = new URL(API + "/api/areas");
-    url.searchParams.set("plan", plan);
-    url.searchParams.set("pref", prefs.join(","));
-    const r = await fetch(url.toString());
-    const j = await r.json();
-    if(!j.ok){
-      showErr(j.error || "Failed to load areas");
-      modePill.textContent = "Error";
-      return;
-    }
-    areaGroups = j.areaGroups || [];
-    // 初期選択：全部ON（社長の運用が楽）
-    selected = new Set(areaGroups);
-    renderChips();
-    modePill.textContent = "Ready";
+    return uniq(list);
   }
 
   function save(){
-    const payload = {
-      plan: planEl.value,
-      prefs: parsePrefs(),
-      areaGroups: Array.from(selected),
-      who: whoEl.value || "",
-      mood: moodEl.value || "",
-      avoid: avoidEl.value || "",
-      ts: Date.now()
-    };
+    const plan = getPlanFromUrlOrUI();
+    const prefs = getSelectedOptions(prefsEl);
+    const areaGroups = Array.from(boxEl.querySelectorAll('input[type="checkbox"]:checked')).map(x => x.value);
+    const who = whoEl.value || "";
+    const vibes = getSelectedOptions(vibesEl).slice(0,2); // max 2
+    const avoid = getSelectedOptions(avoidEl);
+
+    const payload = { plan, prefs, areaGroups, who, vibes, avoid, ts: Date.now() };
     localStorage.setItem(KEY, JSON.stringify(payload));
     return payload;
   }
 
-  // --- events
-  planEl.addEventListener("change", loadAreas);
-  prefsEl.addEventListener("change", loadAreas);
-  prefsEl.addEventListener("blur", loadAreas);
+  function renderAreaGroups(){
+    const plan = getPlanFromUrlOrUI();
+    planEl.value = plan; // UI同期
+    const max = maxAreas(plan);
+
+    const prefs = getSelectedOptions(prefsEl);
+    const candidates = buildCandidates(prefs);
+
+    const prev = (() => {
+      try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; }
+    })();
+    const prevSelected = Array.isArray(prev?.areaGroups) ? prev.areaGroups : [];
+
+    boxEl.innerHTML = "";
+
+    if (!candidates.length){
+      boxEl.innerHTML = `<span class="pill">Select prefecture(s) first</span>`;
+      setHint();
+      return;
+    }
+
+    candidates.forEach(g => {
+      const label = document.createElement("label");
+      label.className = "area-row";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = g;
+
+      // 以前の選択があれば反映。ただし上限超えは無視
+      if (prevSelected.includes(g)) input.checked = true;
+
+      input.addEventListener("change", (e) => {
+        const checked = Array.from(boxEl.querySelectorAll('input[type="checkbox"]:checked'));
+        if (checked.length > max){
+          e.target.checked = false;
+          alert(plan === "connoisseur" ? "Connoisseur: up to 4 areas." : "Explorer: select 1 area.");
+          return;
+        }
+        setHint();
+        save(); // 都度保存（事故防止）
+      });
+
+      const span = document.createElement("span");
+      span.textContent = g;
+
+      label.appendChild(input);
+      label.appendChild(span);
+      boxEl.appendChild(label);
+    });
+
+    // 上限超えてたら切る（安全）
+    const checkedNow = Array.from(boxEl.querySelectorAll('input[type="checkbox"]:checked'));
+    if (checkedNow.length > max){
+      checkedNow.slice(max).forEach(x => x.checked = false);
+    }
+
+    setHint();
+    save();
+  }
+
+  // Restore basic fields
+  function restore(){
+    const plan = getPlanFromUrlOrUI();
+    planEl.value = plan;
+
+    let prev = null;
+    try { prev = JSON.parse(localStorage.getItem(KEY) || "null"); } catch {}
+
+    if (prev?.prefs?.length){
+      Array.from(prefsEl.options).forEach(opt => { opt.selected = prev.prefs.includes(opt.value); });
+    }
+    if (prev?.who) whoEl.value = prev.who;
+    if (Array.isArray(prev?.vibes)){
+      Array.from(vibesEl.options).forEach(opt => { opt.selected = prev.vibes.includes(opt.value); });
+    }
+    if (Array.isArray(prev?.avoid)){
+      Array.from(avoidEl.options).forEach(opt => { opt.selected = prev.avoid.includes(opt.value); });
+    }
+  }
+
+  // events
+  planEl.addEventListener("change", () => { renderAreaGroups(); });
+  prefsEl.addEventListener("change", () => { renderAreaGroups(); });
 
   el("clearBtn").addEventListener("click", () => {
     localStorage.removeItem(KEY);
-    prefsEl.value = "";
-    selected = new Set();
-    areaGroups = [];
-    renderChips();
-    clearErr();
+    location.reload();
   });
 
   el("continueBtn").addEventListener("click", () => {
-    clearErr();
     const data = save();
-    if(!data.prefs.length) return showErr("Prefecture is required (e.g., Tokyo)");
-    if(!data.areaGroups.length) return showErr("Select at least 1 area_group");
-    // ここで “Stripeへの遷移” をやる（planで分岐）
-    // ※ 実運用は Studio 側のSTARTをStripeに飛ばすでもOKだが、今は hearing→Stripe を完成させる
-    const stripeExplorer = "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01";
-    const stripeConnoisseur = "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02";
-    const target = (data.plan === "connoisseur") ? stripeConnoisseur : stripeExplorer;
-    location.href = target;
+    const max = maxAreas(data.plan);
+    if (!data.prefs.length) return alert("Select at least 1 prefecture.");
+    if (!data.areaGroups.length) return alert("Select area_group(s).");
+    if (data.areaGroups.length > max) return alert(data.plan === "connoisseur" ? "Up to 4 areas." : "Explorer: 1 area.");
+
+    // hearing → Stripe（決済後は Stripe 側の success_url で results.html に戻る）
+    location.href = (data.plan === "connoisseur") ? stripeConnoisseur : stripeExplorer;
   });
 
-  // restore saved
-  try {
-    const prev = JSON.parse(localStorage.getItem(KEY) || "null");
-    if(prev){
-      planEl.value = prev.plan || "explorer";
-      prefsEl.value = (prev.prefs || []).join(", ");
-      whoEl.value = prev.who || "";
-      moodEl.value = prev.mood || "";
-      avoidEl.value = prev.avoid || "";
-    }
-  } catch {}
-
-  loadAreas().catch(e => showErr(String(e)));
+  // init
+  restore();
+  renderAreaGroups();
 
 })();
 </script>
