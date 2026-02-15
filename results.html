@@ -1,95 +1,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Your 7 Matches</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #fafafa;
-      padding: 40px;
-      max-width: 900px;
-      margin: auto;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 30px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    .area {
-      font-size: 12px;
-      color: #777;
-      margin-bottom: 6px;
-    }
-    .name {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .desc {
-      font-size: 14px;
-      color: #444;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Your 7 Matches</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f6f6f6;
+  padding: 40px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: white;
+  padding: 28px;
+  margin-bottom: 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+}
+
+.area {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.name {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.genre {
+  font-size: 13px;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  margin-bottom: 14px;
+}
+
+.desc {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+}
+
+.footer {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #aaa;
+}
+</style>
 </head>
+
 <body>
 
 <h1>Your 7 Matches</h1>
 <div id="results">Loading...</div>
 
 <script>
-  async function loadResults() {
-    const params = new URLSearchParams(window.location.search);
-    const area = params.get("areaDetails");
+async function loadResults() {
+  const params = new URLSearchParams(window.location.search);
+  const area = params.get("areaDetails");
 
-    if (!area) {
-      document.getElementById("results").innerHTML = "No area selected.";
+  if (!area) {
+    document.getElementById("results").innerHTML = "No area selected.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/results?areaDetails=${encodeURIComponent(area)}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      document.getElementById("results").innerHTML = "Error loading results.";
+      console.error(data);
       return;
     }
 
-    try {
-      const res = await fetch(
-        `/api/results?areaDetails=${encodeURIComponent(area)}`
-      );
-      const data = await res.json();
+    const container = document.getElementById("results");
+    container.innerHTML = "";
 
-      if (!data.ok) {
-        document.getElementById("results").innerHTML =
-          "Error loading results.";
-        console.error(data);
-        return;
-      }
+    data.shops.forEach(shop => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-      const container = document.getElementById("results");
-      container.innerHTML = "";
+      card.innerHTML = `
+        <div class="area">${shop.area_group} / ${shop.area_detail}</div>
+        <div class="name">${shop.shop_name}</div>
+        ${shop.genre ? `<div class="genre">${shop.genre}</div>` : ""}
+        ${shop.short_desc ? `<div class="desc">${shop.short_desc}</div>` : ""}
+        <div class="footer">ID: ${shop.shop_id}</div>
+      `;
 
-      data.shops.forEach(shop => {
-        const card = document.createElement("div");
-        card.className = "card";
+      container.appendChild(card);
+    });
 
-        card.innerHTML = `
-          <div class="area">${shop.area_group} / ${shop.area_detail}</div>
-          <div class="name">${shop.shop_name}</div>
-          <div class="desc">${shop.short_desc || ""}</div>
-        `;
-
-        container.appendChild(card);
-      });
-
-    } catch (err) {
-      document.getElementById("results").innerHTML =
-        "Network error.";
-      console.error(err);
-    }
+  } catch (err) {
+    document.getElementById("results").innerHTML = "Network error.";
+    console.error(err);
   }
+}
 
-  loadResults();
+loadResults();
 </script>
 
 </body>
