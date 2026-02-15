@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Redirecting…</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 28px; background:#f7f7fb; }
+    .box { max-width: 760px; margin: 0 auto; background:#fff; border:1px solid #e7e9f2; border-radius:16px; padding:18px 16px; box-shadow:0 10px 30px rgba(0,0,0,.06); }
+    .muted { color:#666; font-size:14px; line-height:1.6; }
+    code { background:#f3f3f3; padding:2px 6px; border-radius:6px; }
+    .btn { display:inline-block; margin-top:12px; padding:10px 14px; border-radius:12px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Redirecting to checkout…</h2>
+    <p class="muted" id="msg">Preparing your checkout.</p>
+    <div id="fallback" style="display:none;">
+      <p class="muted">
+        Area is missing. Please go back to hearing and select an area.
+      </p>
+      <button class="btn" id="backBtn">Back to hearing</button>
+    </div>
+  </div>
+
+  <script>
+    // ====== Stripe Payment Links（社長の確定URL） ======
+    const STRIPE_LINKS = {
+      explorer: "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01",
+      connoisseur: "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02"
+    };
+
+    const qs = new URLSearchParams(location.search);
+    const plan = (qs.get("plan") || "explorer").toLowerCase();
+    const areaDetails = (qs.get("areaDetails") || "").trim();
+
+    // areaDetailsが無いなら hearing に戻す（事故防止）
+    if (!areaDetails) {
+      document.getElementById("msg").innerHTML =
+        `Missing <code>areaDetails</code>. Cannot proceed to checkout.`;
+      document.getElementById("fallback").style.display = "block";
+      document.getElementById("backBtn").onclick = () => {
+        location.href = `/hearing.html?plan=${encodeURIComponent(plan)}`;
+      };
+      throw new Error("areaDetails missing");
+    }
+
+    // ✅ 保存（Stripeから戻ったresultsが拾う）
+    localStorage.setItem("allnspyre_plan", plan);
+    localStorage.setItem("allnspyre_areaDetails", areaDetails);
+
+    const stripeUrl = STRIPE_LINKS[plan] || STRIPE_LINKS.explorer;
+
+    document.getElementById("msg").textContent =
+      `Saved selection. Redirecting to checkout…`;
+
+    // 体感一瞬でStripeへ
+    setTimeout(() => {
+      location.href = stripeUrl;
+    }, 250);
+  </script>
+</body>
+</html>
