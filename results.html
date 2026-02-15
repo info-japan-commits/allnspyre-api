@@ -139,7 +139,7 @@
           <div class="tags">
             ${r.genre ? `<span class="tag">${escapeHtml(r.genre)}</span>` : ""}
             ${r.area_group ? `<span class="tag">${escapeHtml(r.area_group)}</span>` : ""}
-            ${r.area_detail ? `<span class="tag">${escapeHtml(r.area_detail)}</span>` : ""}
+            ${r.{area_group} ? `<span class="tag">${escapeHtml(r.{area_group})}</span>` : ""}
           </div>
         </div>
       `;
