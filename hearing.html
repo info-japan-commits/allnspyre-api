@@ -1,91 +1,114 @@
-<script>
-(function () {
-  function getPlan() {
-    const qs = new URLSearchParams(location.search);
-    return (qs.get("plan") || "explorer").toLowerCase();
-  }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Hearing</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#fafafa;color:#111;margin:0}
+    .wrap{max-width:920px;margin:0 auto;padding:28px 18px}
+    .card{background:#fff;border:1px solid #e7e9f2;border-radius:16px;padding:18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    h1{font-size:22px;margin:0 0 12px}
+    .muted{color:#666;font-size:13px;line-height:1.6}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:#333}
+    select,input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #ddd;font-size:14px;background:#fff}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:720px){ .row{grid-template-columns:1fr} }
+    .btn{margin-top:14px;width:100%;padding:14px 14px;border-radius:14px;border:0;background:#111;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .tiny{margin-top:10px;font-size:12px;color:#777;white-space:pre-wrap}
+    .pill{display:inline-block;font-size:12px;padding:4px 10px;border-radius:999px;background:#f3f3f3;margin-left:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Quick hearing <span class="pill" id="planPill">plan=explorer</span></h1>
+      <div class="muted">
+        Select your area detail (must match Airtable <b>area_detail</b> exactly), then continue.
+      </div>
 
-  // できるだけ広く「エリアの選択値」を拾う（Select / Radio両対応）
-  function pickAreaDetails() {
-    // 1) よくあるID
-    const byId =
-      document.querySelector("#areaDetails") ||
-      document.querySelector("#area_detail") ||
-      document.querySelector("#areaDetail") ||
-      document.querySelector("#area");
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="areaDetails">Area detail</label>
+          <select id="areaDetails">
+            <option value="">-- select --</option>
 
-    if (byId && byId.value) return String(byId.value).trim();
+            <!-- Kyoto -->
+            <option>Fushimi-Momoyama</option>
+            <option>Kyoto City</option>
 
-    // 2) select の name
-    const sel =
-      document.querySelector('select[name="areaDetails"]') ||
-      document.querySelector('select[name="area_detail"]') ||
-      document.querySelector('select[name="area"]');
+            <!-- Osaka -->
+            <option>Osaka City</option>
+            <option>Hokusetsu</option>
 
-    if (sel && sel.value) return String(sel.value).trim();
+            <!-- Tokyo / Kanagawa -->
+            <option>Tokyo 23 Wards</option>
+            <option>Kichijoji / Mitaka / Musashisakai</option>
+            <option>Yokohama</option>
+            <option>Suburban Yokohama</option>
 
-    // 3) radio の name
-    const radio =
-      document.querySelector('input[type="radio"][name="areaDetails"]:checked') ||
-      document.querySelector('input[type="radio"][name="area_detail"]:checked') ||
-      document.querySelector('input[type="radio"][name="area"]:checked');
+            <!-- Hyogo / Nara / Fukuoka / Ishikawa など（必要に応じて追加） -->
+            <option>Kobe</option>
+            <option>Ikoma</option>
+            <option>Tenjin → Hakata</option>
+            <option>Nishijin / Itoshima / Dazaifu</option>
+            <option>Akashi / Awaji</option>
+            <option>Kanazawa area</option>
+            <option>Nonoichi</option>
+          </select>
+        </div>
 
-    if (radio && radio.value) return String(radio.value).trim();
+        <div>
+          <label for="note">Optional note</label>
+          <input id="note" placeholder="(optional) e.g. solo, family, evening, etc." />
+        </div>
+      </div>
 
-    // 4) data属性
-    const dataSel =
-      document.querySelector('[data-area-details]') ||
-      document.querySelector('[data-area-detail]');
+      <button class="btn" id="continueBtn" disabled>Continue →</button>
 
-    if (dataSel) {
-      const v = dataSel.getAttribute("data-area-details") || dataSel.getAttribute("data-area-detail");
-      if (v) return String(v).trim();
-    }
+      <div class="tiny" id="debug"></div>
+    </div>
+  </div>
 
-    return "";
-  }
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      const plan = (qs.get("plan") || "explorer").toLowerCase();
+      const planPill = document.getElementById("planPill");
+      planPill.textContent = "plan=" + plan;
 
-  // 「次へ」ボタンっぽいものを拾う（IDが違っても動く）
-  function findSubmitButton() {
-    return (
-      document.querySelector("#continueBtn") ||
-      document.querySelector("#submitBtn") ||
-      document.querySelector('button[type="submit"]') ||
-      document.querySelector('button[data-submit]') ||
-      document.querySelector('button')
-    );
-  }
+      const areaSel = document.getElementById("areaDetails");
+      const note = document.getElementById("note");
+      const btn = document.getElementById("continueBtn");
+      const debug = document.getElementById("debug");
 
-  function goCheckout() {
-    const plan = getPlan();
-    const areaDetails = pickAreaDetails();
+      function sync(){
+        const areaDetails = (areaSel.value || "").trim();
+        btn.disabled = !areaDetails;
+        debug.textContent =
+          "areaDetails=" + (areaDetails || "(none)") + "\\n" +
+          "plan=" + plan + "\\n" +
+          "next=/pay.html?plan=" + encodeURIComponent(plan) + "&areaDetails=" + encodeURIComponent(areaDetails);
+      }
 
-    if (!areaDetails) {
-      alert("Please select an area.");
-      return;
-    }
+      areaSel.addEventListener("change", sync);
+      note.addEventListener("input", sync);
+      sync();
 
-    // ✅ hearing完了後は pay.html に送る（ここが肝）
-    const url = `/pay.html?plan=${encodeURIComponent(plan)}&areaDetails=${encodeURIComponent(areaDetails)}`;
-    location.href = url;
-  }
+      btn.addEventListener("click", function(){
+        const areaDetails = (areaSel.value || "").trim();
+        if(!areaDetails){ alert("Please select an area."); return; }
 
-  // ボタンにクリックを紐づける
-  const btn = findSubmitButton();
-  if (btn) {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      goCheckout();
-    });
-  }
+        // ✅ Stripe復帰用に保存
+        localStorage.setItem("allnspyre_plan", plan);
+        localStorage.setItem("allnspyre_areaDetails", areaDetails);
 
-  // form submit でも拾う（スマホのEnter等）
-  const form = document.querySelector("form");
-  if (form) {
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      goCheckout();
-    });
-  }
-})();
-</script>
+        // ✅ pay.htmlへ（Stripeへ自動遷移する想定）
+        location.href = "/pay.html?plan=" + encodeURIComponent(plan) +
+          "&areaDetails=" + encodeURIComponent(areaDetails);
+      });
+    })();
+  </script>
+</body>
+</html>
