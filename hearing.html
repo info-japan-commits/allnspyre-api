@@ -2,113 +2,390 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Hearing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Allnspyre Hearing</title>
   <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#fafafa;color:#111;margin:0}
-    .wrap{max-width:920px;margin:0 auto;padding:28px 18px}
-    .card{background:#fff;border:1px solid #e7e9f2;border-radius:16px;padding:18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
-    h1{font-size:22px;margin:0 0 12px}
-    .muted{color:#666;font-size:13px;line-height:1.6}
-    label{display:block;margin:10px 0 6px;font-size:13px;color:#333}
-    select,input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #ddd;font-size:14px;background:#fff}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:720px){ .row{grid-template-columns:1fr} }
-    .btn{margin-top:14px;width:100%;padding:14px 14px;border-radius:14px;border:0;background:#111;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .tiny{margin-top:10px;font-size:12px;color:#777;white-space:pre-wrap}
-    .pill{display:inline-block;font-size:12px;padding:4px 10px;border-radius:999px;background:#f3f3f3;margin-left:8px}
+    :root{
+      --bg:#fafafa; --card:#ffffff; --ink:#111; --muted:#666;
+      --line:rgba(0,0,0,.08); --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    }
+    .wrap{max-width:900px;margin:0 auto;padding:40px 20px 80px;}
+    h1{font-size:34px;margin:0 0 10px;}
+    .sub{color:var(--muted);margin:0 0 28px;line-height:1.5}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:22px; margin:16px 0;
+    }
+    .step{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .badge{
+      width:28px;height:28px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid var(--line); background:#fff; font-weight:700;
+      flex:0 0 auto;
+    }
+    .title{font-size:18px;font-weight:700;margin:0}
+    .desc{color:var(--muted);margin:6px 0 0;line-height:1.6}
+    .grid{display:grid;gap:10px;margin-top:14px}
+    @media(min-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+    .opt{
+      border:1px solid var(--line); border-radius:14px;
+      padding:14px 14px; background:#fff; cursor:pointer;
+      transition:transform .05s ease, border-color .1s ease;
+      user-select:none;
+    }
+    .opt:hover{transform:translateY(-1px)}
+    .opt.selected{border-color:rgba(0,0,0,.32)}
+    .opt small{display:block;color:var(--muted);margin-top:4px}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .pill{
+      border:1px solid var(--line); border-radius:999px;
+      padding:10px 12px; background:#fff; cursor:pointer;
+      user-select:none;
+    }
+    .pill.selected{border-color:rgba(0,0,0,.32)}
+    .note{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.6}
+
+    .actions{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap}
+    .btn{
+      border:1px solid rgba(0,0,0,.12);
+      background:#111;color:#fff;border-radius:14px;
+      padding:12px 16px;font-weight:700;cursor:pointer;
+    }
+    .btn.secondary{background:#fff;color:#111}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .mini{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background:var(--line);margin:14px 0}
+    .err{color:#b00020;font-size:13px;margin-top:10px;white-space:pre-wrap}
+    .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+    .plan{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:8px 10px;border-radius:999px;background:#fff}
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="topline">
+      <div>
+        <h1>Tell me your vibe.</h1>
+        <p class="sub">A few quick choices — then we’ll take you to checkout.</p>
+      </div>
+      <div class="plan" id="planBadge">PLAN: —</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="card" id="step1">
+      <div class="step">
+        <div class="badge">1</div>
+        <div>
+          <p class="title">Where</p>
+          <p class="desc">Which prefecture are you visiting?</p>
+        </div>
+      </div>
+      <div class="grid" id="prefGrid"></div>
+
+      <div class="divider"></div>
+
+      <p class="desc" style="margin:0">
+        Now choose your area.
+        <span id="areaRule" class="mini"></span>
+      </p>
+      <div class="grid" id="areaGrid" style="margin-top:12px"></div>
+      <div class="note" id="areaHint"></div>
+      <div class="err" id="areaErr"></div>
+    </div>
+
+    <!-- STEP 2 -->
     <div class="card">
-      <h1>Quick hearing <span class="pill" id="planPill">plan=explorer</span></h1>
-      <div class="muted">
-        Select your area detail (must match Airtable <b>area_detail</b> exactly), then continue.
-      </div>
-
-      <div class="row" style="margin-top:12px;">
+      <div class="step">
+        <div class="badge">2</div>
         <div>
-          <label for="areaDetails">Area detail</label>
-          <select id="areaDetails">
-            <option value="">-- select --</option>
-
-            <!-- Kyoto -->
-            <option>Fushimi-Momoyama</option>
-            <option>Kyoto City</option>
-
-            <!-- Osaka -->
-            <option>Osaka City</option>
-            <option>Hokusetsu</option>
-
-            <!-- Tokyo / Kanagawa -->
-            <option>Tokyo 23 Wards</option>
-            <option>Kichijoji / Mitaka / Musashisakai</option>
-            <option>Yokohama</option>
-            <option>Suburban Yokohama</option>
-
-            <!-- Hyogo / Nara / Fukuoka / Ishikawa など（必要に応じて追加） -->
-            <option>Kobe</option>
-            <option>Ikoma</option>
-            <option>Tenjin → Hakata</option>
-            <option>Nishijin / Itoshima / Dazaifu</option>
-            <option>Akashi / Awaji</option>
-            <option>Kanazawa area</option>
-            <option>Nonoichi</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="note">Optional note</label>
-          <input id="note" placeholder="(optional) e.g. solo, family, evening, etc." />
+          <p class="title">Who</p>
+          <p class="desc">Who are you eating with?</p>
         </div>
       </div>
+      <div class="row" id="whoRow"></div>
+    </div>
 
-      <button class="btn" id="continueBtn" disabled>Continue →</button>
+    <!-- STEP 3 -->
+    <div class="card">
+      <div class="step">
+        <div class="badge">3</div>
+        <div>
+          <p class="title">Time &amp; Mood</p>
+          <p class="desc">What kind of time do you want? <b>Choose up to 2.</b></p>
+        </div>
+      </div>
+      <div class="row" id="moodRow"></div>
+      <div class="note">This is the core. Two picks max — we’ll design the experience around them.</div>
+    </div>
 
-      <div class="tiny" id="debug"></div>
+    <!-- STEP 4 -->
+    <div class="card">
+      <div class="step">
+        <div class="badge">4</div>
+        <div>
+          <p class="title">Friction control</p>
+          <p class="desc">Prefer to avoid? <span class="mini">(Optional)</span></p>
+        </div>
+      </div>
+      <div class="row" id="avoidRow"></div>
+      <div class="note">These aren’t tags — they quietly guide filtering.</div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="card">
+      <div class="step">
+        <div class="badge">5</div>
+        <div>
+          <p class="title">No preference</p>
+          <p class="desc">If you’re not sure:</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="pill" id="noPref">No preference — pick for me</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="continueBtn" disabled>Continue to checkout →</button>
+        <button class="btn secondary" id="resetBtn" type="button">Reset</button>
+        <span class="mini" id="statusText"></span>
+      </div>
+      <div class="err" id="fatalErr"></div>
     </div>
   </div>
 
   <script>
-    (function(){
-      const qs = new URLSearchParams(location.search);
-      const plan = (qs.get("plan") || "explorer").toLowerCase();
-      const planPill = document.getElementById("planPill");
-      planPill.textContent = "plan=" + plan;
+    // ---- crash-proof logging
+    window.addEventListener("error", (e) => console.error("HEARING ERROR:", e.message));
+    window.addEventListener("unhandledrejection", (e) => console.error("HEARING PROMISE ERROR:", e.reason));
 
-      const areaSel = document.getElementById("areaDetails");
-      const note = document.getElementById("note");
-      const btn = document.getElementById("continueBtn");
-      const debug = document.getElementById("debug");
+    // ---- helpers
+    const $ = (id) => document.getElementById(id);
+    const qp = new URLSearchParams(location.search);
+    const plan = (qp.get("plan") || "explorer").toLowerCase();
+    $("planBadge").textContent = "PLAN: " + (plan === "connoisseur" ? "CONNOISSEUR" : "EXPLORER");
 
-      function sync(){
-        const areaDetails = (areaSel.value || "").trim();
-        btn.disabled = !areaDetails;
-        debug.textContent =
-          "areaDetails=" + (areaDetails || "(none)") + "\\n" +
-          "plan=" + plan + "\\n" +
-          "next=/pay.html?plan=" + encodeURIComponent(plan) + "&areaDetails=" + encodeURIComponent(areaDetails);
+    // Explorer: 1 area, Connoisseur: up to 4
+    const maxAreas = plan === "connoisseur" ? 4 : 1;
+    $("areaRule").textContent = `(${plan === "connoisseur" ? "Up to 4" : "Single select"})`;
+    $("areaHint").textContent = plan === "connoisseur"
+      ? "Pick up to 4 areas — we’ll build a richer route."
+      : "Pick one area — focused and fast.";
+
+    const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+
+    const WHO = [
+      { key:"solo", label:"Solo" },
+      { key:"partner", label:"Partner" },
+      { key:"friends", label:"Friends" },
+      { key:"family", label:"Family" },
+    ];
+
+    const MOOD = [
+      { key:"quiet_reflective", label:"Quiet & reflective" },
+      { key:"slow_indulgent", label:"Slow & indulgent" },
+      { key:"deeply_local", label:"Deeply local" },
+      { key:"lively_social", label:"Lively & social" },
+    ];
+
+    const AVOID = [
+      { key:"long_lines", label:"Long lines" },
+      { key:"tourist_heavy", label:"Tourist-heavy places" },
+      { key:"very_noisy", label:"Very noisy spots" },
+    ];
+
+    // ---- state
+    let pref = null;
+    let areaDetails = [];      // selected
+    let areaOptions = [];      // fetched
+    let who = null;
+    let moods = [];
+    let avoids = [];
+    let noPreference = false;
+
+    function setStatus(msg){ $("statusText").textContent = msg || ""; }
+    function setErr(el, msg){ el.textContent = msg || ""; }
+
+    function renderPills(container, items, selectedKeys, onToggle, isMulti=true){
+      container.innerHTML = "";
+      items.forEach(it=>{
+        const div = document.createElement("div");
+        div.className = "pill" + (selectedKeys.includes(it.key) ? " selected" : "");
+        div.textContent = it.label;
+        div.onclick = () => onToggle(it.key);
+        container.appendChild(div);
+      });
+    }
+
+    function renderGrid(container, items, selectedValueOrArray, onClick){
+      container.innerHTML = "";
+      items.forEach(v=>{
+        const div = document.createElement("div");
+        const selected = Array.isArray(selectedValueOrArray)
+          ? selectedValueOrArray.includes(v)
+          : selectedValueOrArray === v;
+        div.className = "opt" + (selected ? " selected" : "");
+        div.innerHTML = `<div><b>${v}</b></div>`;
+        div.onclick = () => onClick(v);
+        container.appendChild(div);
+      });
+    }
+
+    async function fetchAreasForPref(selectedPref){
+      setErr($("areaErr"), "");
+      setStatus("Loading areas…");
+      $("areaGrid").innerHTML = "";
+      areaOptions = [];
+      areaDetails = [];
+
+      try{
+        const r = await fetch(`/api/areas?pref=${encodeURIComponent(selectedPref)}`);
+        const data = await r.json();
+        if(!r.ok || !data.ok){
+          throw new Error((data && (data.error || data.details)) || `Failed (${r.status})`);
+        }
+        areaOptions = data.areaDetails || [];
+        if(areaOptions.length === 0){
+          setErr($("areaErr"), "No areas found for this prefecture yet.");
+        }
+        setStatus("");
+        renderAreaOptions();
+        syncContinue();
+      }catch(err){
+        setStatus("");
+        setErr($("areaErr"), "Failed to load areas.\n" + String(err.message || err));
+      }
+    }
+
+    function renderAreaOptions(){
+      renderGrid($("areaGrid"), areaOptions, areaDetails, (v)=>{
+        // No preference を選んだら解除
+        if(noPreference){
+          noPreference = false;
+          $("noPref").classList.remove("selected");
+        }
+
+        if(maxAreas === 1){
+          areaDetails = [v];
+        } else {
+          if(areaDetails.includes(v)){
+            areaDetails = areaDetails.filter(x=>x!==v);
+          } else {
+            if(areaDetails.length >= maxAreas) return;
+            areaDetails = [...areaDetails, v];
+          }
+        }
+        renderAreaOptions();
+        syncContinue();
+      });
+    }
+
+    function syncContinue(){
+      const okAreas = areaDetails.length > 0 || noPreference;
+      const okWho = Boolean(who) || noPreference;
+      const okMood = (moods.length > 0) || noPreference;
+      $("continueBtn").disabled = !(okAreas && okWho && okMood);
+    }
+
+    // ---- init STEP 1 prefectures
+    renderGrid($("prefGrid"), PREFS, pref, (v)=>{
+      pref = v;
+      renderGrid($("prefGrid"), PREFS, pref, ()=>{});
+      fetchAreasForPref(pref);
+    });
+
+    // ---- init STEP 2/3/4
+    renderPills($("whoRow"), WHO, who ? [who] : [], (k)=>{
+      if(noPreference) return;
+      who = k;
+      renderPills($("whoRow"), WHO, who ? [who] : [], ()=>{});
+      syncContinue();
+    }, false);
+
+    renderPills($("moodRow"), MOOD, moods, (k)=>{
+      if(noPreference) return;
+      if(moods.includes(k)){
+        moods = moods.filter(x=>x!==k);
+      } else {
+        if(moods.length >= 2) return;
+        moods = [...moods, k];
+      }
+      renderPills($("moodRow"), MOOD, moods, ()=>{});
+      syncContinue();
+    }, true);
+
+    renderPills($("avoidRow"), AVOID, avoids, (k)=>{
+      if(noPreference) return;
+      if(avoids.includes(k)){
+        avoids = avoids.filter(x=>x!==k);
+      } else {
+        avoids = [...avoids, k];
+      }
+      renderPills($("avoidRow"), AVOID, avoids, ()=>{});
+    }, true);
+
+    // ---- STEP 5 No preference
+    $("noPref").onclick = ()=>{
+      noPreference = !noPreference;
+      $("noPref").classList.toggle("selected", noPreference);
+
+      if(noPreference){
+        // 全部解除して「選ばない」状態へ
+        pref = null;
+        areaDetails = [];
+        areaOptions = [];
+        who = null;
+        moods = [];
+        avoids = [];
+
+        renderGrid($("prefGrid"), PREFS, pref, (v)=>{
+          pref = v;
+          renderGrid($("prefGrid"), PREFS, pref, ()=>{});
+          fetchAreasForPref(pref);
+        });
+        $("areaGrid").innerHTML = "";
+        renderPills($("whoRow"), WHO, [], ()=>{}, false);
+        renderPills($("moodRow"), MOOD, [], ()=>{}, true);
+        renderPills($("avoidRow"), AVOID, [], ()=>{}, true);
+      }
+      syncContinue();
+    };
+
+    // ---- continue -> pay.html
+    $("continueBtn").onclick = ()=>{
+      setErr($("fatalErr"), "");
+
+      // Explorer/Connoisseur とも results.js は areaDetails を期待（配列）
+      // pay.html にまとめて渡す
+      const params = new URLSearchParams();
+      params.set("plan", plan);
+
+      if(noPreference){
+        params.set("noPref", "1");
+      } else {
+        // areaDetails はカンマ区切りで渡す（pay.html 側で split）
+        params.set("areaDetails", areaDetails.join(","));
+        params.set("who", who || "");
+        params.set("mood", moods.join(","));
+        params.set("avoid", avoids.join(","));
+        params.set("pref", pref || "");
       }
 
-      areaSel.addEventListener("change", sync);
-      note.addEventListener("input", sync);
-      sync();
+      location.href = `/pay.html?${params.toString()}`;
+    };
 
-      btn.addEventListener("click", function(){
-        const areaDetails = (areaSel.value || "").trim();
-        if(!areaDetails){ alert("Please select an area."); return; }
+    $("resetBtn").onclick = ()=>{
+      location.href = `/hearing.html?plan=${encodeURIComponent(plan)}`;
+    };
 
-        // ✅ Stripe復帰用に保存
-        localStorage.setItem("allnspyre_plan", plan);
-        localStorage.setItem("allnspyre_areaDetails", areaDetails);
-
-        // ✅ pay.htmlへ（Stripeへ自動遷移する想定）
-        location.href = "/pay.html?plan=" + encodeURIComponent(plan) +
-          "&areaDetails=" + encodeURIComponent(areaDetails);
-      });
-    })();
+    // 初期状態
+    syncContinue();
   </script>
 </body>
 </html>
