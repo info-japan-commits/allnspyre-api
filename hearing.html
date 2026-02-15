@@ -4,64 +4,100 @@
   <meta charset="utf-8" />
   <title>Allnspyre — Hearing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
     :root{
-      --bg:#f7f8fb; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+      --bg:#f7f8fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
       --line:rgba(15,23,42,.10);
-      --btn:#0b5cff; --btnText:#fff;
+      --btn:#0b5cff;
+      --btnText:#fff;
+      --shadow:0 18px 40px rgba(15,23,42,.10);
+      --radius:18px;
     }
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
-    .wrap{max-width:980px;margin:0 auto;padding:28px 18px 40px;}
+    .wrap{max-width:980px;margin:0 auto;padding:22px 16px 44px;}
     .hero{
       border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
-      border-radius:18px; padding:18px; overflow:hidden;
+      border-radius:var(--radius);
+      overflow:hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.65)),
+        url("https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1400&q=80");
+      background-size:cover;
+      background-position:center;
+      box-shadow:var(--shadow);
     }
-    .heroInner{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
-    .heroImg{
-      flex:0 0 240px; height:120px; border-radius:14px;
-      background-image:url("https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80");
-      background-size:cover; background-position:center;
+    .heroInner{padding:18px 18px 16px;backdrop-filter:saturate(120%) blur(2px);}
+    .topRow{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px}
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--btn)}
+    h1{margin:0;font-size:24px;letter-spacing:.2px}
+    .sub{margin:6px 0 0;color:rgba(15,23,42,.70);line-height:1.5}
+    .planBox{
+      display:flex;gap:12px;align-items:center;
+      padding:10px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.65);
+      background:rgba(255,255,255,.55);
+      color:rgba(15,23,42,.75);
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .planName{font-weight:750;color:rgba(15,23,42,.85)}
+    .err{margin-top:10px;color:#b91c1c;font-size:13px;display:none}
+
+    .content{margin-top:14px;display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width: 900px){ .content{grid-template-columns: 1.1fr .9fr;} }
+
+    .card{
+      background:var(--card);
       border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
     }
-    .heroText{flex:1; min-width:260px;}
-    h1{margin:0 0 6px;font-size:26px;letter-spacing:.2px}
-    .sub{margin:0;color:var(--muted);line-height:1.45}
-    .pill{display:inline-flex;gap:8px;align-items:center;margin-top:10px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.7);color:var(--muted);font-size:13px}
+    .card h2{margin:0 0 10px;font-size:15px}
+    .step{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+    .step:first-of-type{border-top:0;padding-top:0;margin-top:0}
+    .stepTitle{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .stepTitle b{font-size:14px}
+    .stepTitle span{font-size:12px;color:var(--muted)}
+    .desc{margin:8px 0 10px;color:var(--muted);font-size:13px;line-height:1.45}
 
-    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;}
-    @media (min-width: 900px){ .grid{grid-template-columns:1.1fr .9fr;} }
-
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;}
-    .card h2{margin:0 0 10px;font-size:16px}
-    label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
     select, input[type="text"]{
-      width:100%; padding:12px 12px; border-radius:12px;
+      width:100%; padding:12px 12px; border-radius:14px;
       border:1px solid var(--line); outline:none; background:#fff;
       font-size:14px;
     }
-    .row{display:grid;grid-template-columns:1fr;gap:10px;}
-    @media (min-width: 600px){ .row{grid-template-columns:1fr 1fr;} }
 
-    .actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+    .chips{display:flex;flex-wrap:wrap;gap:10px}
+    .chip{
+      display:inline-flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(15,23,42,.02);
+      cursor:pointer; user-select:none;
+      font-size:14px;
+    }
+    .chip input{accent-color:var(--btn);}
+
+    .checkGrid{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width: 680px){ .checkGrid{grid-template-columns:1fr 1fr;} }
+
+    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
     button{
-      border:0;border-radius:12px;padding:12px 14px;background:var(--btn);color:var(--btnText);
-      font-size:14px;font-weight:650;cursor:pointer;
-      box-shadow:0 10px 24px rgba(11,92,255,.20);
+      border:0;border-radius:14px;padding:12px 14px;background:var(--btn);color:var(--btnText);
+      font-size:14px;font-weight:750;cursor:pointer;
+      box-shadow:0 14px 28px rgba(11,92,255,.20);
     }
     .ghost{
       background:transparent;color:var(--muted);border:1px solid var(--line);
-      box-shadow:none;font-weight:600;
+      box-shadow:none;font-weight:650;
     }
-    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
-    .planBox{
-      display:flex;justify-content:space-between;gap:12px;align-items:center;
-      padding:12px;border-radius:14px;border:1px dashed rgba(15,23,42,.18); background:rgba(15,23,42,.02);
-      margin-top:10px;
-    }
-    .planName{font-weight:750}
-    .badge{font-size:12px;color:var(--muted)}
-    .error{color:#b91c1c;font-size:13px;margin-top:10px}
+    .small{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background:var(--line);margin:12px 0}
   </style>
 </head>
 
@@ -69,84 +105,144 @@
   <div class="wrap">
     <div class="hero">
       <div class="heroInner">
-        <div class="heroImg" aria-hidden="true"></div>
-        <div class="heroText">
-          <h1>Quick questions</h1>
-          <p class="sub">Answer a few items and we’ll prepare your match. Shop names remain hidden until purchase.</p>
-          <div class="pill">No people • Bright • Food-first</div>
+        <div class="topRow">
+          <div class="brand">
+            <div class="dot" aria-hidden="true"></div>
+            <div>
+              <h1>Quick questions</h1>
+              <p class="sub">Just tell us <b>who</b> and <b>what kind of time</b> you want. We’ll do the rest.</p>
+            </div>
+          </div>
+          <div class="planBox" id="planBox" style="display:none;">
+            <span class="planName" id="planName"></span>
+            <span id="planNote"></span>
+            <b id="planPrice"></b>
+          </div>
         </div>
+        <div class="err" id="err"></div>
       </div>
-
-      <div class="planBox" id="planBox" style="display:none;">
-        <div>
-          <div class="planName" id="planName"></div>
-          <div class="badge" id="planNote"></div>
-        </div>
-        <div class="badge" id="planPrice"></div>
-      </div>
-
-      <div class="error" id="err" style="display:none;"></div>
     </div>
 
-    <div class="grid">
+    <div class="content">
       <div class="card">
         <h2>Hearing</h2>
 
         <form id="form">
-          <label for="area">Which area?</label>
-          <select id="area" required>
-            <option value="">Select…</option>
-            <option value="Osaka">Osaka</option>
-            <option value="Kyoto">Kyoto</option>
-            <option value="Hyogo">Hyogo</option>
-            <option value="Nara">Nara</option>
-            <option value="Tokyo">Tokyo</option>
-            <option value="Kanagawa">Kanagawa</option>
-            <option value="Fukuoka">Fukuoka</option>
-            <option value="Ishikawa">Ishikawa</option>
-          </select>
-
-          <div class="row">
-            <div>
-              <label for="vibe">What vibe?</label>
-              <select id="vibe">
-                <option value="">Any</option>
-                <option value="slow_indulgent">Slow & indulgent</option>
-                <option value="lively_social">Lively & social</option>
-                <option value="deeply_local">Deeply local</option>
-              </select>
+          <!-- STEP 1 -->
+          <div class="step">
+            <div class="stepTitle">
+              <b>STEP 1 — Where</b>
+              <span>Two-step</span>
             </div>
-            <div>
-              <label for="time">Time / meal</label>
-              <select id="time">
-                <option value="">Any</option>
-                <option value="lunch">Lunch</option>
-                <option value="dinner">Dinner</option>
-                <option value="late">Late</option>
-              </select>
+            <div class="desc">Select a prefecture, then choose an area.</div>
+
+            <label for="pref">Prefecture</label>
+            <select id="pref" required>
+              <option value="">Select…</option>
+              <option value="Tokyo">Tokyo</option>
+              <option value="Kanagawa">Kanagawa</option>
+              <option value="Osaka">Osaka</option>
+              <option value="Kyoto">Kyoto</option>
+              <option value="Hyogo">Hyogo</option>
+              <option value="Nara">Nara</option>
+              <option value="Fukuoka">Fukuoka</option>
+              <option value="Ishikawa">Ishikawa</option>
+            </select>
+
+            <label for="area">Area</label>
+            <select id="area" required disabled>
+              <option value="">Select prefecture first…</option>
+            </select>
+
+            <div class="hint" id="whereHint">Tip: choose the area you’ll actually be in (station / district).</div>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="step">
+            <div class="stepTitle">
+              <b>STEP 2 — Who</b>
+              <span>Single select</span>
+            </div>
+            <div class="desc">Who are you eating with?</div>
+
+            <div class="chips" role="radiogroup" aria-label="Who">
+              <label class="chip"><input type="radio" name="who" value="solo" required> Solo</label>
+              <label class="chip"><input type="radio" name="who" value="partner"> Partner</label>
+              <label class="chip"><input type="radio" name="who" value="friends"> Friends</label>
+              <label class="chip"><input type="radio" name="who" value="family"> Family</label>
             </div>
           </div>
 
-          <label for="notes">Any notes? (optional)</label>
-          <input id="notes" type="text" placeholder="e.g., no spicy / walking distance / etc." />
+          <!-- STEP 3 -->
+          <div class="step">
+            <div class="stepTitle">
+              <b>STEP 3 — Time & Mood</b>
+              <span>Choose up to 2</span>
+            </div>
+            <div class="desc">What kind of time do you want?</div>
 
-          <div class="actions">
-            <button type="submit" id="goBtn">Continue →</button>
-            <button type="button" class="ghost" id="backBtn">Back</button>
+            <div class="checkGrid">
+              <label class="chip"><input type="checkbox" name="mood" value="quiet_reflective"> Quiet &amp; reflective</label>
+              <label class="chip"><input type="checkbox" name="mood" value="slow_indulgent"> Slow &amp; indulgent</label>
+              <label class="chip"><input type="checkbox" name="mood" value="deeply_local"> Deeply local</label>
+              <label class="chip"><input type="checkbox" name="mood" value="lively_social"> Lively &amp; social</label>
+            </div>
+            <div class="hint" id="moodHint">You can pick 1 or 2. (0 is allowed if you choose “No preference” below.)</div>
           </div>
 
-          <div class="hint">
-            Next step will open the results page for your plan. (Names are revealed after purchase.)
+          <!-- STEP 4 -->
+          <div class="step">
+            <div class="stepTitle">
+              <b>STEP 4 — Friction control</b>
+              <span>Optional</span>
+            </div>
+            <div class="desc">Prefer to avoid?</div>
+
+            <div class="checkGrid">
+              <label class="chip"><input type="checkbox" name="avoid" value="long_lines"> Long lines</label>
+              <label class="chip"><input type="checkbox" name="avoid" value="tourist_heavy"> Tourist-heavy places</label>
+              <label class="chip"><input type="checkbox" name="avoid" value="very_noisy"> Very noisy spots</label>
+            </div>
+            <div class="hint">These won’t be shown — they quietly adjust the selection.</div>
+          </div>
+
+          <!-- STEP 5 -->
+          <div class="step">
+            <div class="stepTitle">
+              <b>STEP 5 — No preference</b>
+              <span>Optional</span>
+            </div>
+            <div class="desc">If you’re not sure:</div>
+
+            <label class="chip" style="width:fit-content;">
+              <input type="checkbox" id="noPref" />
+              No preference — pick for me
+            </label>
+
+            <div class="divider"></div>
+
+            <div class="actions">
+              <button type="submit" id="goBtn">Continue →</button>
+              <button type="button" class="ghost" id="backBtn">Back</button>
+              <span class="small" id="nextText"></span>
+            </div>
+
+            <div class="err" id="formErr" style="display:none;"></div>
           </div>
         </form>
       </div>
 
       <div class="card">
         <h2>What happens next</h2>
-        <div class="hint" style="font-size:13px">
+        <div class="small" style="line-height:1.7">
           <div>1) You answer the questions</div>
           <div>2) We generate 7 matches</div>
           <div>3) Shop names unlock after purchase</div>
+        </div>
+        <div class="divider"></div>
+        <div class="small" style="line-height:1.7">
+          <b>English only</b> (fixed)<br/>
+          No cuisine questions • No people in images • Bright & clean UI
         </div>
       </div>
     </div>
@@ -156,13 +252,16 @@
     (function(){
       const qs = new URLSearchParams(location.search);
       const plan = (qs.get("plan") || "").toLowerCase();
-      const err = document.getElementById("err");
 
-      // plan表示（英語固定）
+      const err = document.getElementById("err");
+      const formErr = document.getElementById("formErr");
+
+      // Plan UI
       const planBox = document.getElementById("planBox");
       const planName = document.getElementById("planName");
       const planNote = document.getElementById("planNote");
       const planPrice = document.getElementById("planPrice");
+      const nextText = document.getElementById("nextText");
 
       if(plan !== "explorer" && plan !== "connoisseur"){
         err.style.display = "block";
@@ -171,36 +270,121 @@
         planBox.style.display = "flex";
         if(plan === "explorer"){
           planName.textContent = "Explorer";
-          planNote.textContent = "Confirm 1 area • Focused & fast";
+          planNote.textContent = "Focused & fast";
           planPrice.textContent = "$19";
+          nextText.textContent = "Next: results-explorer";
         } else {
           planName.textContent = "Connoisseur";
-          planNote.textContent = "Up to 4 areas • Deeper exploration";
+          planNote.textContent = "Deeper exploration";
           planPrice.textContent = "$39";
+          nextText.textContent = "Next: results-connoisseur";
         }
       }
 
-      // 戻る
+      // Back button
       document.getElementById("backBtn").onclick = () => history.back();
 
-      // 送信 → Studioのresultsページへ
-      document.getElementById("form").addEventListener("submit", (e)=>{
-        e.preventDefault();
-        if(plan !== "explorer" && plan !== "connoisseur") return;
+      // STEP 1: Prefecture -> Area (2-step)
+      const PREF_TO_AREAS = {
+        Tokyo: ["Shinjuku", "Shibuya", "Ginza", "Asakusa", "Ueno"],
+        Kanagawa: ["Yokohama", "Kamakura", "Hakone", "Kawasaki"],
+        Osaka: ["Osaka City", "Umeda", "Namba", "Tennoji", "Hokusetu"],
+        Kyoto: ["Central Kyoto", "Gion", "Arashiyama", "Fushimi-Momoyama"],
+        Hyogo: ["Kobe", "Himeji", "Arima", "Awaji"],
+        Nara: ["Nara City", "Ikoma", "Kashihara", "Asuka"],
+        Fukuoka: ["Tenjin", "Hakata", "Dazaifu", "Itoshima"],
+        Ishikawa: ["Kanazawa", "Kaga", "Noto", "Komatsu"]
+      };
 
-        const area = document.getElementById("area").value;
-        if(!area){
-          err.style.display = "block";
-          err.textContent = "Please select an area.";
+      const prefEl = document.getElementById("pref");
+      const areaEl = document.getElementById("area");
+
+      function setAreas(pref){
+        areaEl.innerHTML = "";
+        if(!pref || !PREF_TO_AREAS[pref]){
+          areaEl.disabled = true;
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "Select prefecture first…";
+          areaEl.appendChild(opt);
           return;
         }
-        err.style.display = "none";
+        areaEl.disabled = false;
+        const opt0 = document.createElement("option");
+        opt0.value = "";
+        opt0.textContent = "Select…";
+        areaEl.appendChild(opt0);
 
-        const vibe = document.getElementById("vibe").value;
-        const time = document.getElementById("time").value;
-        const notes = document.getElementById("notes").value;
+        PREF_TO_AREAS[pref].forEach(a=>{
+          const opt = document.createElement("option");
+          opt.value = a;
+          opt.textContent = a;
+          areaEl.appendChild(opt);
+        });
+      }
+      prefEl.addEventListener("change", ()=> setAreas(prefEl.value));
 
-        // Studio側のページ（既にある前提）
+      // STEP 3: mood max 2 (unless noPref)
+      const noPrefEl = document.getElementById("noPref");
+      const moodChecks = Array.from(document.querySelectorAll('input[name="mood"]'));
+      const moodHint = document.getElementById("moodHint");
+
+      function enforceMoodLimit(){
+        if(noPrefEl.checked){
+          moodChecks.forEach(c=>{ c.checked = false; c.disabled = true; });
+          moodHint.textContent = "No preference is ON — we’ll pick the mood for you.";
+          return;
+        }
+        moodChecks.forEach(c=> c.disabled = false);
+        const chosen = moodChecks.filter(c=>c.checked).length;
+        if(chosen >= 2){
+          moodChecks.filter(c=>!c.checked).forEach(c=> c.disabled = true);
+          moodHint.textContent = "Max 2 selected.";
+        } else {
+          moodChecks.forEach(c=> c.disabled = false);
+          moodHint.textContent = "You can pick 1 or 2. (0 is allowed if you choose “No preference” below.)";
+        }
+      }
+      moodChecks.forEach(c=> c.addEventListener("change", enforceMoodLimit));
+      noPrefEl.addEventListener("change", enforceMoodLimit);
+
+      // Submit -> Studio results pages
+      document.getElementById("form").addEventListener("submit",(e)=>{
+        e.preventDefault();
+
+        if(plan !== "explorer" && plan !== "connoisseur") return;
+
+        const pref = prefEl.value;
+        const area = areaEl.value;
+        if(!pref){
+          formErr.style.display="block";
+          formErr.textContent="Please select a prefecture.";
+          return;
+        }
+        if(!area){
+          formErr.style.display="block";
+          formErr.textContent="Please select an area.";
+          return;
+        }
+
+        const who = (document.querySelector('input[name="who"]:checked')||{}).value;
+        if(!who){
+          formErr.style.display="block";
+          formErr.textContent="Please select who you’re eating with.";
+          return;
+        }
+
+        const moods = moodChecks.filter(c=>c.checked).map(c=>c.value);
+        if(!noPrefEl.checked && moods.length === 0){
+          formErr.style.display="block";
+          formErr.textContent="Please choose at least 1 mood (or turn on “No preference”).";
+          return;
+        }
+
+        const avoids = Array.from(document.querySelectorAll('input[name="avoid"]:checked')).map(x=>x.value);
+
+        formErr.style.display="none";
+
         const target =
           (plan === "explorer")
             ? "https://aiinspyre.com/results-explorer"
@@ -208,13 +392,23 @@
 
         const p = new URLSearchParams();
         p.set("plan", plan);
+        p.set("pref", pref);
         p.set("area", area);
-        if(vibe) p.set("vibe", vibe);
-        if(time) p.set("time", time);
-        if(notes) p.set("notes", notes);
+        p.set("who", who);
+        if(noPrefEl.checked){
+          p.set("no_pref","1");
+        } else {
+          // moods 1-2
+          p.set("mood", moods.join(",")); // e.g. "deeply_local,slow_indulgent"
+        }
+        if(avoids.length) p.set("avoid", avoids.join(",")); // optional
 
         location.href = `${target}?${p.toString()}`;
       });
+
+      // init
+      setAreas(prefEl.value);
+      enforceMoodLimit();
     })();
   </script>
 </body>
