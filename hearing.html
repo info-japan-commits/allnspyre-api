@@ -1,64 +1,221 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Allnspyre Hearing</title>
+  <meta charset="utf-8" />
+  <title>Allnspyre — Hearing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body style="margin:0;font-family:system-ui;background:#f9fafb;">
-
-<div id="app" style="padding:40px;text-align:center;">
-  <h2>Loading...</h2>
-</div>
-
-<script>
-(async function () {
-  const qs = new URLSearchParams(location.search);
-  const plan = qs.get("plan");
-
-  if (!plan || (plan !== "explorer" && plan !== "connoisseur")) {
-    document.getElementById("app").innerHTML = `
-      <h2>Invalid access</h2>
-      <p>plan=explorer or plan=connoisseur required.</p>
-    `;
-    return;
-  }
-
-  try {
-    const res = await fetch("https://allnspyre-api.vercel.app/api/recommend");
-    const data = await res.json();
-
-    if (!data.success) {
-      throw new Error("API error");
+  <style>
+    :root{
+      --bg:#f7f8fb; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+      --line:rgba(15,23,42,.10);
+      --btn:#0b5cff; --btnText:#fff;
     }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+    .wrap{max-width:980px;margin:0 auto;padding:28px 18px 40px;}
+    .hero{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+      border-radius:18px; padding:18px; overflow:hidden;
+    }
+    .heroInner{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
+    .heroImg{
+      flex:0 0 240px; height:120px; border-radius:14px;
+      background-image:url("https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80");
+      background-size:cover; background-position:center;
+      border:1px solid var(--line);
+    }
+    .heroText{flex:1; min-width:260px;}
+    h1{margin:0 0 6px;font-size:26px;letter-spacing:.2px}
+    .sub{margin:0;color:var(--muted);line-height:1.45}
+    .pill{display:inline-flex;gap:8px;align-items:center;margin-top:10px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.7);color:var(--muted);font-size:13px}
 
-    const shops = data.shops;
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;}
+    @media (min-width: 900px){ .grid{grid-template-columns:1.1fr .9fr;} }
 
-    let html = "<h2>Your Selection</h2>";
-    html += "<div style='max-width:800px;margin:40px auto;text-align:left;'>";
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;}
+    .card h2{margin:0 0 10px;font-size:16px}
+    label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+    select, input[type="text"]{
+      width:100%; padding:12px 12px; border-radius:12px;
+      border:1px solid var(--line); outline:none; background:#fff;
+      font-size:14px;
+    }
+    .row{display:grid;grid-template-columns:1fr;gap:10px;}
+    @media (min-width: 600px){ .row{grid-template-columns:1fr 1fr;} }
 
-    shops.forEach(s => {
-      html += `
-        <div style="background:white;padding:20px;margin-bottom:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
-          <h3 style="margin:0 0 8px 0;">${s.shop_name}</h3>
-          <p style="margin:0;color:#555;">
-            ${s.area_group} / ${s.area_detail}
-          </p>
+    .actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+    button{
+      border:0;border-radius:12px;padding:12px 14px;background:var(--btn);color:var(--btnText);
+      font-size:14px;font-weight:650;cursor:pointer;
+      box-shadow:0 10px 24px rgba(11,92,255,.20);
+    }
+    .ghost{
+      background:transparent;color:var(--muted);border:1px solid var(--line);
+      box-shadow:none;font-weight:600;
+    }
+    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+    .planBox{
+      display:flex;justify-content:space-between;gap:12px;align-items:center;
+      padding:12px;border-radius:14px;border:1px dashed rgba(15,23,42,.18); background:rgba(15,23,42,.02);
+      margin-top:10px;
+    }
+    .planName{font-weight:750}
+    .badge{font-size:12px;color:var(--muted)}
+    .error{color:#b91c1c;font-size:13px;margin-top:10px}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="heroInner">
+        <div class="heroImg" aria-hidden="true"></div>
+        <div class="heroText">
+          <h1>Quick questions</h1>
+          <p class="sub">Answer a few items and we’ll prepare your match. Shop names remain hidden until purchase.</p>
+          <div class="pill">No people • Bright • Food-first</div>
         </div>
-      `;
-    });
+      </div>
 
-    html += "</div>";
-    document.getElementById("app").innerHTML = html;
+      <div class="planBox" id="planBox" style="display:none;">
+        <div>
+          <div class="planName" id="planName"></div>
+          <div class="badge" id="planNote"></div>
+        </div>
+        <div class="badge" id="planPrice"></div>
+      </div>
 
-  } catch (e) {
-    document.getElementById("app").innerHTML = `
-      <h2>Error</h2>
-      <p>Failed to load recommendations.</p>
-    `;
-  }
-})();
-</script>
+      <div class="error" id="err" style="display:none;"></div>
+    </div>
 
+    <div class="grid">
+      <div class="card">
+        <h2>Hearing</h2>
+
+        <form id="form">
+          <label for="area">Which area?</label>
+          <select id="area" required>
+            <option value="">Select…</option>
+            <option value="Osaka">Osaka</option>
+            <option value="Kyoto">Kyoto</option>
+            <option value="Hyogo">Hyogo</option>
+            <option value="Nara">Nara</option>
+            <option value="Tokyo">Tokyo</option>
+            <option value="Kanagawa">Kanagawa</option>
+            <option value="Fukuoka">Fukuoka</option>
+            <option value="Ishikawa">Ishikawa</option>
+          </select>
+
+          <div class="row">
+            <div>
+              <label for="vibe">What vibe?</label>
+              <select id="vibe">
+                <option value="">Any</option>
+                <option value="slow_indulgent">Slow & indulgent</option>
+                <option value="lively_social">Lively & social</option>
+                <option value="deeply_local">Deeply local</option>
+              </select>
+            </div>
+            <div>
+              <label for="time">Time / meal</label>
+              <select id="time">
+                <option value="">Any</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="late">Late</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="notes">Any notes? (optional)</label>
+          <input id="notes" type="text" placeholder="e.g., no spicy / walking distance / etc." />
+
+          <div class="actions">
+            <button type="submit" id="goBtn">Continue →</button>
+            <button type="button" class="ghost" id="backBtn">Back</button>
+          </div>
+
+          <div class="hint">
+            Next step will open the results page for your plan. (Names are revealed after purchase.)
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>What happens next</h2>
+        <div class="hint" style="font-size:13px">
+          <div>1) You answer the questions</div>
+          <div>2) We generate 7 matches</div>
+          <div>3) Shop names unlock after purchase</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      const plan = (qs.get("plan") || "").toLowerCase();
+      const err = document.getElementById("err");
+
+      // plan表示（英語固定）
+      const planBox = document.getElementById("planBox");
+      const planName = document.getElementById("planName");
+      const planNote = document.getElementById("planNote");
+      const planPrice = document.getElementById("planPrice");
+
+      if(plan !== "explorer" && plan !== "connoisseur"){
+        err.style.display = "block";
+        err.textContent = "Invalid access: plan=explorer or plan=connoisseur required.";
+      } else {
+        planBox.style.display = "flex";
+        if(plan === "explorer"){
+          planName.textContent = "Explorer";
+          planNote.textContent = "Confirm 1 area • Focused & fast";
+          planPrice.textContent = "$19";
+        } else {
+          planName.textContent = "Connoisseur";
+          planNote.textContent = "Up to 4 areas • Deeper exploration";
+          planPrice.textContent = "$39";
+        }
+      }
+
+      // 戻る
+      document.getElementById("backBtn").onclick = () => history.back();
+
+      // 送信 → Studioのresultsページへ
+      document.getElementById("form").addEventListener("submit", (e)=>{
+        e.preventDefault();
+        if(plan !== "explorer" && plan !== "connoisseur") return;
+
+        const area = document.getElementById("area").value;
+        if(!area){
+          err.style.display = "block";
+          err.textContent = "Please select an area.";
+          return;
+        }
+        err.style.display = "none";
+
+        const vibe = document.getElementById("vibe").value;
+        const time = document.getElementById("time").value;
+        const notes = document.getElementById("notes").value;
+
+        // Studio側のページ（既にある前提）
+        const target =
+          (plan === "explorer")
+            ? "https://aiinspyre.com/results-explorer"
+            : "https://aiinspyre.com/results-connoisseur";
+
+        const p = new URLSearchParams();
+        p.set("plan", plan);
+        p.set("area", area);
+        if(vibe) p.set("vibe", vibe);
+        if(time) p.set("time", time);
+        if(notes) p.set("notes", notes);
+
+        location.href = `${target}?${p.toString()}`;
+      });
+    })();
+  </script>
 </body>
 </html>
