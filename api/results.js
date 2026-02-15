@@ -1,53 +1,56 @@
-<script>
-async function loadResults() {
-  const params = new URLSearchParams(window.location.search);
-  const areaIds = params.get("areaIds");
-  const plan = params.get("plan");
+const AIRTABLE_BASE = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 
-  if (!areaIds) {
-    document.querySelector("#result").innerHTML = "No area selected.";
-    return;
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const res = await fetch("/api/results", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        areaIds: areaIds.split(","),
-        who: null,
-        mood: null,
-        friction: null
-      })
-    });
+    const { areaIds, who, mood, friction } = req.body;
 
-    const data = await res.json();
-
-    if (!data.shops) {
-      document.querySelector("#result").innerHTML = "No shops returned.";
-      return;
+    if (!areaIds || areaIds.length === 0) {
+      return res.status(400).json({ error: "No area selected" });
     }
 
-    let html = "<h2>Your 7 Matches</h2>";
-    data.shops.forEach(shop => {
-      html += `
-        <div style="margin-bottom:20px;padding:15px;border:1px solid #eee;border-radius:12px;">
-          <h3>${shop.shop_name}</h3>
-          <p>${shop.area_detail}</p>
-          <p>${shop.genre}</p>
-          <p>${shop.short_desc}</p>
-        </div>
-      `;
+    // ===== Airtable filter formula =====
+    const areaFilter = areaIds
+      .map(id => `{area_id}='${id}'`)
+      .join(",");
+
+    const formula = `OR(${areaFilter})`;
+
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/shops_master?filterByFormula=${encodeURIComponent(
+      formula
+    )}&maxRecords=7`;
+
+    const airtableRes = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      },
     });
 
-    document.querySelector("#result").innerHTML = html;
+    if (!airtableRes.ok) {
+      const text = await airtableRes.text();
+      return res.status(500).json({
+        error: "Airtable request failed",
+        details: text,
+      });
+    }
+
+    const data = await airtableRes.json();
+
+    const shops = data.records.map(r => ({
+      shop_name: r.fields.shop_name || "",
+      area_detail: r.fields.area_detail || "",
+      genre: r.fields.genre || "",
+      short_desc: r.fields.short_desc || "",
+    }));
+
+    return res.status(200).json({ shops });
 
   } catch (err) {
-    document.querySelector("#result").innerHTML = "Error loading results.";
+    console.error(err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
-
-loadResults();
-</script>
