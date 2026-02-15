@@ -1,54 +1,324 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Allnspyre Results</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Allnspyre — Results</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --accent:#2563eb;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--accent);
+    }
+    .pill{
+      padding:6px 10px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .hero{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px 18px 14px;
+      box-shadow: 0 8px 26px rgba(15,23,42,.05);
+      margin-bottom: 16px;
+    }
+    .hero h1{
+      margin:0 0 6px;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+    }
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-top: 12px;
+      flex-wrap:wrap;
+    }
+    button{
+      appearance:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    button.primary{
+      background: var(--accent);
+      color:#fff;
+      border-color: transparent;
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (max-width: 720px){
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.04);
+    }
+    .card h3{
+      margin:0 0 6px;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+    .meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .tag{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:4px 8px;
+    }
+    .desc{
+      margin:0;
+      color:var(--text);
+      font-size:14px;
+      line-height:1.55;
+      white-space:pre-wrap;
+    }
+    .status{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .err{
+      color: #b91c1c;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .small{
+      font-size:12px;color:var(--muted);
+    }
+  </style>
 </head>
+
 <body>
-  <h2>Your 7 Matches</h2>
-  <div id="result">Loading...</div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span> Allnspyre</div>
+      <div class="pill" id="pill">Loading…</div>
+    </div>
 
-  <script>
-    async function loadResults() {
-      const params = new URLSearchParams(window.location.search);
-      const areaIds = params.get("areaIds");
+    <div class="hero">
+      <h1>Your 7 Matches</h1>
+      <p>We’re generating your results from Airtable.</p>
 
-      if (!areaIds) {
-        document.getElementById("result").innerText = "No area selected.";
-        return;
-      }
+      <div class="row">
+        <button id="reloadBtn">Reload</button>
+        <button class="primary" id="backBtn">Back to hearing</button>
+        <span class="small" id="hint"></span>
+      </div>
 
+      <div class="status" id="status">Preparing…</div>
+      <div class="err" id="error" style="display:none;"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+<script>
+  const $ = (sel) => document.querySelector(sel);
+
+  function setStatus(msg){ $("#status").textContent = msg; }
+  function setPill(msg){ $("#pill").textContent = msg; }
+
+  function showError(msg){
+    const el = $("#error");
+    el.style.display = "block";
+    el.textContent = msg;
+  }
+  function clearError(){
+    const el = $("#error");
+    el.style.display = "none";
+    el.textContent = "";
+  }
+
+  // URLパラメータ：
+  //  - 推奨: areaDetails=Fushimi-Momoyama,Kyoto City
+  //  - 互換: areaIds=kyoto_fushimi_momoyama (古いのが来ても落ちないようにする)
+  function getAreaDetailsFromQuery(){
+    const params = new URLSearchParams(window.location.search);
+
+    // ✅ 新方式
+    const areaDetails = params.get("areaDetails");
+    if (areaDetails && areaDetails.trim()){
+      return areaDetails.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
+    // ✅ 互換：古い areaIds が来た場合（とりあえず _ を - にして表示。※最終的には hearing 側を areaDetails 送信に統一）
+    const areaIds = params.get("areaIds");
+    if (areaIds && areaIds.trim()){
+      // 例: kyoto_fushimi_momoyama → "kyoto fushimi momoyama"
+      const guess = areaIds.replace(/_/g, " ").trim();
+      return guess ? [guess] : [];
+    }
+
+    return [];
+  }
+
+  function renderShops(shops){
+    const grid = $("#grid");
+    grid.innerHTML = "";
+
+    if (!Array.isArray(shops) || shops.length === 0){
+      grid.innerHTML = "<div class='card'><h3>No shops returned.</h3><p class='desc'>Try another area.</p></div>";
+      return;
+    }
+
+    shops.forEach((s) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      const tags = [];
+      if (s.area_group) tags.push(`<span class="tag">${escapeHtml(s.area_group)}</span>`);
+      if (s.area_detail) tags.push(`<span class="tag">${escapeHtml(s.area_detail)}</span>`);
+      if (s.genre) tags.push(`<span class="tag">${escapeHtml(s.genre)}</span>`);
+
+      card.innerHTML = `
+        <h3>${escapeHtml(s.shop_name || "Untitled")}</h3>
+        <div class="meta">${tags.join("")}</div>
+        <p class="desc">${escapeHtml(s.short_desc || "")}</p>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  async function loadResults(){
+    clearError();
+    setStatus("Reading your selection…");
+
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get("plan") || "explorer";
+
+    const areaDetailsArr = getAreaDetailsFromQuery();
+
+    setPill(`plan: ${plan}${areaDetailsArr.length ? " • area: " + areaDetailsArr.join(", ") : ""}`);
+
+    if (!areaDetailsArr.length){
+      setStatus("No area selected.");
+      showError("Missing areaDetails in URL.\nExample:\n/results.html?plan=explorer&areaDetails=Fushimi-Momoyama");
+      renderShops([]);
+      return;
+    }
+
+    setStatus("Calling /api/results …");
+
+    try{
       const res = await fetch("/api/results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          areaIds: areaIds.split(",")
-        })
+          areaDetails: areaDetailsArr
+        }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      if (!data.shops || data.shops.length === 0) {
-        document.getElementById("result").innerText = "No shops returned.";
+      if (!res.ok || !data.ok){
+        setStatus("Failed.");
+        showError(
+          "API error.\n" +
+          "status: " + res.status + "\n" +
+          "message: " + (data.error || "unknown") + "\n" +
+          (data.details ? ("details: " + data.details) : "")
+        );
+        renderShops([]);
         return;
       }
 
-      let html = "";
-      data.shops.forEach(shop => {
-        html += `
-          <div style="margin-bottom:20px;padding:10px;border:1px solid #ccc;">
-            <h3>${shop.shop_name}</h3>
-            <p>${shop.area_detail}</p>
-            <p>${shop.genre}</p>
-            <p>${shop.short_desc}</p>
-          </div>
-        `;
-      });
+      setStatus(`Done. ${data.count} shops returned.`);
+      $("#hint").textContent = data.debug?.usedFormula ? "Airtable filter applied." : "";
+      renderShops(data.shops);
 
-      document.getElementById("result").innerHTML = html;
+    }catch(err){
+      setStatus("Failed.");
+      showError("Network/Runtime error:\n" + String(err));
+      renderShops([]);
     }
+  }
 
-    loadResults();
-  </script>
+  $("#reloadBtn").addEventListener("click", () => loadResults());
+  $("#backBtn").addEventListener("click", () => {
+    // hearing.html に戻す（同じ plan を維持）
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get("plan") || "explorer";
+    window.location.href = `/hearing.html?plan=${encodeURIComponent(plan)}`;
+  });
+
+  loadResults();
+</script>
 </body>
 </html>
