@@ -1,84 +1,58 @@
 export default async function handler(req, res) {
   try {
-    const plan = req.query.plan || "explorer"; // explorer / connoisseur
-    const prefsRaw = req.query.prefs || req.query.pref; // 互換: prefも許可
-    if (!prefsRaw) {
-      return res.status(400).json({ ok: false, error: "prefs is required" });
-    }
-
-    // prefs の受け方:
-    // - prefs=Tokyo|Osaka|Kanagawa
-    // - pref=Tokyo (旧)
-    const prefs = String(prefsRaw)
-      .split("|")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const plan = String(req.query.plan || "").toLowerCase() || "explorer";
+    const pref = String(req.query.pref || "");
+    const prefs = pref.split(",").map(s => s.trim()).filter(Boolean);
 
     if (prefs.length === 0) {
-      return res.status(400).json({ ok: false, error: "prefs is required" });
+      return res.status(200).json({ ok: true, plan, prefs: [], count: 0, areaGroups: [] });
     }
 
-    const baseId = process.env.AIRTABLE_BASE_ID;
-    const tableId = process.env.AIRTABLE_TABLE_ID;
-    const token = process.env.AIRTABLE_TOKEN;
+    const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+    const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+    const AIRTABLE_TABLE = process.env.AIRTABLE_TABLE || "shops_master";
 
-    if (!baseId || !tableId || !token) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing env vars",
-        debug: {
-          hasBaseId: !!baseId,
-          hasTableId: !!tableId,
-          hasToken: !!token,
-        },
-      });
+    if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
+      return res.status(500).json({ ok: false, error: "Missing Airtable env vars" });
     }
 
-    // 複数都道府県 OR 条件
-    const prefOr = prefs
-      .map((p) => `FIND("${p}", {area_group}) > 0`)
-      .join(", ");
+    // Airtable: prefecture が prefs に含まれる active 行の area_group をユニーク抽出
+    // ※ prefecture列名はあなたのAirtableに合わせて調整して（例: pref / prefecture）
+    const PREF_FIELD = "pref";       // ←必要なら "prefecture" に変えて
+    const STATUS_FIELD = "status";
+    const AREA_GROUP_FIELD = "area_group";
 
-    // tier は multi-select なので ARRAYJOIN で contains 判定
-    const formula = `AND(
-      FIND("${plan}", ARRAYJOIN({tier})) > 0,
-      OR(${prefOr}),
-      {status} = "active"
-    )`;
+    const prefOr = prefs.map(p => `{${PREF_FIELD}}="${escapeFormula(p)}"`).join(",");
+    const formula = `AND({${STATUS_FIELD}}="active", OR(${prefOr}))`;
 
-    const url =
-      `https://api.airtable.com/v0/${baseId}/${tableId}` +
-      `?pageSize=100` +
-      `&filterByFormula=${encodeURIComponent(formula)}` +
-      `&fields[]=area_group`;
+    const url = new URL(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}`);
+    url.searchParams.set("pageSize", "100");
+    url.searchParams.set("filterByFormula", formula);
+    url.searchParams.append("fields[]", AREA_GROUP_FIELD);
 
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+    const r = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        ok: false,
-        error: "Airtable request failed",
-        details: data,
-        debug: { plan, prefs, formula, url },
-      });
+    const j = await r.json();
+    if (!r.ok) {
+      return res.status(500).json({ ok: false, error: "Airtable error", detail: j });
     }
 
-    const areaGroups = [
-      ...new Set((data.records || []).map((r) => r.fields?.area_group).filter(Boolean)),
-    ].sort((a, b) => a.localeCompare(b));
-
-    return res.status(200).json({
-      ok: true,
-      plan,
-      prefs,
-      count: areaGroups.length,
-      areaGroups,
+    const set = new Set();
+    (j.records || []).forEach(rec => {
+      const g = rec.fields?.[AREA_GROUP_FIELD];
+      if (g) set.add(g);
     });
+
+    const areaGroups = Array.from(set).sort();
+    res.status(200).json({ ok: true, plan, prefs, count: areaGroups.length, areaGroups });
+
   } catch (e) {
-    return res.status(500).json({ ok: false, error: e.message });
+    res.status(500).json({ ok: false, error: String(e) });
   }
+}
+
+function escapeFormula(s) {
+  return String(s).replace(/"/g, '\\"');
 }
