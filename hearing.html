@@ -1,503 +1,199 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tell me your vibe.</title>
-  <style>
-    :root{
-      --bg:#f6f6f6;
-      --card:#ffffff;
-      --text:#111;
-      --muted:#6b6b6b;
-      --line:#e7e7e7;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
-    }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:980px;margin:40px auto;padding:0 16px;}
-    h1{font-size:44px;line-height:1.05;margin:0 0 8px;}
-    .sub{color:var(--muted);margin:0 0 24px;font-size:16px;}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      font-size:12px;color:#333;background:#fff;border:1px solid var(--line);
-      padding:8px 10px;border-radius:999px; box-shadow: 0 2px 10px rgba(0,0,0,.04);
-    }
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:22px;
-      margin:14px 0;
-    }
-    .stepRow{display:flex;gap:18px;align-items:flex-start;}
-    .stepNum{
-      width:28px;height:28px;border-radius:999px;
-      display:flex;align-items:center;justify-content:center;
-      border:1px solid var(--line); color:#444; background:#fff; flex:0 0 auto;
-      font-weight:600;
-    }
-    .stepTitle{font-weight:700;margin:0 0 4px;}
-    .stepHint{color:var(--muted);margin:0 0 14px;font-size:14px;}
-    .grid{
-      display:grid;grid-template-columns:1fr 1fr;gap:12px;
-    }
-    @media (max-width:720px){ .grid{grid-template-columns:1fr;} h1{font-size:34px;} }
-    button.choice{
-      width:100%;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      text-align:left;
-      cursor:pointer;
-      transition: transform .04s ease, border-color .12s ease, box-shadow .12s ease;
-      font-size:16px;
-    }
-    button.choice:hover{box-shadow:0 10px 22px rgba(0,0,0,.06);}
-    button.choice:active{transform: translateY(1px);}
-    button.choice.selected{
-      border-color:#111;
-      box-shadow:0 10px 24px rgba(0,0,0,.08);
-    }
-    .mini{font-size:12px;color:var(--muted);margin-top:6px;}
-    .rowBetween{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-    .counter{font-size:12px;color:var(--muted);}
-    .error{color:#b42318;font-size:13px;margin-top:8px;}
-    .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px;}
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:999px;
-      padding:12px 16px;
-      font-weight:700;
-      cursor:pointer;
-    }
-    .btn.primary{background:#111;color:#fff;border-color:#111;}
-    .btn.ghost{background:transparent;}
-    .divider{height:1px;background:var(--line);margin:18px 0;}
-    .note{color:var(--muted);font-size:12px;margin:8px 0 0;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Allnspyre — Hearing</title>
+
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #fafafa;
+  padding: 40px;
+}
+
+.section {
+  background: white;
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.button {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background: white;
+}
+
+.button.selected {
+  border: 2px solid black;
+}
+.small {
+  font-size: 14px;
+  color: #777;
+}
+.error {
+  color: red;
+  margin-top: 8px;
+}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div>
-        <h1>Tell me your vibe.</h1>
-        <p class="sub">A few quick choices — then we’ll take you to checkout.</p>
-      </div>
-      <div class="pill" id="planPill">PLAN: …</div>
-    </div>
 
-    <!-- STEP 1 -->
-    <div class="card">
-      <div class="stepRow">
-        <div class="stepNum">1</div>
-        <div style="flex:1">
-          <div class="rowBetween">
-            <div>
-              <p class="stepTitle">Where</p>
-              <p class="stepHint" id="prefHint">Which prefecture are you visiting?</p>
-            </div>
-            <div class="counter" id="prefCounter"></div>
-          </div>
+<h1>Tell me your vibe.</h1>
+<p class="small">A few quick choices — then we’ll take you to checkout.</p>
 
-          <div class="grid" id="prefGrid"></div>
+<div class="section">
+  <h3>1. Where</h3>
+  <p id="pref-label" class="small"></p>
 
-          <div class="divider"></div>
+  <div id="pref-grid" class="grid"></div>
 
-          <div class="rowBetween">
-            <div>
-              <p class="stepTitle" style="margin-top:0">Now choose your area.</p>
-              <p class="stepHint" id="areaHint">Pick one area — focused and fast.</p>
-            </div>
-            <div class="counter" id="areaCounter"></div>
-          </div>
+  <h4 style="margin-top:20px;">Now choose your area</h4>
+  <p class="small">Pick up to 4 broad areas — we’ll build a richer route.</p>
 
-          <div class="grid" id="areaGrid"></div>
-          <div class="error" id="areaError" style="display:none;"></div>
-          <p class="note" id="areaNote"></p>
-        </div>
-      </div>
-    </div>
+  <div id="area-grid" class="grid"></div>
+  <div id="area-error" class="error"></div>
+</div>
 
-    <!-- STEP 2 -->
-    <div class="card">
-      <div class="stepRow">
-        <div class="stepNum">2</div>
-        <div style="flex:1">
-          <p class="stepTitle">Who</p>
-          <p class="stepHint">Who are you eating with?</p>
-          <div class="grid" id="whoGrid"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 3 -->
-    <div class="card">
-      <div class="stepRow">
-        <div class="stepNum">3</div>
-        <div style="flex:1">
-          <div class="rowBetween">
-            <div>
-              <p class="stepTitle">Time & Mood</p>
-              <p class="stepHint">What kind of time do you want? <b>Choose up to 2.</b></p>
-            </div>
-            <div class="counter" id="moodCounter"></div>
-          </div>
-          <div class="grid" id="moodGrid"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 4 -->
-    <div class="card">
-      <div class="stepRow">
-        <div class="stepNum">4</div>
-        <div style="flex:1">
-          <p class="stepTitle">Friction control</p>
-          <p class="stepHint">Prefer to avoid? (Optional)</p>
-          <div class="grid" id="avoidGrid"></div>
-          <div class="actions">
-            <button class="btn ghost" id="noPrefBtn" type="button">No preference — pick for me</button>
-            <button class="btn primary" id="continueBtn" type="button">Continue to checkout →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
+<div class="section">
+  <h3>2. Who</h3>
+  <div class="grid">
+    <div class="button">Solo</div>
+    <div class="button">Partner</div>
+    <div class="button">Friends</div>
+    <div class="button">Family</div>
   </div>
+</div>
+
+<div class="section">
+  <h3>3. Time & Mood</h3>
+  <div class="grid">
+    <div class="button">Quiet & reflective</div>
+    <div class="button">Slow & indulgent</div>
+    <div class="button">Deeply local</div>
+    <div class="button">Lively & social</div>
+  </div>
+</div>
 
 <script>
-(() => {
-  // ---------- config
-  const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+const params = new URLSearchParams(window.location.search);
+const plan = params.get("plan") || "explorer";
 
-  const WHO = ["Solo","Partner","Friends","Family"];
-  const MOODS = [
-    { id:"quiet_reflective", label:"Quiet & reflective" },
-    { id:"slow_indulgent", label:"Slow & indulgent" },
-    { id:"deeply_local", label:"Deeply local" },
-    { id:"lively_social", label:"Lively & social" },
-  ];
-  const AVOIDS = ["Long lines","Tourist-heavy places","Very noisy spots"];
+const PREFECTURES = [
+  "Tokyo","Kanagawa","Osaka","Kyoto",
+  "Hyogo","Nara","Fukuoka","Ishikawa"
+];
 
-  // ---------- state
-  const qs = new URLSearchParams(location.search);
-  const plan = (qs.get("plan") || "explorer").toLowerCase() === "connoisseur" ? "connoisseur" : "explorer";
+let selectedPrefs = [];
+let selectedAreas = [];
 
-  const limits = {
-    pref: plan === "connoisseur" ? 3 : 1,     // Connoisseur: prefecture up to 3 (推奨)
-    areas: plan === "connoisseur" ? 4 : 1,    // Connoisseur: area_group up to 4 / Explorer: 1
-    mood: 2
-  };
+const prefGrid = document.getElementById("pref-grid");
+const areaGrid = document.getElementById("area-grid");
+const areaError = document.getElementById("area-error");
+const prefLabel = document.getElementById("pref-label");
 
-  const state = {
-    prefs: [],        // ["Tokyo","Osaka"] (connoisseur) / ["Tokyo"] (explorer)
-    areaGroups: [],   // ["Tokyo Urban", ...] up to limits.areas
-    who: null,
-    moods: [],
-    avoids: [],
-    areaOptions: [],  // fetched from API for current prefs
-  };
+if (plan === "connoisseur") {
+  prefLabel.innerText = "Choose up to 3 prefectures (recommended)";
+} else {
+  prefLabel.innerText = "Choose one prefecture";
+}
 
-  // ---------- elements
-  const planPill = document.getElementById("planPill");
-  const prefGrid = document.getElementById("prefGrid");
-  const prefHint = document.getElementById("prefHint");
-  const prefCounter = document.getElementById("prefCounter");
+PREFECTURES.forEach(pref => {
+  const btn = document.createElement("div");
+  btn.className = "button";
+  btn.innerText = pref;
+  btn.onclick = () => togglePref(pref, btn);
+  prefGrid.appendChild(btn);
+});
 
-  const areaGrid = document.getElementById("areaGrid");
-  const areaHint = document.getElementById("areaHint");
-  const areaCounter = document.getElementById("areaCounter");
-  const areaError = document.getElementById("areaError");
-  const areaNote = document.getElementById("areaNote");
-
-  const whoGrid = document.getElementById("whoGrid");
-  const moodGrid = document.getElementById("moodGrid");
-  const moodCounter = document.getElementById("moodCounter");
-  const avoidGrid = document.getElementById("avoidGrid");
-
-  const continueBtn = document.getElementById("continueBtn");
-  const noPrefBtn = document.getElementById("noPrefBtn");
-
-  // ---------- UI text
-  planPill.textContent = `PLAN: ${plan.toUpperCase()}`;
-  prefHint.textContent = plan === "connoisseur"
-    ? "Choose up to 3 prefectures (recommended)."
-    : "Which prefecture are you visiting?";
-  areaHint.textContent = plan === "connoisseur"
-    ? "Pick up to 4 broad areas — we’ll build a richer route."
-    : "Pick one area — focused and fast.";
-  areaNote.textContent = "Areas are shown as broad groups (easy for travelers).";
-
-  // ---------- render helpers
-  function el(tag, attrs={}, children=[]) {
-    const n = document.createElement(tag);
-    Object.entries(attrs).forEach(([k,v]) => {
-      if (k === "class") n.className = v;
-      else if (k === "text") n.textContent = v;
-      else n.setAttribute(k, v);
-    });
-    children.forEach(c => n.appendChild(c));
-    return n;
-  }
-
-  function renderCounters() {
-    prefCounter.textContent =
-      (plan === "connoisseur")
-        ? `${state.prefs.length}/${limits.pref}`
-        : (state.prefs.length ? `Selected` : ``);
-
-    areaCounter.textContent =
-      `${state.areaGroups.length}/${limits.areas}`;
-
-    moodCounter.textContent =
-      `${state.moods.length}/${limits.mood}`;
-  }
-
-  function setError(msg) {
-    if (!msg) {
-      areaError.style.display = "none";
-      areaError.textContent = "";
-      return;
-    }
-    areaError.style.display = "block";
-    areaError.textContent = msg;
-  }
-
-  // ---------- Pref selection logic
-  function togglePref(pref) {
-    if (!PREFS.includes(pref)) return;
-
-    if (plan === "explorer") {
-      // single select
-      const changed = state.prefs[0] !== pref;
-      state.prefs = [pref];
-      if (changed) {
-        // Explorerは県変えたら area もリセットでOK（1県1エリアだから）
-        state.areaGroups = [];
-      }
-      fetchAreas();
-      renderAll();
-      return;
-    }
-
-    // connoisseur: multi select up to limits.pref
-    const i = state.prefs.indexOf(pref);
-    if (i >= 0) {
-      state.prefs.splice(i,1);
+function togglePref(pref, btn) {
+  if (plan === "connoisseur") {
+    if (selectedPrefs.includes(pref)) {
+      selectedPrefs = selectedPrefs.filter(p => p !== pref);
+      btn.classList.remove("selected");
     } else {
-      if (state.prefs.length >= limits.pref) return;
-      state.prefs.push(pref);
+      if (selectedPrefs.length >= 3) return;
+      selectedPrefs.push(pref);
+      btn.classList.add("selected");
     }
-
-    // prefs変動 → area options再取得 → 選択済みareaGroupsは「残るものだけ残す」
-    fetchAreas().then(() => {
-      state.areaGroups = state.areaGroups.filter(a => state.areaOptions.includes(a));
-      renderAll();
-    });
-    renderAll();
-  }
-
-  // ---------- Area selection logic
-  function toggleArea(groupName) {
-    if (!state.areaOptions.includes(groupName)) return;
-
-    const i = state.areaGroups.indexOf(groupName);
-    if (i >= 0) {
-      state.areaGroups.splice(i,1);
-      renderAll();
-      return;
-    }
-
-    if (state.areaGroups.length >= limits.areas) return;
-    state.areaGroups.push(groupName);
-    renderAll();
-  }
-
-  // ---------- fetch area_groups
-  async function fetchAreas() {
-    setError("");
-    areaGrid.innerHTML = "";
-    state.areaOptions = [];
-
-    if (state.prefs.length === 0) {
-      setError(plan === "connoisseur"
-        ? "Pick at least 1 prefecture to see areas."
-        : "Pick a prefecture to see areas."
-      );
-      renderAll();
-      return;
-    }
-
-    const prefsParam = state.prefs.join("|");
-    const url = `/api/areas?plan=${encodeURIComponent(plan)}&prefs=${encodeURIComponent(prefsParam)}`;
-
-    try {
-      const r = await fetch(url, { cache: "no-store" });
-      const data = await r.json();
-
-      if (!data.ok) {
-        setError("Failed to load areas. " + (data.error || ""));
-        console.log("areas api error", data);
-        renderAll();
-        return;
-      }
-
-      state.areaOptions = Array.isArray(data.areaGroups) ? data.areaGroups : [];
-      // Explorerなら options が出た瞬間に見せる / Connoisseurも同じ
-      setError(state.areaOptions.length ? "" : "No areas found for this selection.");
-      renderAll();
-    } catch (e) {
-      setError("Failed to load areas.");
-      console.log(e);
-      renderAll();
-    }
-  }
-
-  // ---------- render blocks
-  function renderPrefs() {
-    prefGrid.innerHTML = "";
-    PREFS.forEach(pref => {
-      const selected = state.prefs.includes(pref);
-      const b = el("button", { class: "choice" + (selected ? " selected" : ""), type:"button" });
-      b.textContent = pref;
-      b.addEventListener("click", () => togglePref(pref));
-      prefGrid.appendChild(b);
-    });
-  }
-
-  function renderAreas() {
-    areaGrid.innerHTML = "";
-    state.areaOptions.forEach(name => {
-      const selected = state.areaGroups.includes(name);
-      const b = el("button", { class: "choice" + (selected ? " selected" : ""), type:"button" });
-      b.textContent = name; // ★ area_group 表示
-      b.addEventListener("click", () => toggleArea(name));
-      areaGrid.appendChild(b);
-    });
-  }
-
-  function renderWho() {
-    whoGrid.innerHTML = "";
-    WHO.forEach(v => {
-      const selected = state.who === v;
-      const b = el("button", { class: "choice" + (selected ? " selected" : ""), type:"button" });
-      b.textContent = v;
-      b.addEventListener("click", () => { state.who = v; renderAll(); });
-      whoGrid.appendChild(b);
-    });
-  }
-
-  function renderMoods() {
-    moodGrid.innerHTML = "";
-    MOODS.forEach(m => {
-      const selected = state.moods.includes(m.id);
-      const b = el("button", { class: "choice" + (selected ? " selected" : ""), type:"button" });
-      b.textContent = m.label;
-      b.addEventListener("click", () => {
-        const i = state.moods.indexOf(m.id);
-        if (i >= 0) state.moods.splice(i,1);
-        else {
-          if (state.moods.length >= limits.mood) return;
-          state.moods.push(m.id);
-        }
-        renderAll();
-      });
-      moodGrid.appendChild(b);
-    });
-  }
-
-  function renderAvoids() {
-    avoidGrid.innerHTML = "";
-    AVOIDS.forEach(v => {
-      const selected = state.avoids.includes(v);
-      const b = el("button", { class: "choice" + (selected ? " selected" : ""), type:"button" });
-      b.textContent = v;
-      b.addEventListener("click", () => {
-        const i = state.avoids.indexOf(v);
-        if (i >= 0) state.avoids.splice(i,1);
-        else state.avoids.push(v);
-        renderAll();
-      });
-      avoidGrid.appendChild(b);
-    });
-  }
-
-  function renderAll() {
-    renderCounters();
-    renderPrefs();
-    renderAreas();
-    renderWho();
-    renderMoods();
-    renderAvoids();
-  }
-
-  // ---------- No preference
-  noPrefBtn.addEventListener("click", () => {
-    // “考えない”の逃げ道：who/mood/avoid をデフォルトで軽く埋める（好みがない＝ニュートラル）
-    if (!state.who) state.who = "Solo";
-    if (state.moods.length === 0) state.moods = ["deeply_local"];
-    state.avoids = [];
-    renderAll();
-  });
-
-  // ---------- Continue
-  continueBtn.addEventListener("click", () => {
-    // 必須チェック
-    if (state.prefs.length === 0) {
-      setError("Pick a prefecture first.");
-      return;
-    }
-    if (state.areaGroups.length === 0) {
-      setError(plan === "connoisseur" ? "Pick at least 1 area (up to 4)." : "Pick 1 area.");
-      return;
-    }
-    if (!state.who) {
-      alert("Pick who you are eating with.");
-      return;
-    }
-    if (state.moods.length === 0) {
-      alert("Pick at least 1 mood (up to 2).");
-      return;
-    }
-
-    // URLに載せる値は “許可された prefs + APIから来た areaGroups” のみにする（事故防止）
-    const safePrefs = state.prefs.filter(p => PREFS.includes(p));
-    const safeAreas = state.areaGroups.filter(a => state.areaOptions.includes(a));
-
-    const out = new URLSearchParams();
-    out.set("plan", plan);
-    out.set("prefs", safePrefs.join("|"));
-    out.set("areas", safeAreas.join("|"));
-    out.set("who", state.who);
-    out.set("moods", state.moods.join("|"));
-    if (state.avoids.length) out.set("avoid", state.avoids.join("|"));
-
-    // 次は checkout（pay.html）へ
-    location.href = `/pay.html?` + out.toString();
-  });
-
-  // ---------- init
-  renderAll();
-
-  // 初期pref：ExplorerはTokyoをデフォルト（無選択の迷子を減らす）
-  if (plan === "explorer") {
-    state.prefs = ["Tokyo"];
-    fetchAreas().then(renderAll);
   } else {
-    // connoisseur: 何も選ばず開始（複数県を前提だから）
-    setError("Pick up to 3 prefectures to see areas.");
+    selectedPrefs = [pref];
+    document.querySelectorAll("#pref-grid .button")
+      .forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
   }
-})();
+
+  selectedAreas = [];
+  areaGrid.innerHTML = "";
+  areaError.innerText = "";
+
+  loadAreas();
+}
+
+async function loadAreas() {
+  if (selectedPrefs.length === 0) return;
+
+  areaGrid.innerHTML = "Loading...";
+
+  try {
+    const responses = await Promise.all(
+      selectedPrefs.map(pref =>
+        fetch(`/api/areas?pref=${encodeURIComponent(pref)}&plan=${plan}`)
+      )
+    );
+
+    const results = await Promise.all(responses.map(r => r.json()));
+
+    let areaSet = new Set();
+    results.forEach(r => {
+      if (r.areaDetails) {
+        r.areaDetails.forEach(a => areaSet.add(a));
+      }
+    });
+
+    areaGrid.innerHTML = "";
+
+    if (areaSet.size === 0) {
+      areaError.innerText = "No areas found for this selection.";
+      return;
+    }
+
+    areaSet.forEach(area => {
+      const btn = document.createElement("div");
+      btn.className = "button";
+      btn.innerText = area;
+      btn.onclick = () => toggleArea(area, btn);
+      areaGrid.appendChild(btn);
+    });
+
+  } catch (e) {
+    areaGrid.innerHTML = "";
+    areaError.innerText = "Failed to load areas.";
+  }
+}
+
+function toggleArea(area, btn) {
+  if (selectedAreas.includes(area)) {
+    selectedAreas = selectedAreas.filter(a => a !== area);
+    btn.classList.remove("selected");
+  } else {
+    if (selectedAreas.length >= 4) return;
+    selectedAreas.push(area);
+    btn.classList.add("selected");
+  }
+}
 </script>
+
 </body>
 </html>
