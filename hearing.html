@@ -1,37 +1,590 @@
-<script>
-const API_BASE = "https://allnspyre-api.vercel.app";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Allnspyre | Tell me your vibe</title>
 
-async function loadAreas(plan, prefs) {
-  const container = document.getElementById("area-options");
-  container.innerHTML = "";
+  <style>
+    :root{
+      --bg:#f7f5f1;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e8e5df;
+      --accent:#111;
+      --danger:#c62828;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 34px 16px 64px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .pill{
+      font-size:12px;
+      letter-spacing:.06em;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(6px);
+      color:#222;
+    }
+    h1{
+      font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+      font-weight:700;
+      font-size:54px;
+      line-height:1.02;
+      margin: 10px 0 10px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:16px;
+      margin-bottom:22px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.04);
+    }
+    .section{
+      margin-top:18px;
+    }
+    .section h2{
+      margin:0 0 8px;
+      font-size:18px;
+    }
+    .section .hint{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      h1{font-size:44px}
+      .grid{grid-template-columns: 1fr}
+    }
+    .choice{
+      width:100%;
+      padding:16px 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111;
+      font-size:16px;
+      text-align:left;
+      cursor:pointer;
+      transition: transform .06s ease, border-color .12s ease, box-shadow .12s ease;
+      user-select:none;
+      position:relative;
+      z-index: 1; /* クリック不能回避 */
+    }
+    .choice:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    }
+    .choice.selected{
+      border-color: #111;
+      box-shadow: 0 0 0 2px rgba(17,17,17,.10);
+    }
+    .choice:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+    .rows{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .row-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .row-2{grid-template-columns:1fr}
+    }
+    .status{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+      min-height: 18px;
+    }
+    .danger{color:var(--danger)}
+    .divider{
+      height:1px;
+      background:var(--line);
+      margin:18px 0;
+    }
+    .footerbar{
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      margin-top: 16px;
+      padding-top: 12px;
+      background: linear-gradient(180deg, rgba(247,245,241,0) 0%, rgba(247,245,241,0.85) 30%, rgba(247,245,241,1) 100%);
+      backdrop-filter: blur(6px);
+    }
+    .cta{
+      width: 100%;
+      padding: 18px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #111;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: transform .06s ease, opacity .12s ease;
+    }
+    .cta:disabled{
+      opacity: .4;
+      cursor: not-allowed;
+      transform:none;
+    }
+    .cta:not(:disabled):hover{
+      transform: translateY(-1px);
+    }
+    .mini{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .counter{
+      font-size:12px;
+      color:var(--muted);
+      text-align:right;
+      margin-top:6px;
+    }
+  </style>
+</head>
 
-  if (!prefs || prefs.length === 0) {
-    container.innerHTML = '<div style="color:red;">pref is required</div>';
-    return;
-  }
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="pill" id="planPill">PLAN: —</span>
+    </div>
 
-  try {
-    const prefQuery = prefs.map(p => `pref=${encodeURIComponent(p)}`).join("&");
-    const url = `${API_BASE}/api/areas?plan=${encodeURIComponent(plan)}&${prefQuery}`;
+    <h1>Tell me your vibe.</h1>
+    <div class="sub">A few quick choices — then we’ll take you to checkout.</div>
 
-    const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
+    <div class="card" id="mainCard">
+      <!-- 1 WHERE -->
+      <div class="section" id="secWhere">
+        <h2>1&nbsp;&nbsp;Where</h2>
+        <p class="hint" id="prefHint">Choose one prefecture</p>
 
-    if (!data.ok || !data.areaGroups || data.areaGroups.length === 0) {
-      container.innerHTML = '<div style="color:red;">No areas found for this selection.</div>';
-      return;
+        <div class="grid" id="prefGrid">
+          <!-- buttons injected -->
+        </div>
+
+        <div class="divider"></div>
+
+        <h2 style="margin-top:0">Now choose your area.</h2>
+        <p class="hint" id="areaHint">Pick up to 4 broad areas — we’ll build a richer route.</p>
+
+        <div class="grid" id="areaGrid">
+          <!-- buttons injected -->
+        </div>
+
+        <div class="counter" id="areaCounter">0/4</div>
+        <div class="status" id="areaStatus"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 2 WHO -->
+      <div class="section" id="secWho">
+        <h2>2&nbsp;&nbsp;Who</h2>
+        <p class="hint">Who are you eating with?</p>
+        <div class="grid" id="whoGrid"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 3 TIME & MOOD -->
+      <div class="section" id="secMood">
+        <h2>3&nbsp;&nbsp;Time &amp; Mood</h2>
+        <p class="hint">What kind of time do you want? Choose up to 2.</p>
+        <div class="grid" id="moodGrid"></div>
+        <div class="counter" id="moodCounter">0/2</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 4 FRICTION CONTROL -->
+      <div class="section" id="secFriction">
+        <h2>4&nbsp;&nbsp;Friction control</h2>
+        <p class="hint">Prefer to avoid? (Optional)</p>
+        <div class="grid" id="frictionGrid"></div>
+        <div class="counter" id="frictionCounter">0/2</div>
+      </div>
+
+      <div class="footerbar">
+        <button class="cta" id="btnContinue" disabled>Continue to checkout</button>
+        <div class="mini" id="continueHint">Select at least one area to continue.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**********************
+     * CONFIG
+     **********************/
+    const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+
+    // “外人が分かる” broad group 表示（area_group）を使う前提
+    // APIは areaGroups で返る想定（もし areaDetails ならフォールバックで表示）
+    const AREAS_MAX = 4;
+
+    const WHO_CHOICES = ["Solo","Partner","Friends","Family"];
+    const MOOD_CHOICES = ["Quiet & reflective","Slow & indulgent","Deeply local","Lively & social"];
+    const FRICTION_CHOICES = ["Long lines","Tourist-heavy places"];
+
+    // checkout（必要なら社長の既存仕様に合わせて変えてOK）
+    const STRIPE_EXPLORER = "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01";
+    const STRIPE_CONNOISSEUR = "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02";
+
+    /**********************
+     * STATE
+     **********************/
+    const state = {
+      plan: "explorer",              // explorer | connoisseur
+      selectedPrefs: [],             // array
+      availableAreas: [],            // array of strings (broad groups)
+      selectedAreas: [],             // array up to 4
+      who: null,                     // one
+      moods: [],                     // up to 2
+      frictions: []                  // up to 2
+    };
+
+    /**********************
+     * HELPERS
+     **********************/
+    function $(id){ return document.getElementById(id); }
+
+    function uniq(arr){
+      return Array.from(new Set(arr)).filter(Boolean);
     }
 
-    data.areaGroups.forEach(group => {
-      const btn = document.createElement("button");
-      btn.className = "area-btn";
-      btn.textContent = group;
-      btn.onclick = () => toggleArea(btn, group);
-      container.appendChild(btn);
-    });
+    function clampSelectionsToAvailable(){
+      const set = new Set(state.availableAreas);
+      state.selectedAreas = state.selectedAreas.filter(a => set.has(a));
+    }
 
-  } catch (e) {
-    container.innerHTML = '<div style="color:red;">Failed to load areas.</div>';
-  }
-}
-</script>
+    function normalizePlan(raw){
+      const p = String(raw || "").toLowerCase().trim();
+      if (p === "connoisseur") return "connoisseur";
+      return "explorer";
+    }
+
+    function getPlanFromQuery(){
+      const sp = new URLSearchParams(location.search);
+      const plan = normalizePlan(sp.get("plan"));
+      return plan;
+    }
+
+    function setPlanUI(){
+      $("planPill").textContent = `PLAN: ${state.plan.toUpperCase()}`;
+      if (state.plan === "connoisseur"){
+        $("prefHint").textContent = "Choose up to 3 prefectures (recommended).";
+      } else {
+        $("prefHint").textContent = "Choose one prefecture";
+      }
+    }
+
+    function maxPrefsAllowed(){
+      return state.plan === "connoisseur" ? 3 : 1;
+    }
+
+    function setStatus(msg, isError=false){
+      const el = $("areaStatus");
+      el.textContent = msg || "";
+      el.className = "status" + (isError ? " danger" : "");
+    }
+
+    function updateAreaCounter(){
+      $("areaCounter").textContent = `${state.selectedAreas.length}/${AREAS_MAX}`;
+    }
+
+    function updateMoodCounter(){
+      $("moodCounter").textContent = `${state.moods.length}/2`;
+    }
+
+    function updateFrictionCounter(){
+      $("frictionCounter").textContent = `${state.frictions.length}/2`;
+    }
+
+    function updateContinue(){
+      const ok = state.selectedAreas.length > 0;
+      $("btnContinue").disabled = !ok;
+      $("continueHint").textContent = ok ? "Ready." : "Select at least one area to continue.";
+    }
+
+    function button(label, selected=false, onClick){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "choice" + (selected ? " selected" : "");
+      b.textContent = label;
+      b.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick?.();
+      }, {passive:false});
+      return b;
+    }
+
+    /**********************
+     * API
+     **********************/
+    async function fetchAreasForPref(pref){
+      // ここは /api/areas を叩く（Vercel）
+      // 例: /api/areas?plan=connoisseur&pref=Tokyo
+      const url = new URL("/api/areas", location.origin);
+      url.searchParams.set("plan", state.plan);
+      url.searchParams.set("pref", pref);
+
+      const res = await fetch(url.toString(), {cache:"no-store"});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      // フォールバック対応（areaGroups / areaDetails）
+      const groups = Array.isArray(data.areaGroups) ? data.areaGroups : [];
+      const details = Array.isArray(data.areaDetails) ? data.areaDetails : [];
+      return uniq(groups.length ? groups : details);
+    }
+
+    async function reloadAreas(){
+      // prefs 未選択
+      if (state.selectedPrefs.length === 0){
+        state.availableAreas = [];
+        state.selectedAreas = [];
+        renderAreas();
+        updateContinue();
+        setStatus("Select a prefecture first.");
+        return;
+      }
+
+      setStatus("Loading areas…");
+      $("areaGrid").innerHTML = "";
+
+      try{
+        const lists = await Promise.all(state.selectedPrefs.map(p => fetchAreasForPref(p)));
+        state.availableAreas = uniq(lists.flat());
+
+        clampSelectionsToAvailable();
+        renderAreas();
+
+        if (state.availableAreas.length === 0){
+          setStatus("No areas found for this selection.", true);
+        } else {
+          setStatus("");
+        }
+      }catch(err){
+        console.error(err);
+        state.availableAreas = [];
+        state.selectedAreas = [];
+        renderAreas();
+        setStatus("Failed to load areas. Try again.", true);
+      }
+
+      updateAreaCounter();
+      updateContinue();
+    }
+
+    /**********************
+     * RENDER
+     **********************/
+    function renderPrefs(){
+      const grid = $("prefGrid");
+      grid.innerHTML = "";
+
+      const cap = maxPrefsAllowed();
+
+      PREFS.forEach(pref => {
+        const selected = state.selectedPrefs.includes(pref);
+        const b = button(pref, selected, async () => {
+          // toggle
+          if (state.plan === "explorer"){
+            // single select
+            state.selectedPrefs = [pref];
+          } else {
+            // multi select up to 3
+            if (selected){
+              state.selectedPrefs = state.selectedPrefs.filter(x => x !== pref);
+            } else {
+              if (state.selectedPrefs.length >= cap) return;
+              state.selectedPrefs = [...state.selectedPrefs, pref];
+            }
+          }
+          renderPrefs();
+          await reloadAreas();
+        });
+
+        // disable when reached cap and this is not selected
+        if (state.plan === "connoisseur" && !selected && state.selectedPrefs.length >= cap){
+          b.disabled = true;
+        }
+
+        grid.appendChild(b);
+      });
+    }
+
+    function renderAreas(){
+      const grid = $("areaGrid");
+      grid.innerHTML = "";
+
+      state.availableAreas.forEach(area => {
+        const selected = state.selectedAreas.includes(area);
+        const b = button(area, selected, () => {
+          if (selected){
+            state.selectedAreas = state.selectedAreas.filter(x => x !== area);
+          } else {
+            if (state.selectedAreas.length >= AREAS_MAX) return;
+            state.selectedAreas = [...state.selectedAreas, area];
+          }
+          renderAreas();
+          updateAreaCounter();
+          updateContinue();
+        });
+
+        // disable when reached cap and not selected
+        if (!selected && state.selectedAreas.length >= AREAS_MAX){
+          b.disabled = true;
+        }
+
+        grid.appendChild(b);
+      });
+
+      updateAreaCounter();
+    }
+
+    function renderWho(){
+      const grid = $("whoGrid");
+      grid.innerHTML = "";
+      WHO_CHOICES.forEach(v => {
+        const selected = state.who === v;
+        const b = button(v, selected, () => {
+          state.who = (state.who === v) ? null : v;
+          renderWho();
+        });
+        grid.appendChild(b);
+      });
+    }
+
+    function renderMood(){
+      const grid = $("moodGrid");
+      grid.innerHTML = "";
+      MOOD_CHOICES.forEach(v => {
+        const selected = state.moods.includes(v);
+        const b = button(v, selected, () => {
+          if (selected){
+            state.moods = state.moods.filter(x => x !== v);
+          } else {
+            if (state.moods.length >= 2) return;
+            state.moods = [...state.moods, v];
+          }
+          renderMood();
+          updateMoodCounter();
+        });
+        if (!selected && state.moods.length >= 2) b.disabled = true;
+        grid.appendChild(b);
+      });
+      updateMoodCounter();
+    }
+
+    function renderFriction(){
+      const grid = $("frictionGrid");
+      grid.innerHTML = "";
+      FRICTION_CHOICES.forEach(v => {
+        const selected = state.frictions.includes(v);
+        const b = button(v, selected, () => {
+          if (selected){
+            state.frictions = state.frictions.filter(x => x !== v);
+          } else {
+            if (state.frictions.length >= 2) return;
+            state.frictions = [...state.frictions, v];
+          }
+          renderFriction();
+          updateFrictionCounter();
+        });
+        if (!selected && state.frictions.length >= 2) b.disabled = true;
+        grid.appendChild(b);
+      });
+      updateFrictionCounter();
+    }
+
+    /**********************
+     * CONTINUE
+     **********************/
+    function buildPayload(){
+      return {
+        plan: state.plan,
+        prefs: state.selectedPrefs,
+        areas: state.selectedAreas,
+        who: state.who,
+        moods: state.moods,
+        frictions: state.frictions,
+        ts: Date.now()
+      };
+    }
+
+    function goCheckout(){
+      // ここは「壊さず安全」なやり方にする：
+      // 1) ローカルに保存
+      // 2) Stripeリンクへ遷移
+      const payload = buildPayload();
+      try{
+        localStorage.setItem("allnspyre_hearing", JSON.stringify(payload));
+      }catch(_){}
+
+      const url = (state.plan === "connoisseur") ? STRIPE_CONNOISSEUR : STRIPE_EXPLORER;
+      location.href = url;
+    }
+
+    /**********************
+     * INIT
+     **********************/
+    (function init(){
+      state.plan = getPlanFromQuery();
+      setPlanUI();
+
+      renderPrefs();
+      renderAreas();
+      renderWho();
+      renderMood();
+      renderFriction();
+
+      updateContinue();
+      setStatus("Select a prefecture first.");
+
+      $("btnContinue").addEventListener("click", (e) => {
+        e.preventDefault();
+        if ($("btnContinue").disabled) return;
+        goCheckout();
+      }, {passive:false});
+    })();
+  </script>
+</body>
+</html>
