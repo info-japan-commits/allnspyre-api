@@ -1,85 +1,437 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Checkout</title>
+  <title>Allnspyre — Almost there</title>
   <style>
-    body{margin:0;background:#fafafa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111}
-    .wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
-    h1{margin:0 0 10px;font-size:32px}
-    .sub{margin:0 0 22px;color:#666;line-height:1.6}
-    .card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px 18px;margin:14px 0}
-    .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-    .k{color:#666}
-    .v{font-weight:700}
-    .btn{width:100%;border:1px solid rgba(0,0,0,.12);background:#111;color:#fff;border-radius:14px;padding:14px 16px;font-weight:800;cursor:pointer;font-size:16px}
-    .btn.secondary{background:#fff;color:#111;margin-top:10px}
-    .mini{font-size:12px;color:#777;margin-top:10px;line-height:1.5}
+    :root{
+      --bg:#ffffff;
+      --ink:#111111;
+      --muted:#6b6b6b;
+      --line:#e9e9e9;
+      --card:#fafafa;
+      --btn:#111;
+      --btnInk:#fff;
+      --btn2:#fff;
+      --btn2Ink:#111;
+      --shadow: 0 20px 60px rgba(0,0,0,.08);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background:var(--bg);
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 56px 20px 80px;
+    }
+    h1{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-weight: 700;
+      font-size: clamp(36px, 4vw, 52px);
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    .sub{
+      color:var(--muted);
+      margin:0 0 26px;
+      font-size: 15px;
+    }
+    .card{
+      background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media(min-width:820px){
+      .grid{grid-template-columns: 1.2fr .8fr;}
+    }
+    .kv{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .kv td{
+      padding: 10px 0;
+      border-bottom:1px solid var(--line);
+      vertical-align: top;
+    }
+    .kv tr:last-child td{border-bottom:none;}
+    .k{color:var(--muted); width: 44%;}
+    .v{font-weight: 600;}
+    .pill{
+      display:inline-block;
+      padding:.18rem .55rem;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      background:#fff;
+      margin: 0 .35rem .35rem 0;
+      font-weight: 600;
+      font-size: 12px;
+      color:#222;
+    }
+    .actions{
+      margin-top: 18px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn{
+      width:100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border:1px solid transparent;
+      cursor:pointer;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .primary{
+      background:var(--btn);
+      color:var(--btnInk);
+    }
+    .secondary{
+      background:var(--btn2);
+      color:var(--btn2Ink);
+      border-color: var(--line);
+    }
+    .note{
+      margin-top: 14px;
+      color:var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align:center;
+    }
+    .err{
+      margin-top: 14px;
+      color:#b00020;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .topline{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      margin-bottom: 18px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .badge{
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing:.08em;
+      color:#444;
+      border:1px solid var(--line);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background:#fff;
+      text-transform: uppercase;
+    }
+    .small{
+      color:var(--muted);
+      font-size: 12px;
+    }
+    a{color:inherit}
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <h1>Almost there.</h1>
-    <p class="sub">Confirm your intent, then proceed to secure checkout.</p>
-
-    <div class="card">
-      <div class="row"><div class="k">Plan</div><div class="v" id="plan"></div></div>
-      <div class="row"><div class="k">Prefecture</div><div class="v" id="pref"></div></div>
-      <div class="row"><div class="k">Area</div><div class="v" id="areas"></div></div>
-      <div class="row"><div class="k">Who</div><div class="v" id="who"></div></div>
-      <div class="row"><div class="k">Mood</div><div class="v" id="mood"></div></div>
-      <div class="row"><div class="k">Avoid</div><div class="v" id="avoid"></div></div>
-      <div class="mini" id="note"></div>
+    <div class="topline">
+      <div>
+        <h1>Almost there.</h1>
+        <p class="sub">Confirm your intent, then proceed to secure checkout.</p>
+      </div>
+      <div class="badge" id="planBadge">PLAN: —</div>
     </div>
 
-    <button class="btn" id="go">Proceed to checkout →</button>
-    <button class="btn secondary" id="back" type="button">Back to hearing</button>
+    <div class="card">
+      <div class="grid">
+        <div>
+          <table class="kv" aria-label="Summary">
+            <tr><td class="k">Plan</td><td class="v" id="vPlan">—</td></tr>
+            <tr><td class="k">Prefectures</td><td class="v" id="vPrefs">—</td></tr>
+            <tr><td class="k">Areas</td><td class="v" id="vAreas">—</td></tr>
+            <tr><td class="k">Who</td><td class="v" id="vWho">—</td></tr>
+            <tr><td class="k">Mood</td><td class="v" id="vMood">—</td></tr>
+            <tr><td class="k">Avoid</td><td class="v" id="vAvoid">—</td></tr>
+          </table>
+          <div class="actions">
+            <button class="btn primary" id="btnCheckout">Proceed to checkout →</button>
+            <button class="btn secondary" id="btnBack">Back to hearing</button>
+          </div>
+          <div class="note">
+            After purchase, you’ll be redirected to your results page automatically.
+          </div>
+          <div class="err" id="errBox" style="display:none;"></div>
+        </div>
 
-    <p class="mini">After purchase, you’ll be redirected to your results page automatically.</p>
+        <div>
+          <div class="small" style="margin-bottom:8px;">What gets passed to Stripe / results</div>
+          <div id="debugPills"></div>
+          <div class="small" style="margin-top:10px;">
+            This page is <b>URL-param only</b>. No localStorage, no domain fragility.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const qp = new URLSearchParams(location.search);
-    const plan = (qp.get("plan") || "explorer").toLowerCase();
+<script>
+/**
+ * PAY.HTML (robust)
+ * - Reads ALL choices from URL parameters (not localStorage)
+ * - Creates Stripe Checkout Session via API_BASE /api/stripe/checkout (expected)
+ * - Redirects to Stripe
+ *
+ * Required params:
+ *   plan=explorer|connoisseur
+ * Optional:
+ *   prefs=Tokyo,Osaka (comma-separated)
+ *   areas=Tokyo Urban,Osaka Suburban (comma-separated)
+ *   who=Solo|Partner|Friends|Family (or comma-separated)
+ *   mood=Deeply local|Quiet & reflective (or comma-separated)
+ *   avoid=Long lines|Tourist-heavy places (or comma-separated)
+ *
+ * It also forwards the same params to success_url so results can render.
+ */
 
-    // ✅ ここをあなたのStripe Payment Linkに置換
-    const STRIPE_LINK = {
-      explorer: "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01",
-      connoisseur: "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02",
-    };
+const API_BASE = (() => {
+  // Prefer same origin
+  // (If you ever move domains, this still works.)
+  return location.origin;
+})();
 
-    const noPref = qp.get("noPref") === "1";
-    const areaDetails = (qp.get("areaDetails") || "").split(",").map(s=>s.trim()).filter(Boolean);
+function qs() {
+  return new URLSearchParams(location.search);
+}
 
-    function text(id, v){ document.getElementById(id).textContent = v; }
+function splitList(value) {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map(s => decodeURIComponent(s.trim()))
+    .filter(Boolean);
+}
 
-    text("plan", plan === "connoisseur" ? "Connoisseur" : "Explorer");
+function normalizePlan(p) {
+  const v = (p || '').toLowerCase().trim();
+  if (v === 'connoisseur') return 'connoisseur';
+  return 'explorer';
+}
 
-    if(noPref){
-      text("pref", "—");
-      text("areas", "Pick for me");
-      text("who", "—");
-      text("mood", "—");
-      text("avoid", "—");
-      text("note", "You chose “No preference — pick for me.” We’ll handle it.");
-    } else {
-      text("pref", qp.get("pref") || "—");
-      text("areas", areaDetails.join(", ") || "—");
-      text("who", qp.get("who") || "—");
-      text("mood", (qp.get("mood") || "").split(",").filter(Boolean).join(", ") || "—");
-      text("avoid", (qp.get("avoid") || "").split(",").filter(Boolean).join(", ") || "—");
-      text("note", "These choices shape the ordering & filtering after purchase.");
+function titleCasePlan(p) {
+  return p === 'connoisseur' ? 'Connoisseur' : 'Explorer';
+}
+
+function safeText(v) {
+  if (!v) return '—';
+  if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
+  return String(v);
+}
+
+function setError(msg) {
+  const box = document.getElementById('errBox');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+function clearError() {
+  const box = document.getElementById('errBox');
+  box.style.display = 'none';
+  box.textContent = '';
+}
+
+function renderPills(label, arr) {
+  const wrap = document.createElement('div');
+  const head = document.createElement('div');
+  head.className = 'small';
+  head.style.margin = '10px 0 6px';
+  head.textContent = label;
+  wrap.appendChild(head);
+  const row = document.createElement('div');
+  if (!arr.length) {
+    const p = document.createElement('span');
+    p.className = 'pill';
+    p.textContent = '—';
+    row.appendChild(p);
+  } else {
+    arr.forEach(x => {
+      const p = document.createElement('span');
+      p.className = 'pill';
+      p.textContent = x;
+      row.appendChild(p);
+    });
+  }
+  wrap.appendChild(row);
+  return wrap;
+}
+
+function buildPayloadFromUrl() {
+  const p = qs();
+  const plan = normalizePlan(p.get('plan'));
+
+  const prefs = splitList(p.get('prefs'));
+  const areas = splitList(p.get('areas'));
+
+  const who = splitList(p.get('who'));     // allow single or multi
+  const mood = splitList(p.get('mood'));   // allow single or multi
+  const avoid = splitList(p.get('avoid')); // allow single or multi
+
+  return { plan, prefs, areas, who, mood, avoid };
+}
+
+function encodeList(arr) {
+  if (!arr || !arr.length) return '';
+  // encode each item safely, then join with comma
+  return arr.map(v => encodeURIComponent(v)).join(',');
+}
+
+function buildSuccessUrl(payload) {
+  // results.html must be able to read these
+  const u = new URL(API_BASE + '/results.html');
+  u.searchParams.set('plan', payload.plan);
+
+  if (payload.prefs?.length) u.searchParams.set('prefs', encodeList(payload.prefs));
+  if (payload.areas?.length) u.searchParams.set('areas', encodeList(payload.areas));
+  if (payload.who?.length) u.searchParams.set('who', encodeList(payload.who));
+  if (payload.mood?.length) u.searchParams.set('mood', encodeList(payload.mood));
+  if (payload.avoid?.length) u.searchParams.set('avoid', encodeList(payload.avoid));
+
+  return u.toString();
+}
+
+function buildCancelUrl(payload) {
+  // back to hearing with same plan
+  const u = new URL(API_BASE + '/hearing.html');
+  u.searchParams.set('plan', payload.plan);
+  return u.toString();
+}
+
+function fillSummary(payload) {
+  document.getElementById('planBadge').textContent = 'PLAN: ' + titleCasePlan(payload.plan);
+  document.getElementById('vPlan').textContent = titleCasePlan(payload.plan);
+
+  document.getElementById('vPrefs').textContent = payload.prefs.length ? payload.prefs.join(', ') : '—';
+  document.getElementById('vAreas').textContent = payload.areas.length ? payload.areas.join(', ') : '—';
+  document.getElementById('vWho').textContent = payload.who.length ? payload.who.join(', ') : '—';
+  document.getElementById('vMood').textContent = payload.mood.length ? payload.mood.join(', ') : '—';
+  document.getElementById('vAvoid').textContent = payload.avoid.length ? payload.avoid.join(', ') : '—';
+
+  const dbg = document.getElementById('debugPills');
+  dbg.innerHTML = '';
+  dbg.appendChild(renderPills('prefs', payload.prefs));
+  dbg.appendChild(renderPills('areas', payload.areas));
+  dbg.appendChild(renderPills('who', payload.who));
+  dbg.appendChild(renderPills('mood', payload.mood));
+  dbg.appendChild(renderPills('avoid', payload.avoid));
+}
+
+async function createStripeCheckoutSession(payload) {
+  // This endpoint must exist on your Vercel API:
+  // POST /api/stripe/checkout
+  // Body: { plan, success_url, cancel_url, metadata }
+  //
+  // Response: { ok:true, url:"https://checkout.stripe.com/..." } or { ok:false, error:"..." }
+  const endpoint = API_BASE + '/api/stripe/checkout';
+
+  const success_url = buildSuccessUrl(payload);
+  const cancel_url  = buildCancelUrl(payload);
+
+  const body = {
+    plan: payload.plan,
+    success_url,
+    cancel_url,
+    // Keep metadata small. Stripe metadata has limits.
+    metadata: {
+      plan: payload.plan,
+      prefs: (payload.prefs || []).join('|'),
+      areas: (payload.areas || []).join('|'),
+      who:   (payload.who   || []).join('|'),
+      mood:  (payload.mood  || []).join('|'),
+      avoid: (payload.avoid || []).join('|')
+    }
+  };
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch(e) {
+    throw new Error('Stripe API returned non-JSON:\n' + text);
+  }
+  if (!res.ok || !json?.ok || !json?.url) {
+    throw new Error('Stripe session failed:\n' + JSON.stringify(json, null, 2));
+  }
+  return json.url;
+}
+
+function requireMinimum(payload) {
+  // You can loosen/tighten rules here.
+  // For paid plans, at least 1 prefecture and 1 area is recommended.
+  if (!payload.plan) return 'plan is required';
+  if (!payload.prefs.length) return 'prefs is required';
+  if (!payload.areas.length) return 'areas is required';
+  return null;
+}
+
+(function init(){
+  const payload = buildPayloadFromUrl();
+  fillSummary(payload);
+
+  // Back button
+  document.getElementById('btnBack').addEventListener('click', () => {
+    const u = new URL(API_BASE + '/hearing.html');
+    u.searchParams.set('plan', payload.plan);
+    location.href = u.toString();
+  });
+
+  // Checkout button
+  document.getElementById('btnCheckout').addEventListener('click', async () => {
+    clearError();
+
+    const err = requireMinimum(payload);
+    if (err) {
+      setError('Missing required selection: ' + err + '\n\nFix: go back to hearing and select again.');
+      return;
     }
 
-    document.getElementById("go").onclick = ()=>{
-      // Stripeへ飛ぶ（完了後のRedirectは Stripe側で results.html?plan=...&session_id=... へ）
-      location.href = STRIPE_LINK[plan] || STRIPE_LINK.explorer;
-    };
+    try{
+      document.getElementById('btnCheckout').disabled = true;
+      document.getElementById('btnCheckout').textContent = 'Redirecting…';
+      const url = await createStripeCheckoutSession(payload);
+      location.href = url;
+    } catch(e){
+      document.getElementById('btnCheckout').disabled = false;
+      document.getElementById('btnCheckout').textContent = 'Proceed to checkout →';
+      setError(String(e?.message || e));
+    }
+  });
 
-    document.getElementById("back").onclick = ()=>{
-      location.href = "/hearing.html?plan=" + encodeURIComponent(plan);
-    };
-  </script>
+  // If plan missing, show strong error immediately
+  if (!qs().get('plan')) {
+    setError(
+      'Missing URL param: plan\n\n' +
+      'Open this page from hearing, or add:\n' +
+      '?plan=explorer\n\n' +
+      'This page does not read localStorage.'
+    );
+  }
+})();
+</script>
 </body>
 </html>
