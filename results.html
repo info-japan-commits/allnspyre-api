@@ -12,7 +12,8 @@
       --muted:#6b6b6b;
       --line:#e8e5df;
       --danger:#c62828;
-      --radius:18px;
+      --radius:20px;
+      --shadow: 0 14px 34px rgba(17,17,17,.08);
     }
     *{box-sizing:border-box}
     body{
@@ -21,8 +22,10 @@
       color:var(--text);
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
+
+    /* top */
     .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
     .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
     .chip{
       font-size:12px;color:var(--muted);
@@ -30,7 +33,7 @@
       background:#fff;
       padding:6px 10px;border-radius:999px;
     }
-    .actions{display:flex;gap:10px}
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .btn{
       border:1px solid var(--line);
       background:#fff;
@@ -38,16 +41,34 @@
       border-radius:999px;
       cursor:pointer;
       font-size:13px;
+      line-height:1;
     }
     .btn:hover{filter:brightness(0.98)}
+
     h1{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
       font-size:64px;
       letter-spacing:-0.02em;
-      margin:18px 0 8px;
+      margin:10px 0 8px;
       line-height:1.0;
     }
-    .sub{color:var(--muted);margin:0 0 22px}
+    .sub{color:var(--muted);margin:0 0 14px}
+
+    .progress{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:10px;
+    }
+    .dotbar{display:flex;gap:6px;align-items:center;}
+    .dot{
+      width:6px;height:6px;border-radius:999px;
+      background:rgba(17,17,17,.12);
+    }
+    .dot.active{background:rgba(17,17,17,.65);}
+
     .alert{
       border:1px solid #f2b8b5;
       background:#fff3f3;
@@ -57,44 +78,97 @@
       margin:18px 0;
       display:none;
     }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:14px;
-      margin-top:18px;
+
+    /* immersive deck */
+    .deck{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
     }
+    .slide{
+      height: calc(100vh - 230px);
+      min-height: 540px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      background: #fff;
+    }
+
     @media (max-width: 960px){
       h1{font-size:44px}
-      .grid{grid-template-columns: repeat(2, minmax(0, 1fr));}
+      .slide{
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: unset;
+      }
     }
     @media (max-width: 600px){
       h1{font-size:38px}
-      .grid{grid-template-columns: 1fr;}
     }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px 16px 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+
+    .media{
+      position:relative;
+      background: linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
+      min-height: 320px;
     }
+    .media img{
+      width:100%;height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .pane{
+      padding:22px 22px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background: rgba(255,255,255,.88);
+    }
+
     .name{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:20px;
-      margin:0 0 6px;
+      font-size:30px;
+      margin:0;
+      line-height:1.18;
+      letter-spacing:-0.01em;
     }
-    .meta{font-size:13px;color:var(--muted);margin:0 0 10px;}
-    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .meta{
+      font-size:14px;color:var(--muted);
+      margin:0;
+    }
+
+    .note{
+      margin:8px 0 0;
+      color:var(--text);
+      font-size:14px;
+      line-height:1.65;
+    }
+
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
     .tag{
       font-size:12px;color:var(--text);
       border:1px solid var(--line);
       background:#fff;
-      padding:5px 9px;border-radius:999px;
+      padding:6px 10px;border-radius:999px;
     }
+
+    .nav{
+      margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding-top:14px;
+      border-top:1px solid rgba(232,229,223,.7);
+    }
+    .hint{color:var(--muted);font-size:12px;}
+
+    /* skeleton */
     .skeleton{
-      height:110px;
-      border-radius:var(--radius);
-      border:1px solid var(--line);
+      height: calc(100vh - 230px);
+      min-height: 540px;
       background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
       background-size: 200% 200%;
       animation: shimmer 1.2s infinite linear;
@@ -114,6 +188,8 @@
         <span class="chip">AREAS: —</span>
       </div>
       <div class="actions">
+        <button class="btn" id="prevBtn">←</button>
+        <button class="btn" id="nextBtn">→</button>
         <button class="btn" id="retryBtn">Retry</button>
         <button class="btn" id="backBtn">Back to Hearing</button>
       </div>
@@ -122,24 +198,38 @@
     <h1>Your 7 picks.</h1>
     <p class="sub">Where locals actually eat — before the world finds out.</p>
 
+    <div class="progress">
+      <span id="progressText">—</span>
+      <span class="dotbar" id="dotbar"></span>
+      <span class="hint">Use ← → keys / swipe</span>
+    </div>
+
     <div class="alert" id="alertBox">
       <strong>Failed</strong>
       <div id="alertMsg" style="margin-top:6px;"></div>
     </div>
 
-    <div class="grid" id="grid">
-      <!-- loading skeletons -->
+    <div class="deck" id="deck">
+      <div class="skeleton"></div>
     </div>
   </div>
 
 <script>
-  const grid = document.getElementById("grid");
+  const deck = document.getElementById("deck");
   const alertBox = document.getElementById("alertBox");
   const alertMsg = document.getElementById("alertMsg");
   const chips = document.getElementById("chips");
 
   const retryBtn = document.getElementById("retryBtn");
   const backBtn = document.getElementById("backBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  const progressText = document.getElementById("progressText");
+  const dotbar = document.getElementById("dotbar");
+
+  let shopsCache = [];
+  let idx = 0;
 
   function setError(message){
     alertMsg.textContent = message || "Unknown error";
@@ -152,12 +242,9 @@
   }
 
   function setLoading(){
-    grid.innerHTML = "";
-    for(let i=0;i<7;i++){
-      const d = document.createElement("div");
-      d.className = "skeleton";
-      grid.appendChild(d);
-    }
+    deck.innerHTML = `<div class="skeleton"></div>`;
+    if(progressText) progressText.textContent = "—";
+    if(dotbar) dotbar.innerHTML = "";
   }
 
   function setChips(plan, prefs, areas){
@@ -174,39 +261,86 @@
     }[m]));
   }
 
-  function renderShops(shops){
-    grid.innerHTML = "";
-    shops.forEach((shop) => {
-      const el = document.createElement("div");
-      el.className = "card";
-
-      const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
-      const area = escapeHtml(shop.area_group || "");
-      const detail = escapeHtml(shop.area_detail || "");
-      const slot = escapeHtml(shop.time_slot || "");
-      const tier = escapeHtml(shop.tier || "");
-
-      // best_with / best_vibe が配列 or 文字列両対応
-      const bw = Array.isArray(shop.best_with) ? shop.best_with : (shop.best_with ? [shop.best_with] : []);
-      const bv = Array.isArray(shop.best_vibe) ? shop.best_vibe : (shop.best_vibe ? [shop.best_vibe] : []);
-
-      const tags = [
-        ...(tier ? [tier] : []),
-        ...(slot ? [slot] : []),
-        ...bw,
-        ...bv
-      ].slice(0, 6);
-
-      el.innerHTML = `
-        <h3 class="name">${name}</h3>
-        <p class="meta">${area}${detail ? " / " + detail : ""}</p>
-        <div class="tags">
-          ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
-        </div>
-      `;
-      grid.appendChild(el);
-    });
+  function toArray(v){
+    if (Array.isArray(v)) return v.filter(Boolean);
+    if (typeof v === "string" && v.trim()) return v.split(",").map(s=>s.trim()).filter(Boolean);
+    return [];
   }
+
+  function buildTags(shop){
+    const tier = shop.tier ? [shop.tier] : [];
+    const slot = shop.time_slot ? [shop.time_slot] : [];
+    const bw = toArray(shop.best_with);
+    const bv = toArray(shop.best_vibe);
+
+    // ノイズ制御：最大8（没入型はタグ多すぎると雰囲気が死ぬ）
+    const tags = [...tier, ...slot, ...bw, ...bv].filter(Boolean);
+    return [...new Set(tags)].slice(0, 8);
+  }
+
+  function slideHtml(shop){
+    const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
+    const area = escapeHtml(shop.area_group || "");
+    const detail = escapeHtml(shop.area_detail || "");
+    const tags = buildTags(shop);
+
+    // 画像は将来用：CSVに無いのでプレースホルダ
+    // 将来 photo_url 等が入ればここで表示できる
+    const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
+    const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
+
+    return `
+      <section class="slide" aria-label="result-slide">
+        <div class="media">
+          ${hasImg ? `<img src="${imgUrl}" alt="${name}" loading="lazy">` : ``}
+        </div>
+
+        <div class="pane">
+          <div>
+            <h2 class="name">${name}</h2>
+            <p class="meta">${area}${detail ? " / " + detail : ""}</p>
+
+            <div class="tags">
+              ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+            </div>
+          </div>
+
+          <div class="nav">
+            <span class="hint">Take your time. This is curated for you.</span>
+            <span class="hint" id="slideCounter"></span>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderDots(){
+    if(!dotbar) return;
+    dotbar.innerHTML = shopsCache.map((_, i) =>
+      `<span class="dot ${i===idx ? "active" : ""}"></span>`
+    ).join("");
+  }
+
+  function render(){
+    if(!shopsCache.length){
+      deck.innerHTML = "";
+      setError("No shops returned.");
+      if(progressText) progressText.textContent = "0 / 0";
+      if(dotbar) dotbar.innerHTML = "";
+      return;
+    }
+
+    deck.innerHTML = slideHtml(shopsCache[idx]);
+    const total = shopsCache.length;
+    if(progressText) progressText.textContent = `${idx+1} / ${total}`;
+    renderDots();
+
+    const sc = document.getElementById("slideCounter");
+    if(sc) sc.textContent = `${idx+1} / ${total}`;
+  }
+
+  function next(){ if(idx < shopsCache.length - 1){ idx++; render(); } }
+  function prev(){ if(idx > 0){ idx--; render(); } }
 
   function getSessionId(){
     const u = new URL(location.href);
@@ -219,7 +353,7 @@
 
     const sessionId = getSessionId();
     if(!sessionId){
-      grid.innerHTML = "";
+      deck.innerHTML = "";
       setChips("—", "—", "—");
       setError("Missing session_id. Please retry checkout from hearing page.");
       return;
@@ -230,7 +364,7 @@
       const data = await res.json().catch(()=> ({}));
 
       if(!res.ok || !data.ok){
-        grid.innerHTML = "";
+        deck.innerHTML = "";
         setChips("—", "—", "—");
         setError(data.error || `Request failed (${res.status})`);
         return;
@@ -239,31 +373,60 @@
       // chips
       const plan = data.plan || "—";
       const prefs = data.who ? data.who : "—";
-      const areas = Array.isArray(data.shops) ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—") : "—";
+      const areas = Array.isArray(data.shops)
+        ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—")
+        : "—";
       setChips(plan, prefs, areas);
 
       const shops = Array.isArray(data.shops) ? data.shops : [];
       if(shops.length === 0){
-        grid.innerHTML = "";
+        deck.innerHTML = "";
         setError("No shops returned.");
         return;
       }
 
-      renderShops(shops);
+      shopsCache = shops;
+      idx = 0;
+      render();
     }catch(e){
-      grid.innerHTML = "";
+      deck.innerHTML = "";
       setChips("—", "—", "—");
       setError("Network or server error. Check Vercel Runtime Logs.");
     }
   }
 
+  // Buttons
   retryBtn.addEventListener("click", load);
   backBtn.addEventListener("click", () => {
-    // planが分かれば hearingに戻る（なければそのまま）
     const u = new URL(location.href);
     const plan = (u.searchParams.get("plan") || "");
     location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
   });
+  nextBtn.addEventListener("click", next);
+  prevBtn.addEventListener("click", prev);
+
+  // Keyboard
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowRight") next();
+    if(e.key === "ArrowLeft") prev();
+  });
+
+  // Swipe (mobile)
+  let startX = null;
+  deck.addEventListener("touchstart", (e) => {
+    startX = e.touches?.[0]?.clientX ?? null;
+  }, { passive:true });
+
+  deck.addEventListener("touchend", (e) => {
+    if(startX === null) return;
+    const endX = e.changedTouches?.[0]?.clientX ?? startX;
+    const dx = endX - startX;
+    if(Math.abs(dx) > 40){
+      if(dx < 0) next();
+      else prev();
+    }
+    startX = null;
+  }, { passive:true });
 
   load();
 </script>
