@@ -3,172 +3,269 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Allnspyre | Results</title>
+  <title>Allnspyre | Your 7 picks</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#f7f6f2; color:#111; margin:0; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 26px 18px 60px; }
-    h1 { font-family: Georgia, "Times New Roman", serif; font-size: 56px; margin: 10px 0 8px; }
-    .sub { color:#555; margin-bottom: 16px; }
-    .topline { display:flex; gap:12px; flex-wrap:wrap; align-items:center; color:#444; font-size: 14px; }
-    .pill { padding: 6px 10px; border-radius:999px; border:1px solid #e9e6dc; background:#fff; }
-    .actions { margin-left:auto; display:flex; gap:10px; }
-    a.btn { text-decoration:none; padding: 10px 12px; border-radius: 999px; border:1px solid #ddd; background:#fff; color:#111; }
-    .card { background:#fff; border:1px solid #e9e6dc; border-radius: 18px; padding: 16px; box-shadow: 0 6px 22px rgba(0,0,0,.05); margin-top: 14px; }
-    .err { border:1px solid #ffd2d2; background:#fff6f6; color:#b00020; padding: 12px; border-radius: 14px; }
-    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
-    @media (max-width: 760px){ .grid{ grid-template-columns:1fr; } }
-    .shop { border:1px solid #eee; border-radius: 16px; padding: 14px; }
-    .name { font-family: Georgia, "Times New Roman", serif; font-size: 22px; margin:0 0 6px; }
-    .desc { color:#444; margin:0 0 10px; line-height:1.55; }
-    .meta { display:flex; gap:8px; flex-wrap:wrap; color:#666; font-size: 12px; }
-    .tag { border:1px solid #eee; border-radius:999px; padding: 5px 8px; background:#fff; }
-    .hint { color:#666; font-size: 12px; margin-top: 10px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; white-space: pre-wrap; }
+    :root{
+      --bg:#f7f5f1;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e8e5df;
+      --danger:#c62828;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+    .chip{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;border-radius:999px;
+    }
+    .actions{display:flex;gap:10px}
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn:hover{filter:brightness(0.98)}
+    h1{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-size:64px;
+      letter-spacing:-0.02em;
+      margin:18px 0 8px;
+      line-height:1.0;
+    }
+    .sub{color:var(--muted);margin:0 0 22px}
+    .alert{
+      border:1px solid #f2b8b5;
+      background:#fff3f3;
+      color:var(--danger);
+      padding:14px 16px;
+      border-radius:14px;
+      margin:18px 0;
+      display:none;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:14px;
+      margin-top:18px;
+    }
+    @media (max-width: 960px){
+      h1{font-size:44px}
+      .grid{grid-template-columns: repeat(2, minmax(0, 1fr));}
+    }
+    @media (max-width: 600px){
+      h1{font-size:38px}
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px 16px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+    .name{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-size:20px;
+      margin:0 0 6px;
+    }
+    .meta{font-size:13px;color:var(--muted);margin:0 0 10px;}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .tag{
+      font-size:12px;color:var(--text);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:5px 9px;border-radius:999px;
+    }
+    .skeleton{
+      height:110px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
+      background-size: 200% 200%;
+      animation: shimmer 1.2s infinite linear;
+    }
+    @keyframes shimmer{
+      0%{background-position:0% 0%}
+      100%{background-position:100% 0%}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topline">
-      <div class="pill" id="planPill">PLAN: —</div>
-      <div class="pill" id="prefsPill">PREFS: —</div>
-      <div class="pill" id="areasPill">AREAS: —</div>
+    <div class="topbar">
+      <div class="chips" id="chips">
+        <span class="chip">PLAN: —</span>
+        <span class="chip">PREFS: —</span>
+        <span class="chip">AREAS: —</span>
+      </div>
       <div class="actions">
-        <a class="btn" href="#" id="retryBtn">Retry</a>
-        <a class="btn" href="/hearing.html" id="backBtn">Back to Hearing</a>
+        <button class="btn" id="retryBtn">Retry</button>
+        <button class="btn" id="backBtn">Back to Hearing</button>
       </div>
     </div>
 
     <h1>Your 7 picks.</h1>
-    <div class="sub">Where locals actually eat — before the world finds out.</div>
+    <p class="sub">Where locals actually eat — before the world finds out.</p>
 
-    <div id="status" class="card">Loading…</div>
+    <div class="alert" id="alertBox">
+      <strong>Failed</strong>
+      <div id="alertMsg" style="margin-top:6px;"></div>
+    </div>
 
-    <div id="grid" class="grid" style="display:none;"></div>
-
-    <div id="debug" class="card" style="display:none;">
-      <div class="hint">debug</div>
-      <div class="mono" id="debugText"></div>
+    <div class="grid" id="grid">
+      <!-- loading skeletons -->
     </div>
   </div>
 
 <script>
-(() => {
-  const API = location.origin;
-  const KEY = "allnspyre_hearing";
+  const grid = document.getElementById("grid");
+  const alertBox = document.getElementById("alertBox");
+  const alertMsg = document.getElementById("alertMsg");
+  const chips = document.getElementById("chips");
 
-  const qs = new URLSearchParams(location.search);
-  const planFromUrl = (qs.get("plan") || "").toLowerCase(); // Stripe Success URLで ?plan=... が付いてもOK
-
-  const planPill = document.getElementById("planPill");
-  const prefsPill = document.getElementById("prefsPill");
-  const areasPill = document.getElementById("areasPill");
-  const statusEl = document.getElementById("status");
-  const gridEl = document.getElementById("grid");
   const retryBtn = document.getElementById("retryBtn");
-  const dbg = document.getElementById("debug");
-  const dbgText = document.getElementById("debugText");
+  const backBtn = document.getElementById("backBtn");
 
-  function setStatus(html, isErr=false){
-    statusEl.className = "card" + (isErr ? " err" : "");
-    statusEl.innerHTML = html;
+  function setError(message){
+    alertMsg.textContent = message || "Unknown error";
+    alertBox.style.display = "block";
   }
 
-  function safeJson(s){
-    try { return JSON.parse(s); } catch { return null; }
+  function clearError(){
+    alertBox.style.display = "none";
+    alertMsg.textContent = "";
   }
 
-  function loadHearing(){
-    const raw = localStorage.getItem(KEY);
-    const data = safeJson(raw);
-    if(!data) return null;
-    // planはURLが優先（Stripe Success URLが plan固定なので）
-    if(planFromUrl) data.plan = planFromUrl;
-    return data;
+  function setLoading(){
+    grid.innerHTML = "";
+    for(let i=0;i<7;i++){
+      const d = document.createElement("div");
+      d.className = "skeleton";
+      grid.appendChild(d);
+    }
   }
 
-  function renderHeader(data){
-    planPill.textContent = "PLAN: " + (data.plan || "—");
-    prefsPill.textContent = "PREFS: " + ((data.prefs || []).join(" / ") || "—");
-    areasPill.textContent = "AREAS: " + ((data.areaGroups || []).join(" / ") || "—");
+  function setChips(plan, prefs, areas){
+    chips.innerHTML = `
+      <span class="chip">PLAN: ${plan || "—"}</span>
+      <span class="chip">PREFS: ${prefs || "—"}</span>
+      <span class="chip">AREAS: ${areas || "—"}</span>
+    `;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, (m)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
   }
 
   function renderShops(shops){
-    gridEl.innerHTML = "";
-    shops.forEach(s => {
-      const div = document.createElement("div");
-      div.className = "shop";
-      div.innerHTML = `
-        <h3 class="name">${escapeHtml(s.shop_name || "—")}</h3>
-        <p class="desc">${escapeHtml(s.short_desc || "")}</p>
-        <div class="meta">
-          <span class="tag">${escapeHtml(s.area_group || "")}</span>
-          <span class="tag">${escapeHtml(s.genre || "")}</span>
-          <span class="tag">${escapeHtml(s.photo_status || "none")}</span>
+    grid.innerHTML = "";
+    shops.forEach((shop) => {
+      const el = document.createElement("div");
+      el.className = "card";
+
+      const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
+      const area = escapeHtml(shop.area_group || "");
+      const detail = escapeHtml(shop.area_detail || "");
+      const slot = escapeHtml(shop.time_slot || "");
+      const tier = escapeHtml(shop.tier || "");
+
+      // best_with / best_vibe が配列 or 文字列両対応
+      const bw = Array.isArray(shop.best_with) ? shop.best_with : (shop.best_with ? [shop.best_with] : []);
+      const bv = Array.isArray(shop.best_vibe) ? shop.best_vibe : (shop.best_vibe ? [shop.best_vibe] : []);
+
+      const tags = [
+        ...(tier ? [tier] : []),
+        ...(slot ? [slot] : []),
+        ...bw,
+        ...bv
+      ].slice(0, 6);
+
+      el.innerHTML = `
+        <h3 class="name">${name}</h3>
+        <p class="meta">${area}${detail ? " / " + detail : ""}</p>
+        <div class="tags">
+          ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
         </div>
       `;
-      gridEl.appendChild(div);
+      grid.appendChild(el);
     });
-    gridEl.style.display = "grid";
   }
 
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function getSessionId(){
+    const u = new URL(location.href);
+    return u.searchParams.get("session_id");
   }
 
-  async function fetchResults(){
-    gridEl.style.display = "none";
-    setStatus("Loading…");
+  async function load(){
+    clearError();
+    setLoading();
 
-    const data = loadHearing();
-    if(!data){
-      return setStatus(`Failed ✕<br><br>Missing hearing data (localStorage: <b>${KEY}</b>).<br><a href="/hearing.html">Go to hearing</a>`, true);
-    }
-
-    // 必須：prefs と areaGroups（= area_group）
-    if(!(data.prefs||[]).length) return setStatus("Failed ✕<br><br>No prefs provided", true);
-    if(!(data.areaGroups||[]).length) return setStatus("Failed ✕<br><br>No areaGroups provided", true);
-
-    renderHeader(data);
-
-    const body = {
-      plan: data.plan,
-      prefs: data.prefs,
-      areaGroups: data.areaGroups,  // ← ここがポイント（area_detailじゃない）
-      who: data.who || "",
-      mood: data.mood || "",
-      avoid: data.avoid || ""
-    };
-
-    const r = await fetch(API + "/api/results", {
-      method: "POST",
-      headers: { "content-type":"application/json" },
-      body: JSON.stringify(body)
-    });
-
-    const text = await r.text();
-    const j = safeJson(text);
-
-    // debug出す（社長が確認できるように）
-    dbg.style.display = "block";
-    dbgText.textContent = `status=${r.status}\nresponse=${text}`;
-
-    if(!j || !j.ok){
-      return setStatus(`Failed ✕<br><br>API error (non-JSON or non-200)<br><div class="hint">See debug below</div>`, true);
-    }
-
-    if((j.shops||[]).length === 0){
-      setStatus(`API returned no records.<br><div class="hint">See debug below</div>`, true);
+    const sessionId = getSessionId();
+    if(!sessionId){
+      grid.innerHTML = "";
+      setChips("—", "—", "—");
+      setError("Missing session_id. Please retry checkout from hearing page.");
       return;
     }
 
-    setStatus("Success ✓");
-    renderShops(j.shops || []);
+    try{
+      const res = await fetch(`/api/results?session_id=${encodeURIComponent(sessionId)}`);
+      const data = await res.json().catch(()=> ({}));
+
+      if(!res.ok || !data.ok){
+        grid.innerHTML = "";
+        setChips("—", "—", "—");
+        setError(data.error || `Request failed (${res.status})`);
+        return;
+      }
+
+      // chips
+      const plan = data.plan || "—";
+      const prefs = data.who ? data.who : "—";
+      const areas = Array.isArray(data.shops) ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—") : "—";
+      setChips(plan, prefs, areas);
+
+      const shops = Array.isArray(data.shops) ? data.shops : [];
+      if(shops.length === 0){
+        grid.innerHTML = "";
+        setError("No shops returned.");
+        return;
+      }
+
+      renderShops(shops);
+    }catch(e){
+      grid.innerHTML = "";
+      setChips("—", "—", "—");
+      setError("Network or server error. Check Vercel Runtime Logs.");
+    }
   }
 
-  retryBtn.addEventListener("click", (e) => { e.preventDefault(); fetchResults(); });
+  retryBtn.addEventListener("click", load);
+  backBtn.addEventListener("click", () => {
+    // planが分かれば hearingに戻る（なければそのまま）
+    const u = new URL(location.href);
+    const plan = (u.searchParams.get("plan") || "");
+    location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
+  });
 
-  fetchResults().catch(e => setStatus("Failed ✕<br><br>"+escapeHtml(String(e)), true));
-})();
+  load();
 </script>
 </body>
 </html>
