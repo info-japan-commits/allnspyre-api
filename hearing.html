@@ -166,6 +166,21 @@
       <div class="grid" id="whoGrid"></div>
       <div class="danger" id="whoErr"></div>
     </section>
+
+    <!-- STEP 3 -->
+    <section class="card" id="step-vibe" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 3</div>
+          <div class="h">What kind of time do you want? <span class="small">(choose up to 2)</span></div>
+        </div>
+        <div class="row">
+          <span class="tag" id="vibeTag">Vibe: 0/2</span>
+        </div>
+      </div>
+      <div class="grid" id="vibeGrid"></div>
+      <div class="danger" id="vibeErr"></div>
+    </section>
   </div>
 
   <div class="footerBar">
@@ -184,6 +199,12 @@
     { label:"Friends", slug:"friends" },
     { label:"Family", slug:"family" },
   ];
+  const VIBES = [
+    { label:"Quiet & reflective", slug:"quiet_reflective" },
+    { label:"Slow & indulgent", slug:"slow_indulgent" },
+    { label:"Deeply local", slug:"deeply_local" },
+    { label:"Lively & social", slug:"lively_social" },
+  ];
 
   const qs = new URLSearchParams(location.search);
   const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
@@ -194,6 +215,7 @@
     areasByPref: {},
     selectedAreas: [],
     who: null,
+    vibes: [],
     loadingAreas: false,
   };
 
@@ -214,15 +236,16 @@
   const whoGrid = document.getElementById("whoGrid");
   const whoErr = document.getElementById("whoErr");
 
+  const stepVibe = document.getElementById("step-vibe");
+  const vibeGrid = document.getElementById("vibeGrid");
+  const vibeErr = document.getElementById("vibeErr");
+  const vibeTag = document.getElementById("vibeTag");
+
   const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
 
-  function maxPref(){
-    return state.plan === "connoisseur" ? 3 : 1;
-  }
-  function needAreas(){
-    return state.plan === "connoisseur" ? 4 : 1;
-  }
+  function maxPref(){ return state.plan === "connoisseur" ? 3 : 1; }
+  function needAreas(){ return state.plan === "connoisseur" ? 4 : 1; }
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
@@ -234,6 +257,10 @@
   function setWhoErr(msg){
     if (!msg){ whoErr.style.display="none"; whoErr.textContent=""; return; }
     whoErr.style.display=""; whoErr.textContent = msg;
+  }
+  function setVibeErr(msg){
+    if (!msg){ vibeErr.style.display="none"; vibeErr.textContent=""; return; }
+    vibeErr.style.display=""; vibeErr.textContent = msg;
   }
   function setPressed(container, selector, isOn){
     [...container.querySelectorAll(selector)].forEach(btn => {
@@ -260,6 +287,8 @@
     prefHint.textContent = state.plan === "connoisseur"
       ? "Select up to 3 prefectures."
       : "Explorer selects 1 prefecture.";
+
+    vibeTag.textContent = `Vibe: ${state.vibes.length}/2`;
   }
 
   function renderPlan(){
@@ -276,8 +305,7 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>${on ? "✓" : "+"}</div>`;
       btn.onclick = async () => {
-        setErr("");
-        setWhoErr("");
+        setErr(""); setWhoErr(""); setVibeErr("");
 
         const already = state.prefectures.includes(p);
         if (already){
@@ -294,6 +322,7 @@
         state.selectedAreas = [];
         state.areasByPref = {};
         state.who = null;
+        state.vibes = [];
 
         renderAll();
 
@@ -374,8 +403,9 @@
         btn.onclick = () => {
           setErr("");
           toggleArea(area);
-          // areaを変えたら who はリセット（事故防止）
+          // area change resets downstream
           state.who = null;
+          state.vibes = [];
           renderAll();
         };
         grid.appendChild(btn);
@@ -415,14 +445,45 @@
       btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
       btn.onclick = () => {
         state.who = w.slug;
+        // who change resets vibes（思想の整合：並び軸が変わる）
+        state.vibes = [];
         renderAll();
       };
       whoGrid.appendChild(btn);
     });
   }
 
+  function renderVibes(){
+    vibeGrid.innerHTML = "";
+    setVibeErr("");
+
+    VIBES.forEach(v => {
+      const on = state.vibes.includes(v.slug);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(v.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        setVibeErr("");
+        const has = state.vibes.includes(v.slug);
+        if (has){
+          state.vibes = state.vibes.filter(x => x !== v.slug);
+        } else {
+          if (state.vibes.length >= 2){
+            setVibeErr("You can choose up to 2.");
+            return;
+          }
+          state.vibes = [...state.vibes, v.slug];
+        }
+        renderAll();
+      };
+      vibeGrid.appendChild(btn);
+    });
+  }
+
   function ready(){
-    return (state.selectedAreas.length === needAreas()) && !!state.who;
+    return (state.selectedAreas.length === needAreas()) && !!state.who && (state.vibes.length > 0);
   }
 
   function renderFooter(){
@@ -437,12 +498,23 @@
     renderPref();
     renderAreas();
 
-    // Step2 show/hide
+    // Step2
     if (state.selectedAreas.length === needAreas()){
       stepWho.style.display = "";
       renderWho();
     } else {
       stepWho.style.display = "none";
+      stepVibe.style.display = "none";
+      renderFooter();
+      return;
+    }
+
+    // Step3
+    if (state.who){
+      stepVibe.style.display = "";
+      renderVibes();
+    } else {
+      stepVibe.style.display = "none";
     }
 
     renderFooter();
@@ -455,7 +527,6 @@
 
     state.plan = btn.dataset.plan === "connoisseur" ? "connoisseur" : "explorer";
 
-    // enforce pref limit
     const limit = maxPref();
     if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
 
@@ -463,9 +534,9 @@
     state.selectedAreas = [];
     state.areasByPref = {};
     state.who = null;
+    state.vibes = [];
     state.loadingAreas = false;
-    setErr("");
-    setWhoErr("");
+    setErr(""); setWhoErr(""); setVibeErr("");
 
     const u = new URL(location.href);
     u.searchParams.set("plan", state.plan);
@@ -476,17 +547,21 @@
 
   continueBtn.addEventListener("click", () => {
     if (!ready()){
-      setWhoErr("Please choose who you are eating with.");
+      if (!state.who) setWhoErr("Please choose who you are eating with.");
+      if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
       return;
     }
+
     const payload = {
       plan: state.plan,
       prefectures: state.prefectures,
       area_groups: state.selectedAreas,
       who: state.who,
-      best_with: state.who
+      best_with: state.who,
+      vibes: state.vibes,
+      best_vibe: state.vibes
     };
-    alert("OK (Step1+Step2)\n" + JSON.stringify(payload, null, 2));
+    alert("OK (Step1+Step2+Step3)\n" + JSON.stringify(payload, null, 2));
   });
 
   // init
