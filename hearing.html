@@ -661,16 +661,17 @@
       return;
     }
 
-    const payload = {
-      plan: state.plan,
-      prefectures: state.prefectures,
-      area_groups: state.selectedAreas,   // Airtable area_group
-      best_with: state.who,               // Airtable best_with
-      best_vibe: state.vibes,             // Airtable best_vibe (array)
-      friction: state.friction,           // optional filter
-      no_preference: state.noPreference,  // optional UX branch
-      source: "hearing.html"
-    };
+   const payload = {
+  plan: state.plan,
+  prefectures: state.prefectures,
+  area_groups: state.selectedAreas,
+  who: state.who,        // ← 修正
+  vibes: state.vibes,    // ← 修正
+  friction: state.friction,
+  no_preference: state.noPreference,
+  source: "hearing.html"
+};
+
 
     try{
       state.loadingCheckout = true;
