@@ -22,16 +22,10 @@
       color:var(--text);
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
-
     .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
-
     .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-      flex-wrap:wrap;
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      margin-bottom:18px;flex-wrap:wrap;
     }
     .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
     .chip{
@@ -40,7 +34,6 @@
       background:#fff;
       padding:6px 10px;border-radius:999px;
     }
-
     .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .btn{
       border:1px solid var(--line);
@@ -51,9 +44,13 @@
       font-size:13px;
       line-height:1;
       box-shadow: 0 1px 0 rgba(17,17,17,.03);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--text);
     }
     .btn:hover{filter:brightness(0.98)}
-
     h1{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
       font-size:64px;
@@ -62,24 +59,18 @@
       line-height:1.0;
     }
     .sub{color:var(--muted);margin:0 0 14px}
-
     .progress{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      color:var(--muted);
-      font-size:13px;
-      margin-top:10px;
-      flex-wrap:wrap;
+      display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;margin-top:10px;flex-wrap:wrap;
     }
     .dotbar{display:flex;gap:6px;align-items:center;}
-    .dot{
-      width:6px;height:6px;border-radius:999px;
-      background:rgba(17,17,17,.12);
-    }
+    .dot{width:6px;height:6px;border-radius:999px;background:rgba(17,17,17,.12);}
     .dot.active{background:rgba(17,17,17,.65);}
     .hint{color:var(--muted);font-size:12px;}
-
+    .kbd{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;padding:4px 8px;border-radius:8px;
+    }
     .alert{
       border:1px solid #f2b8b5;
       background:#fff3f3;
@@ -89,8 +80,6 @@
       margin:18px 0;
       display:none;
     }
-
-    /* immersive deck */
     .deck{
       margin-top:16px;
       border:1px solid var(--line);
@@ -99,7 +88,6 @@
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-
     .slide{
       height: calc(100vh - 230px);
       min-height: 560px;
@@ -107,19 +95,13 @@
       grid-template-columns: 1.1fr .9fr;
       background:#fff;
     }
-
     @media (max-width: 960px){
       h1{font-size:44px}
-      .slide{
-        grid-template-columns: 1fr;
-        height:auto;
-        min-height:unset;
-      }
+      .slide{grid-template-columns:1fr;height:auto;min-height:unset;}
     }
     @media (max-width: 600px){
       h1{font-size:38px}
     }
-
     .media{
       position:relative;
       background:
@@ -127,96 +109,36 @@
         linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
       min-height: 320px;
     }
-    .media img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
+    .media img{width:100%;height:100%;object-fit:cover;display:block;}
     .media .placeholder{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:flex-end;
-      justify-content:flex-start;
-      padding:18px;
-      color:rgba(17,17,17,.35);
-      font-size:13px;
+      position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;
+      padding:18px;color:rgba(17,17,17,.35);font-size:13px;
     }
-
     .pane{
       padding:22px 22px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
+      display:flex;flex-direction:column;gap:12px;
       background: rgba(255,255,255,.90);
     }
-
     .name{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:30px;
-      margin:0;
-      line-height:1.18;
-      letter-spacing:-0.01em;
+      font-size:30px;margin:0;line-height:1.18;letter-spacing:-0.01em;
     }
-
-    .meta{
-      font-size:14px;
-      color:var(--muted);
-      margin:0;
-    }
-
-    .note{
-      margin:10px 0 0;
-      color:var(--text);
-      font-size:14px;
-      line-height:1.7;
-    }
+    .meta{font-size:14px;color:var(--muted);margin:0;}
+    .note{margin:10px 0 0;color:var(--text);font-size:14px;line-height:1.7;}
     .note strong{font-weight:600}
-
-    .tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px
-    }
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
     .tag{
-      font-size:12px;
-      color:var(--text);
+      font-size:12px;color:var(--text);
       border:1px solid var(--line);
       background:#fff;
-      padding:6px 10px;
-      border-radius:999px;
+      padding:6px 10px;border-radius:999px;
     }
-
     .nav{
       margin-top:auto;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      padding-top:14px;
-      border-top:1px solid rgba(232,229,223,.7);
-      flex-wrap:wrap;
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+      padding-top:14px;border-top:1px solid rgba(232,229,223,.7);
     }
-
-    .nav .left{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .kbd{
-      font-size:12px;
-      color:var(--muted);
-      border:1px solid var(--line);
-      background:#fff;
-      padding:4px 8px;
-      border-radius:8px;
-    }
-
-    /* skeleton */
+    .nav .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .skeleton{
       height: calc(100vh - 230px);
       min-height: 560px;
@@ -224,10 +146,7 @@
       background-size: 200% 200%;
       animation: shimmer 1.2s infinite linear;
     }
-    @keyframes shimmer{
-      0%{background-position:0% 0%}
-      100%{background-position:100% 0%}
-    }
+    @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:100% 0%}}
   </style>
 </head>
 
@@ -260,6 +179,10 @@
     <div class="alert" id="alertBox">
       <strong>Failed</strong>
       <div id="alertMsg" style="margin-top:6px;"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn" href="/hearing.html">Go to Hearing</a>
+        <button class="btn" id="useLastBtn" style="display:none;">Use last successful session</button>
+      </div>
     </div>
 
     <div class="deck" id="deck">
@@ -278,6 +201,8 @@
   const prevBtn  = document.getElementById("prevBtn");
   const nextBtn  = document.getElementById("nextBtn");
 
+  const useLastBtn = document.getElementById("useLastBtn");
+
   const progressText = document.getElementById("progressText");
   const dotbar = document.getElementById("dotbar");
 
@@ -288,18 +213,15 @@
     alertMsg.textContent = message || "Unknown error";
     alertBox.style.display = "block";
   }
-
   function clearError(){
     alertBox.style.display = "none";
     alertMsg.textContent = "";
   }
-
   function setLoading(){
     deck.innerHTML = `<div class="skeleton"></div>`;
     if(progressText) progressText.textContent = "—";
     if(dotbar) dotbar.innerHTML = "";
   }
-
   function setChips(plan, prefs, areas){
     chips.innerHTML = `
       <span class="chip">PLAN: ${plan || "—"}</span>
@@ -313,13 +235,11 @@
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[m]));
   }
-
   function toArray(v){
     if (Array.isArray(v)) return v.filter(Boolean);
     if (typeof v === "string" && v.trim()) return v.split(",").map(s=>s.trim()).filter(Boolean);
     return [];
   }
-
   function titleCase(s){
     const x = (s ?? "").toString().trim();
     if(!x) return "";
@@ -331,8 +251,6 @@
     const slot = shop.time_slot ? [shop.time_slot] : [];
     const bw = toArray(shop.best_with);
     const bv = toArray(shop.best_vibe);
-
-    // 没入型：タグは控えめに（最大8）
     const tags = [...tier, ...slot, ...bw, ...bv].filter(Boolean);
     return [...new Set(tags)].slice(0, 8);
   }
@@ -342,7 +260,6 @@
     const slot = (shop.time_slot || "").toString().trim();
     const bw = toArray(shop.best_with);
     const bv = toArray(shop.best_vibe);
-
     const lines = [];
     if(slot) lines.push(`Best time: ${titleCase(slot)}.`);
     if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
@@ -359,11 +276,9 @@
     const tags = buildTags(shop);
     const why = escapeHtml(buildWhy(shop));
 
-    // データ追加不要：Google Maps検索リンクを生成
     const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
 
-    // 画像がある場合だけ表示（現状はほぼ空なのでプレースホルダで成立させる）
     const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
     const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
 
@@ -428,21 +343,38 @@
   function next(){ if(idx < shopsCache.length - 1){ idx++; render(); } }
   function prev(){ if(idx > 0){ idx--; render(); } }
 
-  function getSessionId(){
+  function getSessionIdFromUrl(){
     const u = new URL(location.href);
     return u.searchParams.get("session_id");
+  }
+
+  function setSessionIdInUrl(sessionId){
+    const u = new URL(location.href);
+    u.searchParams.set("session_id", sessionId);
+    history.replaceState({}, "", u.toString());
   }
 
   async function load(){
     clearError();
     setLoading();
 
-    const sessionId = getSessionId();
+    let sessionId = getSessionIdFromUrl();
+
+    // ✅ session_id無しで開かれても復元できるようにする
     if(!sessionId){
-      deck.innerHTML = "";
-      setChips("—", "—", "—");
-      setError("Missing session_id. Please retry checkout from hearing page.");
-      return;
+      const last = localStorage.getItem("last_session_id") || "";
+      if(last){
+        useLastBtn.style.display = "inline-flex";
+        setError("Missing session_id. You can use the last successful session, or go back to Hearing.");
+        deck.innerHTML = "";
+        setChips("—","—","—");
+        return;
+      }else{
+        setError("Missing session_id. Please complete checkout and return to this page automatically.");
+        deck.innerHTML = "";
+        setChips("—","—","—");
+        return;
+      }
     }
 
     try{
@@ -452,9 +384,12 @@
       if(!res.ok || !data.ok){
         deck.innerHTML = "";
         setChips("—", "—", "—");
-        setError(data.error || `Request failed (${res.status})`);
+        setError(data.error || `results failed (${res.status})`);
         return;
       }
+
+      // ✅ 成功したsession_idを保存（次回URL無しでも復帰できる）
+      localStorage.setItem("last_session_id", sessionId);
 
       const plan = data.plan || "—";
       const prefs = data.who ? data.who : "—";
@@ -480,23 +415,30 @@
     }
   }
 
-  // Buttons
   retryBtn.addEventListener("click", load);
+
   backBtn.addEventListener("click", () => {
     const u = new URL(location.href);
     const plan = (u.searchParams.get("plan") || "");
     location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
   });
+
   nextBtn.addEventListener("click", next);
   prevBtn.addEventListener("click", prev);
 
-  // Keyboard
+  useLastBtn.addEventListener("click", () => {
+    const last = localStorage.getItem("last_session_id") || "";
+    if(!last) return;
+    setSessionIdInUrl(last);
+    useLastBtn.style.display = "none";
+    load();
+  });
+
   window.addEventListener("keydown", (e) => {
     if(e.key === "ArrowRight") next();
     if(e.key === "ArrowLeft") prev();
   });
 
-  // Swipe
   let startX = null;
   deck.addEventListener("touchstart", (e) => {
     startX = e.touches?.[0]?.clientX ?? null;
