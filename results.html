@@ -23,9 +23,16 @@
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
 
-    /* top */
     .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
     .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
     .chip{
       font-size:12px;color:var(--muted);
@@ -33,6 +40,7 @@
       background:#fff;
       padding:6px 10px;border-radius:999px;
     }
+
     .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .btn{
       border:1px solid var(--line);
@@ -42,6 +50,7 @@
       cursor:pointer;
       font-size:13px;
       line-height:1;
+      box-shadow: 0 1px 0 rgba(17,17,17,.03);
     }
     .btn:hover{filter:brightness(0.98)}
 
@@ -61,6 +70,7 @@
       color:var(--muted);
       font-size:13px;
       margin-top:10px;
+      flex-wrap:wrap;
     }
     .dotbar{display:flex;gap:6px;align-items:center;}
     .dot{
@@ -68,6 +78,7 @@
       background:rgba(17,17,17,.12);
     }
     .dot.active{background:rgba(17,17,17,.65);}
+    .hint{color:var(--muted);font-size:12px;}
 
     .alert{
       border:1px solid #f2b8b5;
@@ -88,20 +99,21 @@
       box-shadow: var(--shadow);
       overflow:hidden;
     }
+
     .slide{
       height: calc(100vh - 230px);
-      min-height: 540px;
+      min-height: 560px;
       display:grid;
       grid-template-columns: 1.1fr .9fr;
-      background: #fff;
+      background:#fff;
     }
 
     @media (max-width: 960px){
       h1{font-size:44px}
       .slide{
         grid-template-columns: 1fr;
-        height: auto;
-        min-height: unset;
+        height:auto;
+        min-height:unset;
       }
     }
     @media (max-width: 600px){
@@ -110,13 +122,26 @@
 
     .media{
       position:relative;
-      background: linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
+      background:
+        radial-gradient(1200px 520px at 35% 25%, rgba(17,17,17,.09), rgba(17,17,17,0)),
+        linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
       min-height: 320px;
     }
     .media img{
-      width:100%;height:100%;
+      width:100%;
+      height:100%;
       object-fit:cover;
       display:block;
+    }
+    .media .placeholder{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+      padding:18px;
+      color:rgba(17,17,17,.35);
+      font-size:13px;
     }
 
     .pane{
@@ -124,7 +149,7 @@
       display:flex;
       flex-direction:column;
       gap:12px;
-      background: rgba(255,255,255,.88);
+      background: rgba(255,255,255,.90);
     }
 
     .name{
@@ -134,24 +159,34 @@
       line-height:1.18;
       letter-spacing:-0.01em;
     }
+
     .meta{
-      font-size:14px;color:var(--muted);
+      font-size:14px;
+      color:var(--muted);
       margin:0;
     }
 
     .note{
-      margin:8px 0 0;
+      margin:10px 0 0;
       color:var(--text);
       font-size:14px;
-      line-height:1.65;
+      line-height:1.7;
     }
+    .note strong{font-weight:600}
 
-    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px
+    }
     .tag{
-      font-size:12px;color:var(--text);
+      font-size:12px;
+      color:var(--text);
       border:1px solid var(--line);
       background:#fff;
-      padding:6px 10px;border-radius:999px;
+      padding:6px 10px;
+      border-radius:999px;
     }
 
     .nav{
@@ -162,13 +197,29 @@
       gap:10px;
       padding-top:14px;
       border-top:1px solid rgba(232,229,223,.7);
+      flex-wrap:wrap;
     }
-    .hint{color:var(--muted);font-size:12px;}
+
+    .nav .left{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .kbd{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:4px 8px;
+      border-radius:8px;
+    }
 
     /* skeleton */
     .skeleton{
       height: calc(100vh - 230px);
-      min-height: 540px;
+      min-height: 560px;
       background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
       background-size: 200% 200%;
       animation: shimmer 1.2s infinite linear;
@@ -179,6 +230,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="topbar">
@@ -187,6 +239,7 @@
         <span class="chip">PREFS: —</span>
         <span class="chip">AREAS: —</span>
       </div>
+
       <div class="actions">
         <button class="btn" id="prevBtn">←</button>
         <button class="btn" id="nextBtn">→</button>
@@ -201,7 +254,7 @@
     <div class="progress">
       <span id="progressText">—</span>
       <span class="dotbar" id="dotbar"></span>
-      <span class="hint">Use ← → keys / swipe</span>
+      <span class="hint">Use <span class="kbd">←</span> <span class="kbd">→</span> / swipe</span>
     </div>
 
     <div class="alert" id="alertBox">
@@ -221,9 +274,9 @@
   const chips = document.getElementById("chips");
 
   const retryBtn = document.getElementById("retryBtn");
-  const backBtn = document.getElementById("backBtn");
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
+  const backBtn  = document.getElementById("backBtn");
+  const prevBtn  = document.getElementById("prevBtn");
+  const nextBtn  = document.getElementById("nextBtn");
 
   const progressText = document.getElementById("progressText");
   const dotbar = document.getElementById("dotbar");
@@ -267,32 +320,57 @@
     return [];
   }
 
+  function titleCase(s){
+    const x = (s ?? "").toString().trim();
+    if(!x) return "";
+    return x.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+  }
+
   function buildTags(shop){
     const tier = shop.tier ? [shop.tier] : [];
     const slot = shop.time_slot ? [shop.time_slot] : [];
     const bw = toArray(shop.best_with);
     const bv = toArray(shop.best_vibe);
 
-    // ノイズ制御：最大8（没入型はタグ多すぎると雰囲気が死ぬ）
+    // 没入型：タグは控えめに（最大8）
     const tags = [...tier, ...slot, ...bw, ...bv].filter(Boolean);
     return [...new Set(tags)].slice(0, 8);
+  }
+
+  function buildWhy(shop){
+    const tier = (shop.tier || "").toString().trim();
+    const slot = (shop.time_slot || "").toString().trim();
+    const bw = toArray(shop.best_with);
+    const bv = toArray(shop.best_vibe);
+
+    const lines = [];
+    if(slot) lines.push(`Best time: ${titleCase(slot)}.`);
+    if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
+    if(bv.length) lines.push(`Vibe: ${bv.slice(0,3).map(titleCase).join(", ")}.`);
+    if(tier) lines.push(`Tier: ${titleCase(tier)}.`);
+    return lines.join(" ");
   }
 
   function slideHtml(shop){
     const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
     const area = escapeHtml(shop.area_group || "");
     const detail = escapeHtml(shop.area_detail || "");
-    const tags = buildTags(shop);
 
-    // 画像は将来用：CSVに無いのでプレースホルダ
-    // 将来 photo_url 等が入ればここで表示できる
+    const tags = buildTags(shop);
+    const why = escapeHtml(buildWhy(shop));
+
+    // データ追加不要：Google Maps検索リンクを生成
+    const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
+
+    // 画像がある場合だけ表示（現状はほぼ空なのでプレースホルダで成立させる）
     const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
     const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
 
     return `
       <section class="slide" aria-label="result-slide">
         <div class="media">
-          ${hasImg ? `<img src="${imgUrl}" alt="${name}" loading="lazy">` : ``}
+          ${hasImg ? `<img src="${imgUrl}" alt="${name}" loading="lazy">` : `<div class="placeholder">Image coming soon.</div>`}
         </div>
 
         <div class="pane">
@@ -300,13 +378,20 @@
             <h2 class="name">${name}</h2>
             <p class="meta">${area}${detail ? " / " + detail : ""}</p>
 
+            <p class="note">
+              <strong>Why this pick:</strong><br/>
+              ${why || "Chosen for the moment you described."}
+            </p>
+
             <div class="tags">
-              ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+              ${tags.map(t => `<span class="tag">${escapeHtml(titleCase(t))}</span>`).join("")}
             </div>
           </div>
 
           <div class="nav">
-            <span class="hint">Take your time. This is curated for you.</span>
+            <div class="left">
+              <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps</a>
+            </div>
             <span class="hint" id="slideCounter"></span>
           </div>
         </div>
@@ -331,6 +416,7 @@
     }
 
     deck.innerHTML = slideHtml(shopsCache[idx]);
+
     const total = shopsCache.length;
     if(progressText) progressText.textContent = `${idx+1} / ${total}`;
     renderDots();
@@ -370,7 +456,6 @@
         return;
       }
 
-      // chips
       const plan = data.plan || "—";
       const prefs = data.who ? data.who : "—";
       const areas = Array.isArray(data.shops)
@@ -411,7 +496,7 @@
     if(e.key === "ArrowLeft") prev();
   });
 
-  // Swipe (mobile)
+  // Swipe
   let startX = null;
   deck.addEventListener("touchstart", (e) => {
     startX = e.touches?.[0]?.clientX ?? null;
