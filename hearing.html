@@ -123,6 +123,7 @@
       <div class="note" id="planNote"></div>
     </section>
 
+    <!-- STEP 1 -->
     <section class="card" id="step-where">
       <div class="stepHead">
         <div>
@@ -153,6 +154,18 @@
 
       <div class="note">This step must match Airtable exactly. (area_group)</div>
     </section>
+
+    <!-- STEP 2 -->
+    <section class="card" id="step-who" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 2</div>
+          <div class="h">Who are you eating with?</div>
+        </div>
+      </div>
+      <div class="grid" id="whoGrid"></div>
+      <div class="danger" id="whoErr"></div>
+    </section>
   </div>
 
   <div class="footerBar">
@@ -165,6 +178,12 @@
 <script>
 (() => {
   const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+  const WHO = [
+    { label:"Solo", slug:"solo" },
+    { label:"Partner", slug:"partner" },
+    { label:"Friends", slug:"friends" },
+    { label:"Family", slug:"family" },
+  ];
 
   const qs = new URLSearchParams(location.search);
   const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
@@ -174,6 +193,7 @@
     prefectures: [],
     areasByPref: {},
     selectedAreas: [],
+    who: null,
     loadingAreas: false,
   };
 
@@ -189,6 +209,10 @@
   const needAreasEl = document.getElementById("needAreas");
   const areasWrap = document.getElementById("areasWrap");
   const err = document.getElementById("err");
+
+  const stepWho = document.getElementById("step-who");
+  const whoGrid = document.getElementById("whoGrid");
+  const whoErr = document.getElementById("whoErr");
 
   const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
@@ -206,6 +230,10 @@
   function setErr(msg){
     if (!msg){ err.style.display="none"; err.textContent=""; return; }
     err.style.display=""; err.textContent = msg;
+  }
+  function setWhoErr(msg){
+    if (!msg){ whoErr.style.display="none"; whoErr.textContent=""; return; }
+    whoErr.style.display=""; whoErr.textContent = msg;
   }
   function setPressed(container, selector, isOn){
     [...container.querySelectorAll(selector)].forEach(btn => {
@@ -249,6 +277,7 @@
       btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>${on ? "✓" : "+"}</div>`;
       btn.onclick = async () => {
         setErr("");
+        setWhoErr("");
 
         const already = state.prefectures.includes(p);
         if (already){
@@ -261,9 +290,11 @@
           state.prefectures = [...state.prefectures, p];
         }
 
-        // reset areas when prefectures change
+        // reset when prefectures change
         state.selectedAreas = [];
         state.areasByPref = {};
+        state.who = null;
+
         renderAll();
 
         if (state.prefectures.length === 0) return;
@@ -311,6 +342,7 @@
     }
 
     const container = document.createElement("div");
+
     state.prefectures.forEach(p => {
       const list = state.areasByPref?.[p] || [];
 
@@ -342,6 +374,8 @@
         btn.onclick = () => {
           setErr("");
           toggleArea(area);
+          // areaを変えたら who はリセット（事故防止）
+          state.who = null;
           renderAll();
         };
         grid.appendChild(btn);
@@ -368,8 +402,27 @@
     }
   }
 
+  function renderWho(){
+    whoGrid.innerHTML = "";
+    setWhoErr("");
+
+    WHO.forEach(w => {
+      const on = state.who === w.slug;
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
+      btn.onclick = () => {
+        state.who = w.slug;
+        renderAll();
+      };
+      whoGrid.appendChild(btn);
+    });
+  }
+
   function ready(){
-    return state.selectedAreas.length === needAreas();
+    return (state.selectedAreas.length === needAreas()) && !!state.who;
   }
 
   function renderFooter(){
@@ -383,6 +436,15 @@
     renderPlan();
     renderPref();
     renderAreas();
+
+    // Step2 show/hide
+    if (state.selectedAreas.length === needAreas()){
+      stepWho.style.display = "";
+      renderWho();
+    } else {
+      stepWho.style.display = "none";
+    }
+
     renderFooter();
   }
 
@@ -400,8 +462,10 @@
     // reset
     state.selectedAreas = [];
     state.areasByPref = {};
+    state.who = null;
     state.loadingAreas = false;
     setErr("");
+    setWhoErr("");
 
     const u = new URL(location.href);
     u.searchParams.set("plan", state.plan);
@@ -411,13 +475,18 @@
   });
 
   continueBtn.addEventListener("click", () => {
-    // For now: show payload (next step will be checkout/results)
+    if (!ready()){
+      setWhoErr("Please choose who you are eating with.");
+      return;
+    }
     const payload = {
       plan: state.plan,
       prefectures: state.prefectures,
       area_groups: state.selectedAreas,
+      who: state.who,
+      best_with: state.who
     };
-    alert("OK (Step1)\n" + JSON.stringify(payload, null, 2));
+    alert("OK (Step1+Step2)\n" + JSON.stringify(payload, null, 2));
   });
 
   // init
