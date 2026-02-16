@@ -6,393 +6,938 @@
   <title>Allnspyre | Hearing</title>
   <style>
     :root{
-      --bg:#f7f6f2; --card:#fff; --ink:#111; --muted:#666;
-      --line:#e9e6dc; --line2:#eee; --radius:18px;
+      --bg:#f7f5f1;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e8e5df;
+      --accent:#111;
+      --danger:#c62828;
+      --radius:18px;
     }
-    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-    .wrap{max-width:920px;margin:0 auto;padding:26px 18px 70px}
-    h1{font-family:Georgia,"Times New Roman",serif;font-size:46px;margin:14px 0 8px}
-    .sub{color:var(--muted);margin:0 0 14px;line-height:1.5}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 6px 22px rgba(0,0,0,.05);margin-top:14px}
-    .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-    .pill{display:inline-flex;gap:8px;align-items:center;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;color:#555}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:760px){.row{grid-template-columns:1fr}}
-    label{display:block;font-weight:700;margin:12px 0 8px}
-    select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:12px;background:#fff;font-size:16px}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    .tile{
-      border:1px solid var(--line2);border-radius:16px;padding:12px 10px;
-      cursor:pointer;user-select:none;background:#fff;transition:.08s;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
-    .tile:hover{transform:translateY(-1px)}
-    .tile[data-on="1"]{border-color:#111}
-    .chiprow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-    .chip{
-      border:1px solid var(--line2);border-radius:999px;padding:10px 12px;
-      background:#fff;cursor:pointer;user-select:none
+    a{color:inherit}
+    .wrap{
+      max-width:860px;
+      margin:0 auto;
+      padding:28px 18px 80px;
     }
-    .chip[data-on="1"]{border-color:#111}
-    .hint{color:var(--muted);font-size:12px;margin-top:8px;line-height:1.45}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-    button{padding:12px 14px;border-radius:12px;border:1px solid #111;background:#111;color:#fff;font-size:16px;cursor:pointer}
-    button.secondary{background:#fff;color:#111;border-color:#ddd}
-    .err{margin-top:12px;border:1px solid #ffd2d2;background:#fff6f6;color:#b00020;border-radius:14px;padding:12px;display:none}
-    .small{font-size:12px;color:#555}
+    .top{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .brand{
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+    .sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:6px;
+      line-height:1.35;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      color:var(--muted);
+      background:rgba(255,255,255,.6);
+      backdrop-filter: blur(8px);
+      white-space:nowrap;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: 0 6px 18px rgba(0,0,0,.04);
+      padding:18px;
+      margin-top:14px;
+    }
+    .stepHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:12px;
+    }
+    .kicker{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .h{
+      font-size:18px;
+      line-height:1.25;
+      margin:6px 0 0;
+      font-weight:650;
+    }
+    .editBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .editBtn:hover{border-color:#d7d2c8}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+    @media (min-width:760px){
+      .grid{grid-template-columns: repeat(3, minmax(0, 1fr));}
+    }
+    .opt{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      cursor:pointer;
+      background:#fff;
+      transition: transform .06s ease, border-color .06s ease;
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .opt:hover{border-color:#d7d2c8; transform: translateY(-1px);}
+    .opt[aria-pressed="true"]{
+      border-color:#111;
+      box-shadow: inset 0 0 0 1px #111;
+    }
+    .opt small{color:var(--muted); font-size:12px}
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .divider{
+      height:1px;
+      background:var(--line);
+      margin:14px 0;
+    }
+    .summary{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      padding-top:6px;
+    }
+    .summary b{color:var(--text); font-weight:600}
+    .danger{
+      color:var(--danger);
+      font-size:13px;
+      margin-top:10px;
+    }
+    .block{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(247,245,241,.55);
+    }
+    .blockHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .blockTitle{
+      font-weight:650;
+      font-size:14px;
+    }
+    .miniBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .miniBtn:hover{border-color:#d7d2c8}
+    .footerBar{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background:rgba(255,255,255,.9);
+      backdrop-filter: blur(10px);
+      border-top:1px solid var(--line);
+      padding:12px 16px;
+    }
+    .footerInner{
+      max-width:860px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .primary{
+      border:1px solid #111;
+      background:#111;
+      color:#fff;
+      border-radius:999px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+    }
+    .primary:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .ghost{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:12px 14px;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .spin{
+      width:14px;height:14px;
+      border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      border-radius:999px;
+      display:inline-block;
+      animation: sp 1s linear infinite;
+      vertical-align:-2px;
+      margin-right:8px;
+    }
+    @keyframes sp {to{transform:rotate(360deg)}}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background:#fff;
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="top">
-      <div class="pill">Domain: allnspyre-api.vercel.app</div>
-      <div class="pill" id="counterPill">Selected: 0</div>
+      <div>
+        <div class="brand">Allnspyre | Hearing</div>
+        <div class="sub">Answer in order. You can always edit. We’ll handle the rest.</div>
+      </div>
+      <div class="pill"><span class="mono" id="planPill">plan: …</span></div>
     </div>
 
-    <h1>Tell me your vibe.</h1>
-    <p class="sub">No cuisine questions. Just <b>who</b> and <b>what kind of time</b>.</p>
-
-    <div class="card">
-      <div class="row">
+    <!-- STEP 0: PLAN -->
+    <section class="card" id="step-plan">
+      <div class="stepHead">
         <div>
-          <label>Plan</label>
-          <select id="plan">
-            <option value="explorer">Explorer ($19)</option>
-            <option value="connoisseur">Connoisseur ($39)</option>
-          </select>
-          <div class="hint">
-            Explorer: pick <b>1 prefecture</b> → then <b>1 area_group</b><br>
-            Connoisseur: pick up to <b>4 prefectures</b> → then up to <b>4 area_groups</b>
-          </div>
+          <div class="kicker">Step 0</div>
+          <div class="h">Choose your plan</div>
         </div>
-
-        <div>
-          <label>Who are you eating with?</label>
-          <select id="who">
-            <option value="">—</option>
-            <option value="Solo">Solo</option>
-            <option value="Partner">Partner</option>
-            <option value="Friends">Friends</option>
-            <option value="Family">Family</option>
-          </select>
-        </div>
+        <button class="editBtn" type="button" data-edit="plan" style="display:none">Edit</button>
       </div>
 
-      <label>STEP 1 — Prefecture</label>
-      <div class="grid" id="prefGrid"></div>
-      <div class="hint">You can change your mind anytime. (No lock-in.)</div>
-
-      <label>STEP 1-B — Area group (only from selected prefectures)</label>
-      <div class="chiprow" id="areaGroupRow"></div>
-      <div class="hint" id="areasHint">Select prefecture(s) first.</div>
-
-      <div class="row">
-        <div>
-          <label>Time & Mood (choose up to 2)</label>
-          <select id="vibes" multiple size="4">
-            <option>Quiet & reflective</option>
-            <option>Slow & indulgent</option>
-            <option>Deeply local</option>
-            <option>Lively & social</option>
-          </select>
-          <div class="hint">Max 2 vibes.</div>
-        </div>
-
-        <div>
-          <label>Prefer to avoid? (optional)</label>
-          <select id="avoid" multiple size="3">
-            <option>Long lines</option>
-            <option>Tourist-heavy places</option>
-            <option>Very noisy spots</option>
-          </select>
-          <div class="hint">These influence filtering quietly (not shown as “genres”).</div>
-        </div>
+      <div class="grid" id="planGrid">
+        <button class="opt" type="button" data-plan="explorer" aria-pressed="false">
+          <div><b>Explorer</b><br><small>$19</small></div>
+          <div>→</div>
+        </button>
+        <button class="opt" type="button" data-plan="connoisseur" aria-pressed="false">
+          <div><b>Connoisseur</b><br><small>$39</small></div>
+          <div>→</div>
+        </button>
       </div>
 
-      <div class="actions">
-        <button id="continueBtn">Continue → Stripe</button>
-        <button class="secondary" id="clearBtn" type="button">Clear</button>
+      <div class="note">Connoisseur lets you build up to <b>3 prefectures</b>.</div>
+      <div class="summary" id="planSummary" style="display:none"></div>
+    </section>
+
+    <!-- STEP 1: PREFECTURE + AREA GROUPS -->
+    <section class="card" id="step-where" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 1</div>
+          <div class="h">Where are you visiting?</div>
+        </div>
+        <button class="editBtn" type="button" data-edit="where" style="display:none">Edit</button>
       </div>
 
-      <div class="err" id="errBox"></div>
-      <div class="hint">Saved key: <b>allnspyre_hearing</b> (fixed)</div>
-      <div class="small" id="dbg"></div>
+      <div id="whereBlocks"></div>
+
+      <div class="row" style="margin-top:12px" id="addBlockRow" style="display:none">
+        <button class="ghost" type="button" id="addBlockBtn">＋ Add another prefecture</button>
+        <span class="tag">Max 3</span>
+      </div>
+
+      <div class="danger" id="whereErr" style="display:none"></div>
+      <div class="summary" id="whereSummary" style="display:none"></div>
+    </section>
+
+    <!-- STEP 2: WHO -->
+    <section class="card" id="step-who" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 2</div>
+          <div class="h">Who are you eating with?</div>
+        </div>
+        <button class="editBtn" type="button" data-edit="who" style="display:none">Edit</button>
+      </div>
+
+      <div class="grid" id="whoGrid"></div>
+      <div class="summary" id="whoSummary" style="display:none"></div>
+    </section>
+
+    <!-- STEP 3: TIME & MOOD -->
+    <section class="card" id="step-vibe" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 3</div>
+          <div class="h">What kind of time do you want? <span style="color:var(--muted);font-weight:500">(choose up to 2)</span></div>
+        </div>
+        <button class="editBtn" type="button" data-edit="vibe" style="display:none">Edit</button>
+      </div>
+
+      <div class="grid" id="vibeGrid"></div>
+      <div class="note">Two is enough to design a clean experience.</div>
+      <div class="danger" id="vibeErr" style="display:none"></div>
+      <div class="summary" id="vibeSummary" style="display:none"></div>
+    </section>
+
+    <!-- STEP 4: FRICTION -->
+    <section class="card" id="step-friction" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 4</div>
+          <div class="h">Prefer to avoid? <span style="color:var(--muted);font-weight:500">(optional)</span></div>
+        </div>
+        <button class="editBtn" type="button" data-edit="friction" style="display:none">Edit</button>
+      </div>
+
+      <div class="grid" id="frictionGrid"></div>
+      <div class="summary" id="frictionSummary" style="display:none"></div>
+    </section>
+
+    <!-- STEP 5: NO PREFERENCE -->
+    <section class="card" id="step-np" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 5</div>
+          <div class="h">If you’re not sure</div>
+        </div>
+        <button class="editBtn" type="button" data-edit="np" style="display:none">Edit</button>
+      </div>
+
+      <div class="grid" id="npGrid"></div>
+      <div class="summary" id="npSummary" style="display:none"></div>
+    </section>
+
+    <div class="card" id="debugCard" style="display:none">
+      <div class="kicker">Debug</div>
+      <div class="note mono" id="debugOut"></div>
+    </div>
+
+  </div>
+
+  <div class="footerBar">
+    <div class="footerInner">
+      <div class="tag" id="readyTag">Not ready</div>
+      <button class="primary" id="continueBtn" disabled>
+        Continue to payment
+      </button>
     </div>
   </div>
 
 <script>
 (() => {
-  const KEY = "allnspyre_hearing";
+  // ===== CONFIG =====
+  const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
 
-  const PREFS = [
-    "Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"
-  ];
+  const WHO = ["Solo","Partner","Friends","Family"];
+  const VIBES = ["Quiet & reflective","Slow & indulgent","Deeply local","Lively & social"];
+  const FRICTION = ["Long lines","Tourist-heavy places","Very noisy spots"];
+  const NP = ["No preference — pick for me"];
 
-  const stripeExplorer = "https://buy.stripe.com/3cI14f9Axa0mbcc89NbEA01";
-  const stripeConnoisseur = "https://buy.stripe.com/7sY8wH7spc8u8001LpbEA02";
+  const qs = new URLSearchParams(location.search);
+  const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
+  const DEBUG = qs.get("debug") === "1";
 
-  const el = (id) => document.getElementById(id);
-  const planEl = el("plan");
-  const whoEl = el("who");
-  const prefGrid = el("prefGrid");
-  const areaRow = el("areaGroupRow");
-  const vibesEl = el("vibes");
-  const avoidEl = el("avoid");
-  const errBox = el("errBox");
-  const counterPill = el("counterPill");
-  const areasHint = el("areasHint");
-  const dbg = el("dbg");
+  const state = {
+    plan: (initialPlan === "connoisseur" ? "connoisseur" : "explorer"),
+    // blocks: [{prefecture, area_group}]
+    blocks: [],
+    who: null,
+    vibes: [],
+    friction: [],
+    noPreference: false,
+    loadingCheckout: false,
+  };
 
-  let prefSelected = new Set();
-  let areaGroups = [];
-  let areaSelected = new Set();
+  // ===== DOM =====
+  const planPill = document.getElementById("planPill");
+  const planGrid = document.getElementById("planGrid");
+  const planSummary = document.getElementById("planSummary");
 
-  function getPlan(){
-    const q = (new URL(location.href)).searchParams.get("plan");
-    const p = (q || planEl.value || "explorer").toLowerCase();
-    return (p === "connoisseur") ? "connoisseur" : "explorer";
-  }
-  function maxPrefs(plan){ return plan === "connoisseur" ? 4 : 1; }
-  function maxAreas(plan){ return plan === "connoisseur" ? 4 : 1; }
+  const stepWhere = document.getElementById("step-where");
+  const whereBlocks = document.getElementById("whereBlocks");
+  const addBlockBtn = document.getElementById("addBlockBtn");
+  const addBlockRow = document.getElementById("addBlockRow");
+  const whereErr = document.getElementById("whereErr");
+  const whereSummary = document.getElementById("whereSummary");
 
-  function showErr(msg){
-    errBox.style.display = "block";
-    errBox.textContent = msg;
-  }
-  function clearErr(){
-    errBox.style.display = "none";
-    errBox.textContent = "";
-  }
+  const stepWho = document.getElementById("step-who");
+  const whoGrid = document.getElementById("whoGrid");
+  const whoSummary = document.getElementById("whoSummary");
 
-  function selectedOptions(selectEl){
-    return Array.from(selectEl.selectedOptions).map(o => o.value);
-  }
+  const stepVibe = document.getElementById("step-vibe");
+  const vibeGrid = document.getElementById("vibeGrid");
+  const vibeErr = document.getElementById("vibeErr");
+  const vibeSummary = document.getElementById("vibeSummary");
 
-  function save(){
-    const plan = getPlan();
-    const payload = {
-      plan,
-      prefs: Array.from(prefSelected),
-      areaGroups: Array.from(areaSelected),
-      who: whoEl.value || "",
-      vibes: selectedOptions(vibesEl).slice(0,2),
-      avoid: selectedOptions(avoidEl),
-      ts: Date.now()
-    };
-    localStorage.setItem(KEY, JSON.stringify(payload));
-    return payload;
-  }
+  const stepFriction = document.getElementById("step-friction");
+  const frictionGrid = document.getElementById("frictionGrid");
+  const frictionSummary = document.getElementById("frictionSummary");
 
-  function load(){
-    try { return JSON.parse(localStorage.getItem(KEY) || "null"); }
-    catch { return null; }
-  }
+  const stepNp = document.getElementById("step-np");
+  const npGrid = document.getElementById("npGrid");
+  const npSummary = document.getElementById("npSummary");
 
-  function setCounter(){
-    const plan = getPlan();
-    counterPill.textContent = `Prefs: ${prefSelected.size}/${maxPrefs(plan)}  |  Areas: ${areaSelected.size}/${maxAreas(plan)}`;
-  }
+  const continueBtn = document.getElementById("continueBtn");
+  const readyTag = document.getElementById("readyTag");
 
-  function renderPrefTiles(){
-    prefGrid.innerHTML = "";
-    const plan = getPlan();
-    const mp = maxPrefs(plan);
+  const debugCard = document.getElementById("debugCard");
+  const debugOut = document.getElementById("debugOut");
 
-    PREFS.forEach(p => {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.dataset.on = prefSelected.has(p) ? "1" : "0";
-      tile.innerHTML = `<span>${p}</span><span class="small">${prefSelected.has(p) ? "✓" : ""}</span>`;
-      tile.onclick = () => {
-        clearErr();
-        if (prefSelected.has(p)) {
-          prefSelected.delete(p);
-        } else {
-          if (prefSelected.size >= mp) {
-            showErr(plan === "connoisseur" ? "Connoisseur: up to 4 prefectures." : "Explorer: pick 1 prefecture.");
-            return;
-          }
-          prefSelected.add(p);
-        }
-        // prefecture変更 → area選択を候補に合わせて掃除
-        fetchAreasAndRender();
-      };
-      prefGrid.appendChild(tile);
+  if (DEBUG) debugCard.style.display = "block";
+
+  // ===== Helpers =====
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+
+  function setPressed(container, selector, matchFn){
+    [...container.querySelectorAll(selector)].forEach(btn => {
+      btn.setAttribute("aria-pressed", matchFn(btn) ? "true" : "false");
     });
   }
 
-  async function fetchAreas(plan, prefs){
-    const url = new URL(location.origin + "/api/areas");
-    url.searchParams.set("plan", plan);
-    url.searchParams.set("pref", prefs.join(","));
-    const r = await fetch(url.toString(), { method:"GET" });
-    const j = await r.json();
-    if (!j.ok) throw new Error(j.error || "Failed to load areas");
-    return j.areaGroups || [];
+  function scrollToEl(el){
+    try{ el.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
   }
 
-  function renderAreaChips(){
-    areaRow.innerHTML = "";
-    const plan = getPlan();
-    const ma = maxAreas(plan);
+  function show(el){ el.style.display = ""; }
+  function hide(el){ el.style.display = "none"; }
 
-    if (prefSelected.size === 0){
-      areasHint.textContent = "Select prefecture(s) first.";
-      setCounter();
-      save();
-      return;
-    }
-
-    if (!areaGroups.length){
-      areasHint.textContent = "No area_group found for selected prefectures (check Airtable data/tier/status).";
-      setCounter();
-      save();
-      return;
-    }
-
-    areasHint.textContent = (plan === "connoisseur")
-      ? "Pick up to 4 area_groups."
-      : "Pick 1 area_group.";
-
-    areaGroups.forEach(g => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      chip.dataset.on = areaSelected.has(g) ? "1" : "0";
-      chip.textContent = g;
-      chip.onclick = () => {
-        clearErr();
-        if (areaSelected.has(g)) {
-          areaSelected.delete(g);
-        } else {
-          if (areaSelected.size >= ma) {
-            showErr(plan === "connoisseur" ? "Connoisseur: up to 4 area_groups." : "Explorer: pick 1 area_group.");
-            return;
-          }
-          areaSelected.add(g);
-        }
-        chip.dataset.on = areaSelected.has(g) ? "1" : "0";
-        setCounter();
-        save();
-      };
-      areaRow.appendChild(chip);
-    });
-
-    setCounter();
-    save();
+  function setErr(el, msg){
+    if (!msg){ hide(el); el.textContent=""; return; }
+    el.textContent = msg;
+    show(el);
   }
 
-  async function fetchAreasAndRender(){
-    const plan = getPlan();
-    renderPrefTiles(); // reflect selection
+  function updatePlanPill(){
+    planPill.textContent = `plan: ${state.plan}`;
+  }
 
-    // clear area selection if prefecture changed
-    // keep only those still in candidate list after fetch
+  function isConnoisseur(){ return state.plan === "connoisseur"; }
+
+  // ===== API calls =====
+  async function fetchAreas(prefecture){
+    // expects: { areas: ["Kita", "Minami", ...] }  OR { data: [...] }
+    const url = `/api/areas?prefecture=${encodeURIComponent(prefecture)}`;
     try{
-      setCounter();
-      save();
+      const res = await fetch(url, { method:"GET" });
+      if (!res.ok) throw new Error("bad status");
+      const json = await res.json();
+      const arr =
+        (Array.isArray(json.areas) && json.areas) ||
+        (Array.isArray(json.area_groups) && json.area_groups) ||
+        (Array.isArray(json.data) && json.data) ||
+        [];
+      const unique = [...new Set(arr.map(String))].filter(Boolean);
+      if (unique.length) return unique;
+      throw new Error("empty");
+    }catch(e){
+      // Fallback (temporary): keeps UI working even before API is ready
+      return ["Central","East","West","North","South"];
+    }
+  }
 
-      if (prefSelected.size === 0){
-        areaGroups = [];
-        areaSelected = new Set();
-        renderAreaChips();
+  // ===== Render blocks =====
+  async function renderWhere(){
+    show(stepWhere);
+    whereBlocks.innerHTML = "";
+    setErr(whereErr, "");
+
+    const maxBlocks = isConnoisseur() ? 3 : 1;
+
+    // Ensure at least 1 block exists
+    if (state.blocks.length === 0) {
+      state.blocks.push({ prefecture: null, area_group: null, areas: [], loadingAreas:false });
+    }
+    // Trim if plan changed
+    if (state.blocks.length > maxBlocks) state.blocks = state.blocks.slice(0, maxBlocks);
+
+    // Add button visibility
+    if (isConnoisseur()) {
+      show(addBlockRow);
+      addBlockBtn.disabled = state.blocks.length >= 3;
+    } else {
+      hide(addBlockRow);
+    }
+
+    state.blocks.forEach((b, idx) => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.style.marginTop = idx === 0 ? "0" : "12px";
+
+      const head = document.createElement("div");
+      head.className = "blockHead";
+
+      const title = document.createElement("div");
+      title.className = "blockTitle";
+      title.textContent = isConnoisseur() ? `Prefecture ${idx+1}` : "Prefecture";
+
+      const actions = document.createElement("div");
+      actions.className = "row";
+
+      if (isConnoisseur() && state.blocks.length > 1) {
+        const del = document.createElement("button");
+        del.className = "miniBtn";
+        del.type = "button";
+        del.textContent = "Remove";
+        del.onclick = () => {
+          state.blocks.splice(idx, 1);
+          renderAll();
+        };
+        actions.appendChild(del);
+      }
+
+      head.appendChild(title);
+      head.appendChild(actions);
+      block.appendChild(head);
+
+      // Prefecture grid
+      const prefGrid = document.createElement("div");
+      prefGrid.className = "grid";
+      PREFECTURES.forEach(p => {
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", b.prefecture === p ? "true" : "false");
+        btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>→</div>`;
+        btn.onclick = async () => {
+          // Prevent duplicate prefectures in Connoisseur
+          if (isConnoisseur()){
+            const dup = state.blocks.some((x, j) => j !== idx && x.prefecture === p);
+            if (dup){
+              setErr(whereErr, "You already selected that prefecture. Choose a different one.");
+              return;
+            }
+          }
+          setErr(whereErr, "");
+          b.prefecture = p;
+          b.area_group = null; // reset (fixes “cannot change” bug)
+          b.areas = [];
+          b.loadingAreas = true;
+          renderAll(false); // partial
+          const areas = await fetchAreas(p);
+          b.areas = areas;
+          b.loadingAreas = false;
+          renderAll(false);
+          // auto reveal next step once area chosen later
+        };
+        prefGrid.appendChild(btn);
+      });
+      block.appendChild(prefGrid);
+
+      // Area section
+      const areaWrap = document.createElement("div");
+      areaWrap.style.marginTop = "12px";
+
+      const areaTitle = document.createElement("div");
+      areaTitle.className = "kicker";
+      areaTitle.textContent = "Area";
+      areaWrap.appendChild(areaTitle);
+
+      if (!b.prefecture){
+        const tip = document.createElement("div");
+        tip.className = "note";
+        tip.textContent = "Select a prefecture to see its areas.";
+        areaWrap.appendChild(tip);
+      } else if (b.loadingAreas){
+        const tip = document.createElement("div");
+        tip.className = "note";
+        tip.innerHTML = `Loading areas for <b>${escapeHtml(b.prefecture)}</b>…`;
+        areaWrap.appendChild(tip);
+      } else {
+        const areaGrid = document.createElement("div");
+        areaGrid.className = "grid";
+
+        (b.areas || []).forEach(a => {
+          const btn = document.createElement("button");
+          btn.className = "opt";
+          btn.type = "button";
+          btn.setAttribute("aria-pressed", b.area_group === a ? "true" : "false");
+          btn.innerHTML = `<div><b>${escapeHtml(a)}</b></div><div>→</div>`;
+          btn.onclick = () => {
+            b.area_group = a;
+            renderAll(false);
+            // once at least first block has area, show next step
+            if (isWhereComplete()) {
+              show(stepWho);
+              scrollToEl(stepWho);
+            }
+          };
+          areaGrid.appendChild(btn);
+        });
+        areaWrap.appendChild(areaGrid);
+      }
+
+      block.appendChild(areaWrap);
+      whereBlocks.appendChild(block);
+    });
+
+    // Summary + edit handling (simple)
+    const done = isWhereComplete();
+    if (done){
+      whereSummary.innerHTML = state.blocks
+        .filter(b => b.prefecture && b.area_group)
+        .map((b,i) => `• <b>${escapeHtml(b.prefecture)}</b> — ${escapeHtml(b.area_group)}`)
+        .join("<br>");
+      show(whereSummary);
+      // show downstream steps
+      show(stepWho);
+    } else {
+      hide(whereSummary);
+    }
+  }
+
+  function isWhereComplete(){
+    // Explorer: 1 block needs pref + area
+    // Connoisseur: at least 1 block complete; additional blocks may be partial but if pref chosen then area required
+    const blocks = state.blocks;
+    const completeCount = blocks.filter(b => b.prefecture && b.area_group).length;
+    if (completeCount === 0) return false;
+
+    // If a prefecture is selected in a block, area_group must be selected too (prevents half selections)
+    for (const b of blocks){
+      if (b.prefecture && !b.area_group) return false;
+    }
+    return true;
+  }
+
+  function renderWho(){
+    whoGrid.innerHTML = "";
+    WHO.forEach(w => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", state.who === w ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(w)}</b></div><div>→</div>`;
+      btn.onclick = () => {
+        state.who = w;
+        renderAll(false);
+        show(stepVibe);
+        scrollToEl(stepVibe);
+      };
+      whoGrid.appendChild(btn);
+    });
+
+    if (state.who){
+      whoSummary.innerHTML = `Selected: <b>${escapeHtml(state.who)}</b>`;
+      show(whoSummary);
+      show(stepVibe);
+    } else {
+      hide(whoSummary);
+    }
+  }
+
+  function renderVibe(){
+    vibeGrid.innerHTML = "";
+    setErr(vibeErr, "");
+    VIBES.forEach(v => {
+      const active = state.vibes.includes(v);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(v)}</b></div><div>${active ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        const has = state.vibes.includes(v);
+        if (has){
+          state.vibes = state.vibes.filter(x => x !== v);
+        } else {
+          if (state.vibes.length >= 2){
+            setErr(vibeErr, "You can choose up to 2.");
+            return;
+          }
+          state.vibes = [...state.vibes, v];
+        }
+        renderAll(false);
+        if (state.vibes.length > 0){
+          show(stepFriction);
+        }
+      };
+      vibeGrid.appendChild(btn);
+    });
+
+    if (state.vibes.length){
+      vibeSummary.innerHTML = `Selected: <b>${escapeHtml(state.vibes.join(" + "))}</b>`;
+      show(vibeSummary);
+      show(stepFriction);
+    } else {
+      hide(vibeSummary);
+    }
+  }
+
+  function renderFriction(){
+    frictionGrid.innerHTML = "";
+    FRICTION.forEach(f => {
+      const active = state.friction.includes(f);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(f)}</b></div><div>${active ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        const has = state.friction.includes(f);
+        state.friction = has ? state.friction.filter(x => x !== f) : [...state.friction, f];
+        renderAll(false);
+        show(stepNp);
+      };
+      frictionGrid.appendChild(btn);
+    });
+
+    if (state.friction.length){
+      frictionSummary.innerHTML = `Avoid: <b>${escapeHtml(state.friction.join(", "))}</b>`;
+      show(frictionSummary);
+    } else hide(frictionSummary);
+
+    show(stepNp);
+  }
+
+  function renderNP(){
+    npGrid.innerHTML = "";
+    const active = state.noPreference;
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    btn.innerHTML = `<div><b>${escapeHtml(NP[0])}</b></div><div>${active ? "✓" : "+"}</div>`;
+    btn.onclick = () => {
+      state.noPreference = !state.noPreference;
+      renderAll(false);
+    };
+    npGrid.appendChild(btn);
+
+    npSummary.innerHTML = active ? `Enabled: <b>${escapeHtml(NP[0])}</b>` : `Optional`;
+    show(npSummary);
+  }
+
+  function canContinue(){
+    if (!state.plan) return false;
+    if (!isWhereComplete()) return false;
+    if (!state.who) return false;
+    if (state.vibes.length === 0) return false;
+    return true;
+  }
+
+  function updateFooter(){
+    const ok = canContinue();
+    continueBtn.disabled = !ok || state.loadingCheckout;
+    readyTag.textContent = ok ? "Ready" : "Not ready";
+    if (state.loadingCheckout){
+      continueBtn.innerHTML = `<span class="spin"></span>Redirecting…`;
+    } else {
+      continueBtn.textContent = "Continue to payment";
+    }
+  }
+
+  function renderDebug(){
+    if (!DEBUG) return;
+    debugOut.textContent = JSON.stringify({
+      ...state,
+      blocks: state.blocks.map(b => ({prefecture:b.prefecture, area_group:b.area_group}))
+    }, null, 2);
+  }
+
+  function renderAll(scroll=true){
+    updatePlanPill();
+
+    // Mark plan buttons pressed
+    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
+
+    // Plan summary
+    planSummary.innerHTML = `Selected: <b>${escapeHtml(state.plan)}</b>`;
+    show(planSummary);
+
+    // WHERE
+    renderWhere().then(() => {
+      // WHO
+      if (isWhereComplete()){
+        show(stepWho);
+        renderWho();
+      } else {
+        hide(stepWho); hide(stepVibe); hide(stepFriction); hide(stepNp);
+      }
+
+      // VIBE
+      if (state.who){
+        show(stepVibe);
+        renderVibe();
+      } else {
+        hide(stepVibe); hide(stepFriction); hide(stepNp);
+      }
+
+      // friction + np
+      if (state.vibes.length){
+        show(stepFriction);
+        renderFriction();
+      } else {
+        hide(stepFriction); hide(stepNp);
+      }
+
+      if (state.vibes.length){
+        show(stepNp);
+        renderNP();
+      }
+
+      updateFooter();
+      renderDebug();
+
+      if (scroll){
+        scrollToEl(document.getElementById("step-where"));
+      }
+    });
+  }
+
+  // ===== Events =====
+  planGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".opt[data-plan]");
+    if (!btn) return;
+    const p = btn.dataset.plan;
+    if (p !== "explorer" && p !== "connoisseur") return;
+
+    // Update state
+    state.plan = p;
+
+    // Plan change effects
+    const maxBlocks = isConnoisseur() ? 3 : 1;
+    if (state.blocks.length > maxBlocks) state.blocks = state.blocks.slice(0, maxBlocks);
+    if (state.blocks.length === 0) state.blocks = [{prefecture:null, area_group:null, areas:[], loadingAreas:false}];
+
+    // Update URL query for shareability
+    const u = new URL(location.href);
+    u.searchParams.set("plan", state.plan);
+    history.replaceState({}, "", u.toString());
+
+    renderAll();
+  });
+
+  addBlockBtn.addEventListener("click", () => {
+    if (!isConnoisseur()) return;
+    if (state.blocks.length >= 3) return;
+    state.blocks.push({ prefecture:null, area_group:null, areas:[], loadingAreas:false });
+    renderAll(false);
+    // scroll to new block
+    setTimeout(() => {
+      const blocks = whereBlocks.querySelectorAll(".block");
+      const last = blocks[blocks.length - 1];
+      if (last) scrollToEl(last);
+    }, 20);
+  });
+
+  continueBtn.addEventListener("click", async () => {
+    if (!canContinue() || state.loadingCheckout) return;
+
+    state.loadingCheckout = true;
+    updateFooter();
+
+    const payload = {
+      plan: state.plan,
+      selections: state.blocks
+        .filter(b => b.prefecture && b.area_group)
+        .map(b => ({ prefecture: b.prefecture, area_group: b.area_group })),
+      who: state.who,
+      vibe: state.vibes,
+      friction: state.friction,
+      no_preference: state.noPreference,
+      source: "hearing.html"
+    };
+
+    try{
+      const res = await fetch("/api/checkout", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      // If API not ready, fallback to pay.html (keeps flow testable)
+      if (!res.ok){
+        const u = new URL("/pay.html", location.origin);
+        u.searchParams.set("plan", state.plan);
+        u.searchParams.set("payload", btoa(unescape(encodeURIComponent(JSON.stringify(payload))))); // optional
+        location.href = u.toString();
         return;
       }
 
-      dbg.textContent = "Loading areas…";
-      const prefs = Array.from(prefSelected);
-      const groups = await fetchAreas(plan, prefs);
-      areaGroups = groups;
+      const json = await res.json();
+      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
+      if (!checkoutUrl) throw new Error("No checkout URL returned");
+      location.href = checkoutUrl;
 
-      // clean selection to existing groups
-      areaSelected = new Set(Array.from(areaSelected).filter(x => areaGroups.includes(x)));
-
-      dbg.textContent = "";
-      renderAreaChips();
-    } catch(e){
-      areaGroups = [];
-      areaSelected = new Set();
-      dbg.textContent = "";
-      renderAreaChips();
-      showErr(String(e.message || e));
+    }catch(err){
+      // emergency fallback
+      const u = new URL("/pay.html", location.origin);
+      u.searchParams.set("plan", state.plan);
+      location.href = u.toString();
+    }finally{
+      state.loadingCheckout = false;
+      updateFooter();
     }
+  });
+
+  // ===== Init =====
+  function initChoices(){
+    // Pre-select plan based on query
+    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
+
+    // Initialize blocks by plan
+    state.blocks = [{prefecture:null, area_group:null, areas:[], loadingAreas:false}];
+
+    // Render static grids will happen in renderAll()
   }
 
-  // enforce max 2 vibes
-  vibesEl.addEventListener("change", () => {
-    const chosen = selectedOptions(vibesEl);
-    if (chosen.length > 2){
-      // keep first 2
-      Array.from(vibesEl.options).forEach(opt => opt.selected = chosen.slice(0,2).includes(opt.value));
-      showErr("Time & Mood: up to 2.");
-    } else {
-      clearErr();
-    }
-    save(); setCounter();
-  });
-  avoidEl.addEventListener("change", () => { save(); setCounter(); });
-  whoEl.addEventListener("change", () => { save(); setCounter(); });
-
-  planEl.addEventListener("change", () => {
-    clearErr();
-    const plan = getPlan();
-    // apply max limits when switching plan
-    const mp = maxPrefs(plan);
-    const ma = maxAreas(plan);
-
-    prefSelected = new Set(Array.from(prefSelected).slice(0, mp));
-    areaSelected = new Set(Array.from(areaSelected).slice(0, ma));
-    fetchAreasAndRender();
-  });
-
-  el("clearBtn").addEventListener("click", () => {
-    localStorage.removeItem(KEY);
-    location.reload();
-  });
-
-  el("continueBtn").addEventListener("click", () => {
-    clearErr();
-    const data = save();
-    const plan = getPlan();
-
-    if (data.prefs.length === 0) return showErr("Pick prefecture(s).");
-    if (data.areaGroups.length === 0) return showErr("Pick area_group(s).");
-
-    if (plan === "explorer" && data.prefs.length !== 1) return showErr("Explorer: pick exactly 1 prefecture.");
-    if (plan === "explorer" && data.areaGroups.length !== 1) return showErr("Explorer: pick exactly 1 area_group.");
-
-    if (plan === "connoisseur" && data.prefs.length > 4) return showErr("Connoisseur: up to 4 prefectures.");
-    if (plan === "connoisseur" && data.areaGroups.length > 4) return showErr("Connoisseur: up to 4 area_groups.");
-
-    // hearing → Stripe（success_url は Stripe側で results.html に戻す）
-    location.href = (plan === "connoisseur") ? stripeConnoisseur : stripeExplorer;
-  });
-
-  // restore state
-  (function init(){
-    const qPlan = (new URL(location.href)).searchParams.get("plan");
-    if (qPlan) planEl.value = (qPlan.toLowerCase() === "connoisseur") ? "connoisseur" : "explorer";
-
-    const prev = load();
-    if (prev){
-      // plan: URL優先
-      if (!qPlan && prev.plan) planEl.value = (String(prev.plan).toLowerCase() === "connoisseur") ? "connoisseur" : "explorer";
-
-      if (Array.isArray(prev.prefs)) prefSelected = new Set(prev.prefs.filter(x => PREFS.includes(x)));
-      if (Array.isArray(prev.areaGroups)) areaSelected = new Set(prev.areaGroups);
-      if (prev.who) whoEl.value = prev.who;
-
-      if (Array.isArray(prev.vibes)){
-        Array.from(vibesEl.options).forEach(opt => opt.selected = prev.vibes.includes(opt.value));
-      }
-      if (Array.isArray(prev.avoid)){
-        Array.from(avoidEl.options).forEach(opt => opt.selected = prev.avoid.includes(opt.value));
-      }
-    }
-
-    fetchAreasAndRender();
-  })();
-
+  initChoices();
+  updatePlanPill();
+  show(stepWhere);
+  renderAll(false);
 })();
 </script>
 </body>
