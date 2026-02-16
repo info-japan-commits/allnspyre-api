@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "stripe": "^18.0.0"
+    "stripe": "^18.0.0",
+    "airtable": "^0.12.2"
   }
 }
