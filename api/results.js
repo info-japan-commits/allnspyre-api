@@ -37,7 +37,7 @@ function matchesWho(shop, hearing) {
 function matchesAnyVibe(shop, hearing) {
   if (hearing.no_preference) return true;
   const targets = arr(hearing.vibes).map(norm).filter(Boolean);
-  if (targets.length === 0) return true;
+  if (targets.length === 0) return true; // vibes欠損は緩和
   const bv = arr(shop.best_vibe).map(norm).filter(Boolean);
   return bv.some((v) => targets.includes(v));
 }
@@ -51,18 +51,6 @@ function uniquePush(picked, candidates, limit) {
     seen.add(s.shop_id);
     picked.push(s);
   }
-}
-
-// ✅ 1件だけ追加する（Connoisseur Step1用）
-function pickOne(picked, candidates) {
-  const seen = new Set(picked.map((x) => x.shop_id));
-  for (const s of candidates) {
-    if (!s.shop_id || !s.shop_name) continue;
-    if (seen.has(s.shop_id)) continue;
-    picked.push(s);
-    return true;
-  }
-  return false;
 }
 
 function reasonFor(shop, hearing) {
@@ -83,8 +71,8 @@ function reasonFor(shop, hearing) {
   return `Local daily staple in ${area}.`;
 }
 
-// Explorer
-function select7Explorer(areaActive, hearing) {
+// ✅ 1エリア内で「思想順序」で7件作る（Explorerと同等）
+function select7InArea(areaActive, hearing) {
   const base = areaActive.filter((s) => norm(s.status) === "active");
   const picked = [];
 
@@ -102,66 +90,6 @@ function select7Explorer(areaActive, hearing) {
   return picked.slice(0, 7).map((s) => ({ ...s, reason: reasonFor(s, hearing) }));
 }
 
-// ✅ Connoisseur（修正版）: Step1は「各エリア1件だけ」
-function select7Connoisseur(areaMap, hearing) {
-  const areas = hearing.area_groups;
-  const picked = [];
-  const perArea = {};
-
-  const score = (s) => {
-    let sc = 0;
-    if (matchesWho(s, hearing)) sc += 2;
-    if (matchesAnyVibe(s, hearing)) sc += 2;
-    return sc;
-  };
-
-  // 1) min 1 per area（★ここが修正点）
-  for (const ag of areas) {
-    const base = (areaMap[ag] || []).filter((s) => norm(s.status) === "active");
-    if (base.length === 0) continue;
-
-    const sorted = [...base].sort((a, b) => score(b) - score(a));
-
-    // 「そのエリアから1件だけ」選ぶ
-    pickOne(picked, sorted);
-
-    perArea[ag] = picked.filter((x) => areaStr(x) === ag).length;
-  }
-
-  // 2) fill remaining by global score with cap 3 per area
-  if (picked.length < 7) {
-    const pool = areas
-      .flatMap((ag) => areaMap[ag] || [])
-      .filter((s) => norm(s.status) === "active");
-    const sorted = [...pool].sort((a, b) => score(b) - score(a));
-    const seen = new Set(picked.map((x) => x.shop_id));
-
-    for (const s of sorted) {
-      if (picked.length >= 7) break;
-      if (!s.shop_id || !s.shop_name) continue;
-      if (seen.has(s.shop_id)) continue;
-
-      const ag = areaStr(s);
-      const cnt = perArea[ag] ?? picked.filter((x) => areaStr(x) === ag).length;
-      if (cnt >= 3) continue;
-
-      seen.add(s.shop_id);
-      picked.push(s);
-      perArea[ag] = cnt + 1;
-    }
-  }
-
-  // 3) last resort fill
-  if (picked.length < 7) {
-    const pool = areas
-      .flatMap((ag) => areaMap[ag] || [])
-      .filter((s) => norm(s.status) === "active");
-    uniquePush(picked, pool, 7);
-  }
-
-  return picked.slice(0, 7).map((s) => ({ ...s, reason: reasonFor(s, hearing) }));
-}
-
 function escapeAirtableValue(s) {
   return String(s).replace(/'/g, "\\'");
 }
@@ -175,12 +103,14 @@ export default async function handler(req, res) {
 
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
+    // 暫定：決済済みのみ（Webhook前）
     const paid =
       session.payment_status === "paid" || session.status === "complete";
     if (!paid) return res.status(402).json({ ok: false, error: "NOT_PAID" });
 
     const metadata = session.metadata || {};
 
+    // hearing 復元（hearing優先）
     let hearing = null;
     if (metadata.hearing) {
       try {
@@ -190,6 +120,7 @@ export default async function handler(req, res) {
       }
     }
 
+    // 互換：metadata.area_groups でも動く
     if (!hearing) {
       if (!metadata.plan || !metadata.area_groups) {
         return res.status(400).json({
@@ -207,10 +138,7 @@ export default async function handler(req, res) {
       };
     }
 
-    console.log("RESULTS_META_HAS_HEARING", !!metadata.hearing);
-    console.log("RESULTS_HEARING_AREAS", hearing.area_groups);
-    console.log("RESULTS_PLAN", hearing.plan, "WHO", hearing.who, "VIBES", hearing.vibes);
-
+    // plan制約（hearing UI固定）
     if (hearing.plan === "explorer" && hearing.area_groups.length !== 1) {
       return res
         .status(400)
@@ -224,13 +152,22 @@ export default async function handler(req, res) {
 
     const table = base(process.env.AIRTABLE_TABLE_ID);
 
+    // ---------------- Explorer：1エリア7件 ----------------
     if (hearing.plan === "explorer") {
       const ag = hearing.area_groups[0];
-      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
+      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(
+        ag
+      )}')`;
 
       const records = await table.select({ filterByFormula: formula }).all();
       const all = records.map((r) => r.fields);
-      const shops = select7Explorer(all, hearing);
+
+      const shops = select7InArea(all, hearing);
+
+      // 7件に満たないなら商品不成立（事故防止）
+      if (shops.length !== 7) {
+        return res.status(409).json({ ok: false, error: "INSUFFICIENT_INVENTORY" });
+      }
 
       return res.status(200).json({
         ok: true,
@@ -240,32 +177,34 @@ export default async function handler(req, res) {
       });
     }
 
-    const areaMap = {};
+    // ---------------- Connoisseur：4エリア×7件 = 28件 ----------------
+    const out = [];
     for (const ag of hearing.area_groups) {
-      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
+      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(
+        ag
+      )}')`;
       const records = await table.select({ filterByFormula: formula }).all();
-      areaMap[ag] = records.map((r) => r.fields);
+      const all = records.map((r) => r.fields);
+
+      const picks = select7InArea(all, hearing);
+
+      // 各エリア7件固定（要件：4エリア28件）
+      if (picks.length !== 7) {
+        return res.status(409).json({
+          ok: false,
+          error: "INSUFFICIENT_INVENTORY",
+          area_group: ag,
+        });
+      }
+
+      out.push(...picks);
     }
-
-    console.log(
-      "AREA_COUNTS",
-      hearing.area_groups.map((ag) => [ag, (areaMap[ag] || []).length])
-    );
-
-    const shops = select7Connoisseur(areaMap, hearing);
-
-    const dist = shops.reduce((m, s) => {
-      const k = areaStr(s) || "UNKNOWN";
-      m[k] = (m[k] || 0) + 1;
-      return m;
-    }, {});
-    console.log("PICKED_DIST", dist);
 
     return res.status(200).json({
       ok: true,
       plan: hearing.plan,
       who: hearing.who,
-      shops,
+      shops: out, // ✅ 28件
     });
   } catch (e) {
     console.error("results failed", e);
