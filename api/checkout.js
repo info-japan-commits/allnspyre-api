@@ -22,6 +22,7 @@ export default async function handler(req, res) {
       no_preference: !!body.no_preference,
       source: "hearing.html",
     };
+console.log("AREAS_IN", hearing.area_groups, "UNIQ", [...new Set(hearing.area_groups)]);
 
     if (!["explorer","connoisseur"].includes(hearing.plan))
       return res.status(400).json({ ok:false, error:"INVALID_PLAN" });
