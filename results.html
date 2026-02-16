@@ -1,271 +1,151 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Allnspyre | Your 7 picks</title>
-  <style>
-    :root{
-      --bg:#f7f5f1;
-      --card:#ffffff;
-      --text:#111;
-      --muted:#6b6b6b;
-      --line:#e8e5df;
-      --danger:#c62828;
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
-      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
-    }
-    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
-    .chip{
-      font-size:12px;color:var(--muted);
-      border:1px solid var(--line);
-      background:#fff;
-      padding:6px 10px;border-radius:999px;
-    }
-    .actions{display:flex;gap:10px}
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      padding:8px 12px;
-      border-radius:999px;
-      cursor:pointer;
-      font-size:13px;
-    }
-    .btn:hover{filter:brightness(0.98)}
-    h1{
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:64px;
-      letter-spacing:-0.02em;
-      margin:18px 0 8px;
-      line-height:1.0;
-    }
-    .sub{color:var(--muted);margin:0 0 22px}
-    .alert{
-      border:1px solid #f2b8b5;
-      background:#fff3f3;
-      color:var(--danger);
-      padding:14px 16px;
-      border-radius:14px;
-      margin:18px 0;
-      display:none;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:14px;
-      margin-top:18px;
-    }
-    @media (max-width: 960px){
-      h1{font-size:44px}
-      .grid{grid-template-columns: repeat(2, minmax(0, 1fr));}
-    }
-    @media (max-width: 600px){
-      h1{font-size:38px}
-      .grid{grid-template-columns: 1fr;}
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px 16px 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-    }
-    .name{
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:20px;
-      margin:0 0 6px;
-    }
-    .meta{font-size:13px;color:var(--muted);margin:0 0 10px;}
-    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .tag{
-      font-size:12px;color:var(--text);
-      border:1px solid var(--line);
-      background:#fff;
-      padding:5px 9px;border-radius:999px;
-    }
-    .skeleton{
-      height:110px;
-      border-radius:var(--radius);
-      border:1px solid var(--line);
-      background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
-      background-size: 200% 200%;
-      animation: shimmer 1.2s infinite linear;
-    }
-    @keyframes shimmer{
-      0%{background-position:0% 0%}
-      100%{background-position:100% 0%}
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="chips" id="chips">
-        <span class="chip">PLAN: —</span>
-        <span class="chip">PREFS: —</span>
-        <span class="chip">AREAS: —</span>
-      </div>
-      <div class="actions">
-        <button class="btn" id="retryBtn">Retry</button>
-        <button class="btn" id="backBtn">Back to Hearing</button>
-      </div>
-    </div>
+// ===== types (keep minimal) =====
+type Shop = {
+  shop_id: string;
+  shop_name: string;
+  area_group: string;
+  area_detail?: string;
+  tier?: string;
+  time_slot?: string | null;
+  best_with?: string | null;
+  best_vibe?: string | null;
+  status: string;
+  [k: string]: any;
+};
 
-    <h1>Your 7 picks.</h1>
-    <p class="sub">Where locals actually eat — before the world finds out.</p>
+type Hearing = {
+  plan: "explorer" | "connoisseur";
+  prefectures: string[];
+  area_groups: string[];
+  who: string;          // required (slug)
+  vibes: string[];      // 1-2 (slug)
+  friction?: string;
+  no_preference?: boolean;
+  source: "hearing.html";
+};
 
-    <div class="alert" id="alertBox">
-      <strong>Failed</strong>
-      <div id="alertMsg" style="margin-top:6px;"></div>
-    </div>
+type ShopOut = Shop & { reason: string };
 
-    <div class="grid" id="grid">
-      <!-- loading skeletons -->
-    </div>
-  </div>
+// ===== helpers =====
+const norm = (v?: string | null) => (v ? String(v).trim().toLowerCase() : null);
 
-<script>
-  const grid = document.getElementById("grid");
-  const alertBox = document.getElementById("alertBox");
-  const alertMsg = document.getElementById("alertMsg");
-  const chips = document.getElementById("chips");
+function matchesWho(s: Shop, h: Hearing) {
+  return norm(s.best_with) === norm(h.who);
+}
+function matchesAnyVibe(s: Shop, h: Hearing) {
+  if (h.no_preference) return true;
+  const sv = norm(s.best_vibe);
+  if (!sv) return false;
+  const vs = (h.vibes ?? []).map(norm).filter(Boolean) as string[];
+  if (vs.length === 0) return true; // vibes欠損は緩和
+  return vs.includes(sv);
+}
+function timeSlotMatch(s: Shop, h: Hearing) {
+  // hearing payloadにtime_slotが無いなら常にfalse（=優先ソートしない）
+  const p = norm((h as any).time_slot ?? null);
+  const t = norm(s.time_slot ?? null);
+  if (!p || !t) return false;
+  return p === t;
+}
+function stableSortByTime(cands: Shop[], h: Hearing) {
+  const hasPref = !!norm((h as any).time_slot ?? null);
+  if (!hasPref) return cands;
+  const yes: Shop[] = [];
+  const no: Shop[] = [];
+  for (const s of cands) (timeSlotMatch(s, h) ? yes : no).push(s);
+  return yes.concat(no);
+}
+function uniquePush(picked: Shop[], cands: Shop[], limit: number) {
+  const seen = new Set(picked.map(x => x.shop_id));
+  for (const s of cands) {
+    if (picked.length >= limit) break;
+    if (!s.shop_id || !s.shop_name) continue; // 必須欠損は除外
+    if (seen.has(s.shop_id)) continue;
+    seen.add(s.shop_id);
+    picked.push(s);
+  }
+}
 
-  const retryBtn = document.getElementById("retryBtn");
-  const backBtn = document.getElementById("backBtn");
+function reasonFor(s: Shop, h: Hearing): string {
+  const area = s.area_group;
+  const who = norm(h.who) ?? "you";
+  const vibe = norm(s.best_vibe) ?? (h.vibes?.[0] ?? "local");
 
-  function setError(message){
-    alertMsg.textContent = message || "Unknown error";
-    alertBox.style.display = "block";
+  const whoMatch = matchesWho(s, h);
+  const vibeMatch = !h.no_preference && (h.vibes?.length ?? 0) > 0 && matchesAnyVibe(s, h);
+  const tsMatch = timeSlotMatch(s, h);
+  const hasTsPref = !!norm((h as any).time_slot ?? null);
+
+  if (whoMatch && vibeMatch) return `Best for ${who} + ${vibe} in ${area}.`;
+  if (whoMatch) return `Fits ${who} in ${area}.`;
+  if (vibeMatch) return `${vibe} vibe pick in ${area}.`;
+  if (hasTsPref && tsMatch) return `Reliable ${(h as any).time_slot} option in ${area}.`;
+  return `Local daily staple in ${area}.`;
+}
+
+// ===== Explorer selector: 1 area -> 7 (S0..S3) =====
+function select7Explorer(areaActive: Shop[], h: Hearing): ShopOut[] {
+  const base = areaActive.filter(s => norm(s.status) === "active");
+  const picked: Shop[] = [];
+
+  // S0: who + vibe
+  uniquePush(picked, stableSortByTime(base.filter(s => matchesWho(s,h) && matchesAnyVibe(s,h)), h), 7);
+  // S1: who only
+  if (picked.length < 7) uniquePush(picked, stableSortByTime(base.filter(s => matchesWho(s,h)), h), 7);
+  // S2: vibe only
+  if (picked.length < 7) uniquePush(picked, stableSortByTime(base.filter(s => matchesAnyVibe(s,h)), h), 7);
+  // S3: relaxed
+  if (picked.length < 7) uniquePush(picked, stableSortByTime(base, h), 7);
+
+  return picked.slice(0,7).map(s => ({ ...s, reason: reasonFor(s,h) }));
+}
+
+// ===== Connoisseur selector: 4 areas -> 7 total (min viable allocation) =====
+function select7Connoisseur(areaMap: Record<string, Shop[]>, h: Hearing): ShopOut[] {
+  const areas = h.area_groups;
+  const picked: Shop[] = [];
+  const perArea: Record<string, number> = {};
+
+  const score = (s: Shop) => {
+    let sc = 0;
+    if (matchesWho(s,h)) sc += 2;
+    if (matchesAnyVibe(s,h)) sc += 2;
+    if (timeSlotMatch(s,h)) sc += 1;
+    return sc;
+  };
+
+  // 1) min 1 per area
+  for (const ag of areas) {
+    const base = (areaMap[ag] ?? []).filter(s => norm(s.status)==="active");
+    if (base.length === 0) continue;
+    const sorted = stableSortByTime([...base].sort((a,b)=>score(b)-score(a)), h);
+    uniquePush(picked, sorted, 7);
+    perArea[ag] = picked.filter(x=>x.area_group===ag).length;
   }
 
-  function clearError(){
-    alertBox.style.display = "none";
-    alertMsg.textContent = "";
-  }
+  // 2) fill remaining by global score with cap 3 per area
+  if (picked.length < 7) {
+    const pool = areas.flatMap(ag => (areaMap[ag] ?? [])).filter(s => norm(s.status)==="active");
+    const sorted = stableSortByTime([...pool].sort((a,b)=>score(b)-score(a)), h);
+    const seen = new Set(picked.map(x=>x.shop_id));
 
-  function setLoading(){
-    grid.innerHTML = "";
-    for(let i=0;i<7;i++){
-      const d = document.createElement("div");
-      d.className = "skeleton";
-      grid.appendChild(d);
+    for (const s of sorted) {
+      if (picked.length >= 7) break;
+      if (!s.shop_id || !s.shop_name) continue;
+      if (seen.has(s.shop_id)) continue;
+      const ag = s.area_group;
+      const cnt = perArea[ag] ?? picked.filter(x=>x.area_group===ag).length;
+      if (cnt >= 3) continue;
+      seen.add(s.shop_id);
+      picked.push(s);
+      perArea[ag] = cnt + 1;
     }
   }
 
-  function setChips(plan, prefs, areas){
-    chips.innerHTML = `
-      <span class="chip">PLAN: ${plan || "—"}</span>
-      <span class="chip">PREFS: ${prefs || "—"}</span>
-      <span class="chip">AREAS: ${areas || "—"}</span>
-    `;
+  // 3) last-resort relaxed fill (data shortage)
+  if (picked.length < 7) {
+    const pool = areas.flatMap(ag => (areaMap[ag] ?? [])).filter(s => norm(s.status)==="active");
+    uniquePush(picked, stableSortByTime(pool, h), 7);
   }
 
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, (m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-  }
-
-  function renderShops(shops){
-    grid.innerHTML = "";
-    shops.forEach((shop) => {
-      const el = document.createElement("div");
-      el.className = "card";
-
-      const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
-      const area = escapeHtml(shop.area_group || "");
-      const detail = escapeHtml(shop.area_detail || "");
-      const slot = escapeHtml(shop.time_slot || "");
-      const tier = escapeHtml(shop.tier || "");
-
-      // best_with / best_vibe が配列 or 文字列両対応
-      const bw = Array.isArray(shop.best_with) ? shop.best_with : (shop.best_with ? [shop.best_with] : []);
-      const bv = Array.isArray(shop.best_vibe) ? shop.best_vibe : (shop.best_vibe ? [shop.best_vibe] : []);
-
-      const tags = [
-        ...(tier ? [tier] : []),
-        ...(slot ? [slot] : []),
-        ...bw,
-        ...bv
-      ].slice(0, 6);
-
-      el.innerHTML = `
-        <h3 class="name">${name}</h3>
-        <p class="meta">${area}${detail ? " / " + detail : ""}</p>
-        <div class="tags">
-          ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
-        </div>
-      `;
-      grid.appendChild(el);
-    });
-  }
-
-  function getSessionId(){
-    const u = new URL(location.href);
-    return u.searchParams.get("session_id");
-  }
-
-  async function load(){
-    clearError();
-    setLoading();
-
-    const sessionId = getSessionId();
-    if(!sessionId){
-      grid.innerHTML = "";
-      setChips("—", "—", "—");
-      setError("Missing session_id. Please retry checkout from hearing page.");
-      return;
-    }
-
-    try{
-      const res = await fetch(`/api/results?session_id=${encodeURIComponent(sessionId)}`);
-      const data = await res.json().catch(()=> ({}));
-
-      if(!res.ok || !data.ok){
-        grid.innerHTML = "";
-        setChips("—", "—", "—");
-        setError(data.error || `Request failed (${res.status})`);
-        return;
-      }
-
-      // chips
-      const plan = data.plan || "—";
-      const prefs = data.who ? data.who : "—";
-      const areas = Array.isArray(data.shops) ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—") : "—";
-      setChips(plan, prefs, areas);
-
-      const shops = Array.isArray(data.shops) ? data.shops : [];
-      if(shops.length === 0){
-        grid.innerHTML = "";
-        setError("No shops returned.");
-        return;
-      }
-
-      renderShops(shops);
-    }catch(e){
-      grid.innerHTML = "";
-      setChips("—", "—", "—");
-      setError("Network or server error. Check Vercel Runtime Logs.");
-    }
-  }
-
-  retryBtn.addEventListener("click", load);
-  backBtn.addEventListener("click", () => {
-    // planが分かれば hearingに戻る（なければそのまま）
-    const u = new URL(location.href);
-    const plan = (u.searchParams.get("plan") || "");
-    location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
-  });
-
-  load();
-</script>
-</body>
-</html>
+  return picked.slice(0,7).map(s => ({ ...s, reason: reasonFor(s,h) }));
+}
