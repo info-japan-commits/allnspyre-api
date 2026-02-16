@@ -1,50 +1,42 @@
 import Stripe from "stripe";
+import Airtable from "airtable";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-function safeJsonParse(s, fallback) {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return fallback;
-  }
-}
+const base = new Airtable({
+  apiKey: process.env.AIRTABLE_TOKEN,
+}).base(process.env.AIRTABLE_BASE_ID);
 
 export default async function handler(req, res) {
   try {
-    // GET /api/results?session_id=...
-    const session_id = req.query?.session_id;
-    if (!session_id) return res.status(400).json({ error: "Missing session_id" });
-
-    // Stripeからセッション取得（metadataを読む）
-    const session = await stripe.checkout.sessions.retrieve(session_id);
-
-    const md = session?.metadata || {};
-
-    const plan = md.plan || null;
-    const prefectures = safeJsonParse(md.prefectures || "[]", []);
-    const area_groups = safeJsonParse(md.area_groups || "[]", []);
-    const who = md.who || null;
-    const vibes = safeJsonParse(md.vibes || "[]", []);
-    const friction = safeJsonParse(md.friction || "[]", []);
-    const no_preference = md.no_preference === "true";
-
-    // ここで必須チェック（いまの画面エラーの根本）
-    if (!Array.isArray(area_groups) || area_groups.length === 0) {
-      return res.status(400).json({ error: "No areaGroups provided" });
+    const { session_id } = req.query;
+    if (!session_id) {
+      return res.status(400).json({ error: "Missing session_id" });
     }
 
-    // いったん「復元できた」ことを返す（次にAirtable抽出を足す）
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const metadata = session.metadata;
+
+    if (!metadata || !metadata.area_groups) {
+      return res.status(400).json({ error: "No area_groups provided" });
+    }
+
+    const areaGroups = JSON.parse(metadata.area_groups);
+
+    const records = await base(process.env.AIRTABLE_TABLE_ID)
+      .select({
+        filterByFormula: `OR(${areaGroups
+          .map((g) => `{area_group}='${g}'`)
+          .join(",")})`,
+        maxRecords: 7,
+      })
+      .all();
+
+    const shops = records.map((r) => r.fields);
+
     return res.status(200).json({
       ok: true,
-      plan,
-      prefectures,
-      area_groups,
-      who,
-      vibes,
-      friction,
-      no_preference,
-      session_id,
+      plan: metadata.plan,
+      shops,
     });
   } catch (e) {
     console.error(e);
