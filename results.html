@@ -127,7 +127,9 @@
       <div id="alertMsg" style="margin-top:6px;"></div>
     </div>
 
-    <div class="grid" id="grid"></div>
+    <div class="grid" id="grid">
+      <!-- loading skeletons -->
+    </div>
   </div>
 
 <script>
@@ -143,10 +145,12 @@
     alertMsg.textContent = message || "Unknown error";
     alertBox.style.display = "block";
   }
+
   function clearError(){
     alertBox.style.display = "none";
     alertMsg.textContent = "";
   }
+
   function setLoading(){
     grid.innerHTML = "";
     for(let i=0;i<7;i++){
@@ -155,6 +159,7 @@
       grid.appendChild(d);
     }
   }
+
   function setChips(plan, prefs, areas){
     chips.innerHTML = `
       <span class="chip">PLAN: ${plan || "—"}</span>
@@ -162,11 +167,13 @@
       <span class="chip">AREAS: ${areas || "—"}</span>
     `;
   }
+
   function escapeHtml(s){
     return String(s ?? "").replace(/[&<>"']/g, (m)=>({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[m]));
   }
+
   function renderShops(shops){
     grid.innerHTML = "";
     shops.forEach((shop) => {
@@ -179,6 +186,7 @@
       const slot = escapeHtml(shop.time_slot || "");
       const tier = escapeHtml(shop.tier || "");
 
+      // best_with / best_vibe が配列 or 文字列両対応
       const bw = Array.isArray(shop.best_with) ? shop.best_with : (shop.best_with ? [shop.best_with] : []);
       const bv = Array.isArray(shop.best_vibe) ? shop.best_vibe : (shop.best_vibe ? [shop.best_vibe] : []);
 
@@ -199,10 +207,12 @@
       grid.appendChild(el);
     });
   }
+
   function getSessionId(){
     const u = new URL(location.href);
     return u.searchParams.get("session_id");
   }
+
   async function load(){
     clearError();
     setLoading();
@@ -214,6 +224,7 @@
       setError("Missing session_id. Please retry checkout from hearing page.");
       return;
     }
+
     try{
       const res = await fetch(`/api/results?session_id=${encodeURIComponent(sessionId)}`);
       const data = await res.json().catch(()=> ({}));
@@ -225,6 +236,7 @@
         return;
       }
 
+      // chips
       const plan = data.plan || "—";
       const prefs = data.who ? data.who : "—";
       const areas = Array.isArray(data.shops) ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—") : "—";
@@ -236,6 +248,7 @@
         setError("No shops returned.");
         return;
       }
+
       renderShops(shops);
     }catch(e){
       grid.innerHTML = "";
@@ -246,6 +259,7 @@
 
   retryBtn.addEventListener("click", load);
   backBtn.addEventListener("click", () => {
+    // planが分かれば hearingに戻る（なければそのまま）
     const u = new URL(location.href);
     const plan = (u.searchParams.get("plan") || "");
     location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
