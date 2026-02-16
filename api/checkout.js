@@ -1,79 +1,110 @@
+// /api/checkout.js
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2025-01-27.acacia", // 多少違ってもOK（Stripe側で互換）
+});
 
-function uniq(arr){ return [...new Set(arr)]; }
+function json(res, status, obj) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(obj));
+}
+
+function getBaseUrl(req) {
+  // BASE_URLがあれば最優先（例: https://allnspyre-api.vercel.app）
+  const envBase = process.env.BASE_URL;
+  if (envBase && typeof envBase === "string" && envBase.startsWith("http")) return envBase.replace(/\/$/, "");
+
+  // なければリクエストから推定（Vercelで動く）
+  const proto = (req.headers["x-forwarded-proto"] || "https").toString();
+  const host = (req.headers["x-forwarded-host"] || req.headers.host || "").toString();
+  return `${proto}://${host}`.replace(/\/$/, "");
+}
+
+function normalizePlan(v) {
+  const s = (v ?? "").toString().trim().toLowerCase();
+  if (s === "explorer") return "explorer";
+  if (s === "connoisseur") return "connoisseur";
+  return "";
+}
+
+function asString(v) {
+  if (v === undefined || v === null) return "";
+  if (Array.isArray(v)) return v.map(x => String(x)).join(","); // metadataはstring only
+  return String(v);
+}
 
 export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST")
-      return res.status(405).json({ ok:false, error:"METHOD_NOT_ALLOWED" });
+  // GETで叩いたらMETHOD_NOT_ALLOWEDにする（今まで通り）
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return json(res, 405, { ok: false, error: "METHOD_NOT_ALLOWED" });
+  }
 
+  // Stripeキーがない場合は即死
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error("[checkout] missing STRIPE_SECRET_KEY");
+    return json(res, 500, { ok: false, error: "SERVER_MISCONFIG" });
+  }
+
+  try {
+    // bodyはJSON想定（Studio/フロントがPOSTする）
     const body = req.body || {};
 
-    // ===== hearing payload（固定）=====
-    const hearing = {
-      plan: body.plan,
-      prefectures: Array.isArray(body.prefectures) ? body.prefectures : [],
-      area_groups: Array.isArray(body.area_groups) ? body.area_groups : [],
-      who: body.who,
-      vibes: Array.isArray(body.vibes) ? body.vibes : [],
-      friction: body.friction ?? "",
-      no_preference: !!body.no_preference,
-      source: "hearing.html",
-    };
-console.log("AREAS_IN", hearing.area_groups, "UNIQ", [...new Set(hearing.area_groups)]);
+    // planは「body優先」→「query」→（それでも無ければNG）
+    const plan = normalizePlan(body.plan || req.query?.plan);
+    if (!plan) {
+      // ★ここが最重要：デフォルト禁止（誤課金防止）
+      return json(res, 400, { ok: false, error: "INVALID_PLAN" });
+    }
 
-    if (!["explorer","connoisseur"].includes(hearing.plan))
-      return res.status(400).json({ ok:false, error:"INVALID_PLAN" });
+    const priceExplorer = process.env.STRIPE_PRICE_EXPLORER;
+    const priceConnoisseur = process.env.STRIPE_PRICE_CONNOISSEUR;
+    if (!priceExplorer || !priceConnoisseur) {
+      console.error("[checkout] missing STRIPE_PRICE_EXPLORER or STRIPE_PRICE_CONNOISSEUR");
+      return json(res, 500, { ok: false, error: "SERVER_MISCONFIG_PRICE" });
+    }
 
-    // ===== area validation =====
-    const required = hearing.plan === "connoisseur" ? 4 : 1;
+    const priceId = plan === "explorer" ? priceExplorer : priceConnoisseur;
 
-    if (hearing.area_groups.length !== required)
-      return res.status(400).json({ ok:false, error:"INVALID_AREA_COUNT" });
+    // hearingから来る値（無ければ空でOK）
+    // ※ metadataはstringしか入れられないので正規化する
+    const who = asString(body.who);
+    const vibes = asString(body.vibes); // 例: ["quiet_reflective","deeply_local"] or "quiet_reflective,deeply_local"
+    const areaGroups = asString(body.area_groups || body.areas || body.areaGroups);
 
-    if (uniq(hearing.area_groups).length !== required)
-      return res.status(400).json({ ok:false, error:"DUPLICATE_AREA_GROUPS" });
+    const customerEmail = asString(body.customer_email || body.email);
 
-    if (!hearing.who)
-      return res.status(400).json({ ok:false, error:"MISSING_WHO" });
+    const baseUrl = getBaseUrl(req);
 
-    if (hearing.vibes.length < 1 || hearing.vibes.length > 2)
-      return res.status(400).json({ ok:false, error:"INVALID_VIBES" });
-
-    // ===== price selection =====
-    const price =
-      hearing.plan === "explorer"
-        ? process.env.STRIPE_PRICE_EXPLORER
-        : process.env.STRIPE_PRICE_CONNOISSEUR;
-
-    if (!price)
-      return res.status(500).json({ ok:false, error:"MISSING_PRICE_ENV" });
-
-    const baseUrl =
-      process.env.BASE_URL || `https://${req.headers.host}`;
-
-    console.log("FINAL_PLAN", hearing.plan, "PRICE", price);
+    // success/cancel（results UIは固定なので results.html へ）
+    // results.html は ?session_id=... を読む仕様なので必ず付与
+    const successUrl = `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(plan)}`;
+    const cancelUrl = `${baseUrl}/hearing.html?plan=${encodeURIComponent(plan)}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [{ price, quantity: 1 }],
-      success_url: `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/hearing.html?plan=${hearing.plan}`,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+
+      // 任意：メールが取れるなら設定（Stripe側でも入力される）
+      ...(customerEmail ? { customer_email: customerEmail } : {}),
+
+      // ★Webhook / resultsで使うために必ず入れる
       metadata: {
-        plan: hearing.plan,
-        hearing: JSON.stringify(hearing),
-        area_groups: JSON.stringify(hearing.area_groups),
-        who: hearing.who,
-        vibes: JSON.stringify(hearing.vibes),
-        no_preference: String(hearing.no_preference),
+        plan,
+        who,
+        vibes,
+        area_groups: areaGroups,
       },
     });
 
-    return res.status(200).json({ ok:true, url: session.url });
+    // フロントはこのURLへリダイレクトするだけ
+    return json(res, 200, { ok: true, url: session.url, id: session.id, plan });
   } catch (e) {
-    console.error("checkout error", e);
-    return res.status(500).json({ ok:false, error:"CHECKOUT_FAILED" });
+    console.error("[checkout] handler error:", e?.message || e);
+    return json(res, 500, { ok: false, error: "CHECKOUT_FAILED" });
   }
 }
