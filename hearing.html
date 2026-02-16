@@ -92,6 +92,12 @@
     }
     .primary:disabled{opacity:.45;cursor:not-allowed;}
     .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .spin{
+      width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;border-radius:999px;display:inline-block;
+      animation:sp 1s linear infinite;vertical-align:-2px;margin-right:8px;
+    }
+    @keyframes sp {to{transform:rotate(360deg)}}
   </style>
 </head>
 
@@ -181,12 +187,36 @@
       <div class="grid" id="vibeGrid"></div>
       <div class="danger" id="vibeErr"></div>
     </section>
+
+    <!-- STEP 4 -->
+    <section class="card" id="step-friction" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 4</div>
+          <div class="h">Prefer to avoid? <span class="small">(optional)</span></div>
+        </div>
+      </div>
+      <div class="grid" id="frictionGrid"></div>
+      <div class="note">This is a quiet filter. It won’t change your “vibe tags.”</div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="card" id="step-np" style="display:none">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 5</div>
+          <div class="h">If you’re not sure</div>
+        </div>
+      </div>
+      <div class="grid" id="npGrid"></div>
+    </section>
+
   </div>
 
   <div class="footerBar">
     <div class="footerInner">
       <div class="tag" id="statusTag">Not ready</div>
-      <button class="primary" id="continueBtn" disabled>Continue</button>
+      <button class="primary" id="continueBtn" disabled>Continue to payment</button>
     </div>
   </div>
 
@@ -205,6 +235,12 @@
     { label:"Deeply local", slug:"deeply_local" },
     { label:"Lively & social", slug:"lively_social" },
   ];
+  const FRICTION = [
+    { label:"Long lines", slug:"long_lines" },
+    { label:"Tourist-heavy places", slug:"tourist_heavy" },
+    { label:"Very noisy spots", slug:"very_noisy" },
+  ];
+  const NP = [{ label:"No preference — pick for me", slug:"no_preference" }];
 
   const qs = new URLSearchParams(location.search);
   const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
@@ -216,7 +252,10 @@
     selectedAreas: [],
     who: null,
     vibes: [],
+    friction: [],
+    noPreference: false,
     loadingAreas: false,
+    loadingCheckout: false,
   };
 
   const planPill = document.getElementById("planPill");
@@ -240,6 +279,12 @@
   const vibeGrid = document.getElementById("vibeGrid");
   const vibeErr = document.getElementById("vibeErr");
   const vibeTag = document.getElementById("vibeTag");
+
+  const stepFriction = document.getElementById("step-friction");
+  const frictionGrid = document.getElementById("frictionGrid");
+
+  const stepNp = document.getElementById("step-np");
+  const npGrid = document.getElementById("npGrid");
 
   const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
@@ -295,6 +340,13 @@
     setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
   }
 
+  function resetDownstream(){
+    state.who = null;
+    state.vibes = [];
+    state.friction = [];
+    state.noPreference = false;
+  }
+
   function renderPref(){
     prefGrid.innerHTML = "";
     PREFECTURES.forEach(p => {
@@ -321,8 +373,7 @@
         // reset when prefectures change
         state.selectedAreas = [];
         state.areasByPref = {};
-        state.who = null;
-        state.vibes = [];
+        resetDownstream();
 
         renderAll();
 
@@ -404,8 +455,7 @@
           setErr("");
           toggleArea(area);
           // area change resets downstream
-          state.who = null;
-          state.vibes = [];
+          resetDownstream();
           renderAll();
         };
         grid.appendChild(btn);
@@ -445,9 +495,12 @@
       btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
       btn.onclick = () => {
         state.who = w.slug;
-        // who change resets vibes（思想の整合：並び軸が変わる）
+        // who change resets downstream vibe-related
         state.vibes = [];
+        state.friction = [];
+        state.noPreference = false;
         renderAll();
+        stepVibe.scrollIntoView({behavior:"smooth", block:"start"});
       };
       whoGrid.appendChild(btn);
     });
@@ -477,19 +530,58 @@
           state.vibes = [...state.vibes, v.slug];
         }
         renderAll();
+        if (state.vibes.length > 0){
+          stepFriction.scrollIntoView({behavior:"smooth", block:"start"});
+        }
       };
       vibeGrid.appendChild(btn);
     });
   }
 
+  function renderFriction(){
+    frictionGrid.innerHTML = "";
+    FRICTION.forEach(f => {
+      const on = state.friction.includes(f.slug);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(f.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        const has = state.friction.includes(f.slug);
+        state.friction = has ? state.friction.filter(x => x !== f.slug) : [...state.friction, f.slug];
+        renderAll();
+      };
+      frictionGrid.appendChild(btn);
+    });
+  }
+
+  function renderNoPreference(){
+    npGrid.innerHTML = "";
+    const on = state.noPreference;
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.innerHTML = `<div><b>${escapeHtml(NP[0].label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+    btn.onclick = () => {
+      state.noPreference = !state.noPreference;
+      renderAll();
+    };
+    npGrid.appendChild(btn);
+  }
+
   function ready(){
-    return (state.selectedAreas.length === needAreas()) && !!state.who && (state.vibes.length > 0);
+    return (state.selectedAreas.length === needAreas())
+      && !!state.who
+      && (state.vibes.length > 0);
   }
 
   function renderFooter(){
     const ok = ready();
     statusTag.textContent = ok ? "Ready" : "Not ready";
-    continueBtn.disabled = !ok;
+    continueBtn.disabled = !ok || state.loadingCheckout;
+    continueBtn.innerHTML = state.loadingCheckout ? `<span class="spin"></span>Redirecting…` : `Continue to payment`;
   }
 
   function renderAll(){
@@ -498,23 +590,40 @@
     renderPref();
     renderAreas();
 
-    // Step2
+    // Step2 gate
     if (state.selectedAreas.length === needAreas()){
       stepWho.style.display = "";
       renderWho();
     } else {
       stepWho.style.display = "none";
       stepVibe.style.display = "none";
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
       renderFooter();
       return;
     }
 
-    // Step3
+    // Step3 gate
     if (state.who){
       stepVibe.style.display = "";
       renderVibes();
     } else {
       stepVibe.style.display = "none";
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
+      renderFooter();
+      return;
+    }
+
+    // Step4/5 gate (vibe chosen)
+    if (state.vibes.length > 0){
+      stepFriction.style.display = "";
+      stepNp.style.display = "";
+      renderFriction();
+      renderNoPreference();
+    } else {
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
     }
 
     renderFooter();
@@ -533,8 +642,7 @@
     // reset
     state.selectedAreas = [];
     state.areasByPref = {};
-    state.who = null;
-    state.vibes = [];
+    resetDownstream();
     state.loadingAreas = false;
     setErr(""); setWhoErr(""); setVibeErr("");
 
@@ -545,8 +653,9 @@
     renderAll();
   });
 
-  continueBtn.addEventListener("click", () => {
-    if (!ready()){
+  // Continue -> /api/checkout (redirect to Stripe)
+  continueBtn.addEventListener("click", async () => {
+    if (!ready() || state.loadingCheckout) {
       if (!state.who) setWhoErr("Please choose who you are eating with.");
       if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
       return;
@@ -555,13 +664,35 @@
     const payload = {
       plan: state.plan,
       prefectures: state.prefectures,
-      area_groups: state.selectedAreas,
-      who: state.who,
-      best_with: state.who,
-      vibes: state.vibes,
-      best_vibe: state.vibes
+      area_groups: state.selectedAreas,   // Airtable area_group
+      best_with: state.who,               // Airtable best_with
+      best_vibe: state.vibes,             // Airtable best_vibe (array)
+      friction: state.friction,           // optional filter
+      no_preference: state.noPreference,  // optional UX branch
+      source: "hearing.html"
     };
-    alert("OK (Step1+Step2+Step3)\n" + JSON.stringify(payload, null, 2));
+
+    try{
+      state.loadingCheckout = true;
+      renderFooter();
+
+      const res = await fetch("/api/checkout", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("checkout failed");
+      const json = await res.json();
+      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
+      if (!checkoutUrl) throw new Error("no url returned");
+      location.href = checkoutUrl;
+    }catch(e){
+      alert("Checkout not ready yet. Implement /api/checkout next.");
+    }finally{
+      state.loadingCheckout = false;
+      renderFooter();
+    }
   });
 
   // init
