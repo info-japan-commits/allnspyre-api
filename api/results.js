@@ -14,6 +14,19 @@ function arr(v) {
   return Array.isArray(v) ? v : v ? [v] : [];
 }
 
+// ✅ Airtable/実データの揺れ吸収：area_group を必ず文字列に正規化
+function asStr(v) {
+  if (Array.isArray(v)) return v[0] ? String(v[0]) : "";
+  if (v && typeof v === "object") {
+    if ("name" in v) return String(v.name || "");
+    if ("value" in v) return String(v.value || "");
+  }
+  return v ? String(v) : "";
+}
+function areaStr(shop) {
+  return asStr(shop.area_group).trim();
+}
+
 function matchesWho(shop, hearing) {
   const target = norm(hearing.who);
   if (!target) return false;
@@ -34,14 +47,14 @@ function uniquePush(picked, candidates, limit) {
   for (const s of candidates) {
     if (picked.length >= limit) break;
     if (!s.shop_id || !s.shop_name) continue; // 必須欠損は除外
-    if (seen.has(s.shop_id)) continue;        // 重複排除
+    if (seen.has(s.shop_id)) continue; // 重複排除
     seen.add(s.shop_id);
     picked.push(s);
   }
 }
 
 function reasonFor(shop, hearing) {
-  const area = shop.area_group || "";
+  const area = areaStr(shop) || "";
   const who = norm(hearing.who) || "you";
   const bv = arr(shop.best_vibe).map(norm).filter(Boolean);
   const vibe = bv[0] || arr(hearing.vibes)[0] || "local";
@@ -100,7 +113,9 @@ function select7Connoisseur(areaMap, hearing) {
     if (base.length === 0) continue;
     const sorted = [...base].sort((a, b) => score(b) - score(a));
     uniquePush(picked, sorted, 7);
-    perArea[ag] = picked.filter((x) => x.area_group === ag).length;
+
+    // ✅ area_group 正規化してカウント
+    perArea[ag] = picked.filter((x) => areaStr(x) === ag).length;
   }
 
   // 2) fill remaining by global score with cap 3 per area
@@ -116,9 +131,9 @@ function select7Connoisseur(areaMap, hearing) {
       if (!s.shop_id || !s.shop_name) continue;
       if (seen.has(s.shop_id)) continue;
 
-      const ag = s.area_group;
+      const ag = areaStr(s);
       const cnt =
-        perArea[ag] ?? picked.filter((x) => x.area_group === ag).length;
+        perArea[ag] ?? picked.filter((x) => areaStr(x) === ag).length;
       if (cnt >= 3) continue;
 
       seen.add(s.shop_id);
@@ -146,12 +161,14 @@ function escapeAirtableValue(s) {
 export default async function handler(req, res) {
   try {
     const { session_id } = req.query;
-    if (!session_id) return res.status(400).json({ ok: false, error: "Missing session_id" });
+    if (!session_id)
+      return res.status(400).json({ ok: false, error: "Missing session_id" });
 
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
     // 暫定：決済済みのみ（Webhook前）
-    const paid = session.payment_status === "paid" || session.status === "complete";
+    const paid =
+      session.payment_status === "paid" || session.status === "complete";
     if (!paid) return res.status(402).json({ ok: false, error: "NOT_PAID" });
 
     const metadata = session.metadata || {};
@@ -169,30 +186,36 @@ export default async function handler(req, res) {
     // 互換：metadata.area_groups でも動く
     if (!hearing) {
       if (!metadata.plan || !metadata.area_groups) {
-        return res
-          .status(400)
-          .json({ ok: false, error: "Missing metadata.plan or metadata.area_groups" });
+        return res.status(400).json({
+          ok: false,
+          error: "Missing metadata.plan or metadata.area_groups",
+        });
       }
       hearing = {
         plan: metadata.plan,
         area_groups: JSON.parse(metadata.area_groups),
         who: metadata.who || "solo",
         vibes: metadata.vibes ? JSON.parse(metadata.vibes) : [],
-        no_preference: metadata.no_preference === "true" || metadata.no_preference === true,
+        no_preference:
+          metadata.no_preference === "true" || metadata.no_preference === true,
       };
     }
 
-    // ---- DEBUG LOGS (this phase) ----
+    // ---- DEBUG LOGS ----
     console.log("RESULTS_META_HAS_HEARING", !!metadata.hearing);
     console.log("RESULTS_HEARING_AREAS", hearing.area_groups);
     console.log("RESULTS_PLAN", hearing.plan, "WHO", hearing.who, "VIBES", hearing.vibes);
 
     // plan制約
     if (hearing.plan === "explorer" && hearing.area_groups.length !== 1) {
-      return res.status(400).json({ ok: false, error: "Explorer requires exactly 1 area_group" });
+      return res
+        .status(400)
+        .json({ ok: false, error: "Explorer requires exactly 1 area_group" });
     }
     if (hearing.plan === "connoisseur" && hearing.area_groups.length !== 4) {
-      return res.status(400).json({ ok: false, error: "Connoisseur requires exactly 4 area_groups" });
+      return res
+        .status(400)
+        .json({ ok: false, error: "Connoisseur requires exactly 4 area_groups" });
     }
 
     const table = base(process.env.AIRTABLE_TABLE_ID);
@@ -200,7 +223,9 @@ export default async function handler(req, res) {
     // ---------------- Explorer ----------------
     if (hearing.plan === "explorer") {
       const ag = hearing.area_groups[0];
-      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
+      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(
+        ag
+      )}')`;
 
       const records = await table.select({ filterByFormula: formula }).all();
       const all = records.map((r) => r.fields);
@@ -217,7 +242,9 @@ export default async function handler(req, res) {
     // ---------------- Connoisseur ----------------
     const areaMap = {};
     for (const ag of hearing.area_groups) {
-      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
+      const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(
+        ag
+      )}')`;
       const records = await table.select({ filterByFormula: formula }).all();
       areaMap[ag] = records.map((r) => r.fields);
     }
@@ -228,14 +255,16 @@ export default async function handler(req, res) {
       hearing.area_groups.map((ag) => [ag, (areaMap[ag] || []).length])
     );
     for (const ag of hearing.area_groups) {
-      const bad = (areaMap[ag] || []).filter((s) => !s.shop_id || !s.shop_name).length;
+      const bad = (areaMap[ag] || []).filter(
+        (s) => !s.shop_id || !s.shop_name
+      ).length;
       console.log("BAD_ROWS", ag, bad);
     }
 
     const shops = select7Connoisseur(areaMap, hearing);
 
     const dist = shops.reduce((m, s) => {
-      const k = s.area_group || "UNKNOWN";
+      const k = areaStr(s) || "UNKNOWN";
       m[k] = (m[k] || 0) + 1;
       return m;
     }, {});
