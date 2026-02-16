@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid plan" });
     }
 
-    // 最小の入力検証（事故防止）
+    // 事故防止：要件に合わせて最低限バリデーション
     const requiredAreas = plan === "connoisseur" ? 4 : 1;
     if (!Array.isArray(area_groups) || area_groups.length !== requiredAreas) {
       return res.status(400).json({ error: `area_groups must be ${requiredAreas}` });
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
     const baseUrl = process.env.BASE_URL || `https://${req.headers.host}`;
 
-    // hearing回答をmetadataに保存（webhookで使える）
+    // hearing回答をmetadataに保存（後でresults/webhookで使う）
     const metadata = {
       plan,
       prefectures: JSON.stringify(prefectures),
@@ -58,8 +58,6 @@ export default async function handler(req, res) {
       success_url: `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/hearing.html?plan=${plan}`,
       metadata,
-      // ここは後でメール回収を入れたければ追加
-      // customer_email: ...
     });
 
     return res.status(200).json({ url: session.url });
