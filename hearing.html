@@ -148,7 +148,7 @@
       </div>
     </section>
 
-    <!-- STEP 1: WHERE (NEW: one place multi-prefecture + 4 areas) -->
+    <!-- STEP 1: WHERE -->
     <section class="card" id="step-where">
       <div class="stepHead">
         <div>
@@ -162,14 +162,12 @@
       </div>
 
       <div class="twoCol">
-        <!-- Left: prefectures -->
         <div class="panel">
           <div class="panelTitle">Prefectures</div>
           <div class="grid" id="prefGrid"></div>
           <div class="small" id="prefHint"></div>
         </div>
 
-        <!-- Right: areas -->
         <div class="panel">
           <div class="panelTitle">Areas (choose exactly 4)</div>
           <div class="small">These are <b>area_group</b> values from Airtable — no guessing.</div>
@@ -271,18 +269,17 @@
 
   const state = {
     plan: (initialPlan === "connoisseur" ? "connoisseur" : "explorer"),
-    prefectures: [],      // multi
-    areasByPref: {},      // from API
-    selectedAreas: [],    // area_group values (must be exactly 4)
-    who: null,            // slug
-    vibes: [],            // slugs (max 2)
-    friction: [],         // slugs
+    prefectures: [],
+    areasByPref: {},
+    selectedAreas: [],        // MUST be exactly 4
+    who: null,                // slug
+    vibes: [],                // slugs (max 2)
+    friction: [],             // slugs
     noPreference: false,
     loadingCheckout: false,
     loadingAreas: false,
   };
 
-  // DOM
   const planPill = document.getElementById("planPill");
   const planGrid = document.getElementById("planGrid");
 
@@ -330,7 +327,6 @@
   }
 
   function maxPrefectures(){
-    // Explorer: 1 / Connoisseur: 3 （社長の確定）
     return state.plan === "connoisseur" ? 3 : 1;
   }
 
@@ -369,10 +365,8 @@
 
         const onNow = state.prefectures.includes(p);
         if (onNow){
-          // remove prefecture
           state.prefectures = state.prefectures.filter(x => x !== p);
         } else {
-          // add prefecture (respect limit)
           if (state.prefectures.length >= maxPrefectures()){
             setErr(whereErr, `You can choose up to ${maxPrefectures()} prefecture(s) for this plan.`);
             return;
@@ -380,25 +374,28 @@
           state.prefectures = [...state.prefectures, p];
         }
 
-        // When prefectures change, clear selected areas (prevents stale mismatches)
+        // reset dependent selections
         state.selectedAreas = [];
         state.areasByPref = {};
+        state.who = null;
+        state.vibes = [];
+        state.friction = [];
+        state.noPreference = false;
 
-        renderWhere(); // immediate UI update
+        renderAll(false);
 
         if (state.prefectures.length === 0) return;
 
-        // fetch areas for selected prefectures
         try{
           state.loadingAreas = true;
-          renderWhere();
+          renderAll(false);
           const data = await fetchAreasMulti(state.prefectures);
           state.areasByPref = data.areasByPrefecture || {};
         }catch(e){
           setErr(whereErr, "Could not load areas. Please try again.");
         }finally{
           state.loadingAreas = false;
-          renderWhere();
+          renderAll(false);
         }
       };
       prefGrid.appendChild(btn);
@@ -425,16 +422,14 @@
       areasWrap.innerHTML = `<div class="small">Select prefectures to see available areas.</div>`;
       return;
     }
-
     if (state.loadingAreas){
       areasWrap.innerHTML = `<div class="small">Loading areas…</div>`;
       return;
     }
 
-    // Render grouped by prefecture (fast to scan)
-    const prefs = [...state.prefectures];
-    for (const p of prefs){
+    for (const p of state.prefectures){
       const list = state.areasByPref?.[p] || [];
+
       const title = document.createElement("div");
       title.className = "kicker";
       title.style.marginTop = "6px";
@@ -463,10 +458,8 @@
         btn.onclick = () => {
           setErr(whereErr, "");
           toggleArea(area);
-          renderWhere();
-          // if exactly 4, reveal next step immediately
+          renderAll(false);
           if (state.selectedAreas.length === 4){
-            stepWho.style.display = "";
             stepWho.scrollIntoView({behavior:"smooth", block:"start"});
           }
         };
@@ -481,29 +474,12 @@
     helper.style.marginTop = "10px";
     helper.innerHTML = `Selected areas: <b>${escapeHtml(state.selectedAreas.length)}/4</b>`;
     areasWrap.appendChild(helper);
-  }
 
-  function renderWhere(){
-    updateLimitTags();
-    renderPrefGrid();
-    renderAreas();
-
-    // gating: must be exactly 4 areas
-    if (state.selectedAreas.length === 4){
-      stepWho.style.display = "";
+    if (state.selectedAreas.length !== 4){
+      setErr(whereErr, "Choose exactly 4 areas to continue.");
     } else {
-      stepWho.style.display = "none";
-      stepVibe.style.display = "none";
-      stepFriction.style.display = "none";
-      stepNp.style.display = "none";
-      state.who = null;
-      state.vibes = [];
-      state.friction = [];
-      state.noPreference = false;
-      setErr(vibeErr, "");
+      setErr(whereErr, "");
     }
-
-    updateFooter();
   }
 
   function renderWho(){
@@ -517,9 +493,9 @@
       btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>→</div>`;
       btn.onclick = () => {
         state.who = w.slug;
+        renderAll(false);
         stepVibe.style.display = "";
         stepVibe.scrollIntoView({behavior:"smooth", block:"start"});
-        renderAll(false);
       };
       whoGrid.appendChild(btn);
     });
@@ -546,15 +522,6 @@
           }
           state.vibes = [...state.vibes, v.slug];
         }
-        if (state.vibes.length > 0){
-          stepFriction.style.display = "";
-          stepNp.style.display = "";
-        } else {
-          stepFriction.style.display = "none";
-          stepNp.style.display = "none";
-          state.friction = [];
-          state.noPreference = false;
-        }
         renderAll(false);
       };
       vibeGrid.appendChild(btn);
@@ -562,6 +529,13 @@
   }
 
   function renderFriction(){
+    frictionGrid.innerHTML = "";
+    FRICTION.forEach(f => {
+      const on = state.friction.includes(f.slug);
+      const btn = document.createElement("optio");
+      // (typo guard)
+    });
+    // Use correct render (below)
     frictionGrid.innerHTML = "";
     FRICTION.forEach(f => {
       const on = state.friction.includes(f.slug);
@@ -595,7 +569,7 @@
   }
 
   function canContinue(){
-    if (state.selectedAreas.length !== 4) return false; // MUST be 4
+    if (state.selectedAreas.length !== 4) return false;
     if (!state.who) return false;
     if (state.vibes.length === 0) return false;
     return true;
@@ -608,27 +582,46 @@
     continueBtn.innerHTML = state.loadingCheckout ? `<span class="spin"></span>Redirecting…` : `Continue to payment`;
   }
 
-  function renderAll(scroll=true){
+  function renderAll(scroll=false){
     renderPlan();
-    renderWhere();
+    updateLimitTags();
+    renderPrefGrid();
+    renderAreas();
+
+    // gating
     if (state.selectedAreas.length === 4){
+      stepWho.style.display = "";
       renderWho();
-      if (state.who){
-        stepVibe.style.display = "";
-        renderVibe();
-      } else {
-        stepVibe.style.display = "none";
-      }
-      if (state.vibes.length > 0){
-        stepFriction.style.display = "";
-        stepNp.style.display = "";
-        renderFriction();
-        renderNP();
-      } else {
-        stepFriction.style.display = "none";
-        stepNp.style.display = "none";
-      }
+    } else {
+      stepWho.style.display = "none";
+      stepVibe.style.display = "none";
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
+      updateFooter();
+      return;
     }
+
+    if (state.who){
+      stepVibe.style.display = "";
+      renderVibe();
+    } else {
+      stepVibe.style.display = "none";
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
+      updateFooter();
+      return;
+    }
+
+    if (state.vibes.length > 0){
+      stepFriction.style.display = "";
+      stepNp.style.display = "";
+      renderFriction();
+      renderNP();
+    } else {
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
+    }
+
     updateFooter();
     if (scroll) document.getElementById("step-where").scrollIntoView({behavior:"smooth", block:"start"});
   }
@@ -641,11 +634,12 @@
     if (p !== "explorer" && p !== "connoisseur") return;
 
     state.plan = p;
-    // enforce prefecture limit immediately
+
+    // enforce prefecture limit
     const limit = maxPrefectures();
     if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
 
-    // reset dependent selections for safety
+    // reset dependent selections
     state.selectedAreas = [];
     state.areasByPref = {};
     state.who = null;
@@ -657,7 +651,7 @@
     u.searchParams.set("plan", state.plan);
     history.replaceState({}, "", u.toString());
 
-    renderAll();
+    renderAll(false);
   });
 
   // Continue -> /api/checkout
@@ -668,11 +662,12 @@
 
     const payload = {
       plan: state.plan,
-      // IMPORTANT: send area_group values (Airtableと一致)
-      area_groups: state.selectedAreas,
-      who: state.who,           // slug (best_withと一致)
-      vibes: state.vibes,       // slugs (best_vibeと一致)
-      friction: state.friction, // slugs
+      area_groups: state.selectedAreas, // Airtable area_group と一致
+      who: state.who,                   // best_with slug
+      best_with: state.who,             // 互換（recommend側がどっち参照でもOKにする）
+      vibes: state.vibes,               // best_vibe slugs
+      best_vibe: state.vibes,           // 互換
+      friction: state.friction,
       no_preference: state.noPreference,
       source: "hearing.html"
     };
@@ -685,13 +680,11 @@
       });
 
       if (!res.ok) throw new Error("checkout failed");
-
       const json = await res.json();
       const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
-      if (!checkoutUrl) throw new Error("no url");
+      if (!checkoutUrl) throw new Error("no url returned");
       location.href = checkoutUrl;
     }catch(e){
-      // If checkout isn't ready yet, at least show a clear error
       alert("Checkout is not ready yet. Please set up /api/checkout first.");
     }finally{
       state.loadingCheckout = false;
