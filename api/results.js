@@ -6,6 +6,7 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_TOKEN }).base(
   process.env.AIRTABLE_BASE_ID
 );
 
+// ---------------- helpers ----------------
 function norm(v) {
   return v ? String(v).trim().toLowerCase() : null;
 }
@@ -32,8 +33,8 @@ function uniquePush(picked, candidates, limit) {
   const seen = new Set(picked.map((x) => x.shop_id));
   for (const s of candidates) {
     if (picked.length >= limit) break;
-    if (!s.shop_id || !s.shop_name) continue;
-    if (seen.has(s.shop_id)) continue;
+    if (!s.shop_id || !s.shop_name) continue; // 必須欠損は除外
+    if (seen.has(s.shop_id)) continue;        // 重複排除
     seen.add(s.shop_id);
     picked.push(s);
   }
@@ -62,15 +63,19 @@ function select7Explorer(areaActive, hearing) {
   const base = areaActive.filter((s) => norm(s.status) === "active");
   const picked = [];
 
+  // S0: who + vibe
   uniquePush(
     picked,
     base.filter((s) => matchesWho(s, hearing) && matchesAnyVibe(s, hearing)),
     7
   );
+  // S1: who
   if (picked.length < 7)
     uniquePush(picked, base.filter((s) => matchesWho(s, hearing)), 7);
+  // S2: vibe
   if (picked.length < 7)
     uniquePush(picked, base.filter((s) => matchesAnyVibe(s, hearing)), 7);
+  // S3: relaxed
   if (picked.length < 7) uniquePush(picked, base, 7);
 
   return picked.slice(0, 7).map((s) => ({ ...s, reason: reasonFor(s, hearing) }));
@@ -112,7 +117,8 @@ function select7Connoisseur(areaMap, hearing) {
       if (seen.has(s.shop_id)) continue;
 
       const ag = s.area_group;
-      const cnt = perArea[ag] ?? picked.filter((x) => x.area_group === ag).length;
+      const cnt =
+        perArea[ag] ?? picked.filter((x) => x.area_group === ag).length;
       if (cnt >= 3) continue;
 
       seen.add(s.shop_id);
@@ -136,6 +142,7 @@ function escapeAirtableValue(s) {
   return String(s).replace(/'/g, "\\'");
 }
 
+// ---------------- handler ----------------
 export default async function handler(req, res) {
   try {
     const { session_id } = req.query;
@@ -175,7 +182,7 @@ export default async function handler(req, res) {
       };
     }
 
-    // ★ここが「hearing確定後」ログ（今回の目的）
+    // ---- DEBUG LOGS (this phase) ----
     console.log("RESULTS_META_HAS_HEARING", !!metadata.hearing);
     console.log("RESULTS_HEARING_AREAS", hearing.area_groups);
     console.log("RESULTS_PLAN", hearing.plan, "WHO", hearing.who, "VIBES", hearing.vibes);
@@ -190,7 +197,7 @@ export default async function handler(req, res) {
 
     const table = base(process.env.AIRTABLE_TABLE_ID);
 
-    // Explorer
+    // ---------------- Explorer ----------------
     if (hearing.plan === "explorer") {
       const ag = hearing.area_groups[0];
       const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
@@ -207,7 +214,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Connoisseur
+    // ---------------- Connoisseur ----------------
     const areaMap = {};
     for (const ag of hearing.area_groups) {
       const formula = `AND({status}='active',{area_group}='${escapeAirtableValue(ag)}')`;
@@ -215,7 +222,24 @@ export default async function handler(req, res) {
       areaMap[ag] = records.map((r) => r.fields);
     }
 
+    // ---- DEBUG LOGS: data reality + picked distribution ----
+    console.log(
+      "AREA_COUNTS",
+      hearing.area_groups.map((ag) => [ag, (areaMap[ag] || []).length])
+    );
+    for (const ag of hearing.area_groups) {
+      const bad = (areaMap[ag] || []).filter((s) => !s.shop_id || !s.shop_name).length;
+      console.log("BAD_ROWS", ag, bad);
+    }
+
     const shops = select7Connoisseur(areaMap, hearing);
+
+    const dist = shops.reduce((m, s) => {
+      const k = s.area_group || "UNKNOWN";
+      m[k] = (m[k] || 0) + 1;
+      return m;
+    }, {});
+    console.log("PICKED_DIST", dist);
 
     return res.status(200).json({
       ok: true,
