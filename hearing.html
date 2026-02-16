@@ -22,44 +22,94 @@
       color:var(--text);
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
-    .wrap{max-width:860px;margin:0 auto;padding:28px 18px 80px}
-    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
-    .brand{font-weight:600;letter-spacing:.2px}
+    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 92px;}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;}
+    .brand{font-weight:650;letter-spacing:.2px}
     .sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
-    .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--muted);background:rgba(255,255,255,.6);backdrop-filter: blur(8px);white-space:nowrap}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      border:1px solid var(--line);border-radius:999px;
+      padding:8px 12px;font-size:13px;color:var(--muted);
+      background:rgba(255,255,255,.6);backdrop-filter:blur(8px);white-space:nowrap;
+    }
 
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 6px 18px rgba(0,0,0,.04);padding:18px;margin-top:14px}
-    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
-    .kicker{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
-    .h{font-size:18px;line-height:1.25;margin:6px 0 0;font-weight:650}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    @media (min-width:760px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    .opt{border:1px solid var(--line);border-radius:14px;padding:12px 12px;cursor:pointer;background:#fff;transition:transform .06s ease,border-color .06s ease;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .opt:hover{border-color:#d7d2c8;transform:translateY(-1px)}
-    .opt[aria-pressed="true"]{border-color:#111;box-shadow: inset 0 0 0 1px #111;}
-    .opt small{color:var(--muted);font-size:12px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}
-    .danger{color:var(--danger);font-size:13px;margin-top:10px}
-    .summary{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:13px;line-height:1.5;padding-top:6px}
-    .summary b{color:var(--text);font-weight:600}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
+      padding:18px;margin-top:14px;
+    }
+    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;}
+    .kicker{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+    .h{font-size:18px;line-height:1.25;margin:6px 0 0;font-weight:650;}
+    .note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5;}
+    .danger{color:var(--danger);font-size:13px;margin-top:10px;display:none;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
 
-    .block{border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(247,245,241,.55)}
-    .blockHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
-    .blockTitle{font-weight:650;font-size:14px}
-    .miniBtn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px;cursor:pointer}
-    .miniBtn:hover{border-color:#d7d2c8}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    @media (min-width:760px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
 
-    .footerBar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px}
-    .footerInner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:#fff}
-    .primary{border:1px solid #111;background:#111;color:#fff;border-radius:999px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:600}
-    .primary:disabled{opacity:.45;cursor:not-allowed}
-    .ghost{border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 14px;cursor:pointer;font-size:14px}
+    .opt{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      cursor:pointer;
+      background:#fff;
+      transition:transform .06s ease,border-color .06s ease;
+      min-height:44px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .opt:hover{border-color:#d7d2c8;transform:translateY(-1px);}
+    .opt[aria-pressed="true"]{border-color:#111;box-shadow:inset 0 0 0 1px #111;}
 
-    .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:999px;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:8px}
-    @keyframes sp{to{transform:rotate(360deg)}}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border:1px solid var(--line);
+      border-radius:999px;font-size:12px;color:var(--muted);background:#fff;
+    }
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width:860px){
+      .twoCol{grid-template-columns: 1fr 1.35fr;}
+    }
+    .panel{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(247,245,241,.55);
+    }
+    .panelTitle{font-weight:650;font-size:14px;margin:0 0 10px;}
+    .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35;}
+    .divider{height:1px;background:var(--line);margin:12px 0;}
+
+    .footerBar{
+      position:fixed;left:0;right:0;bottom:0;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(10px);
+      border-top:1px solid var(--line);
+      padding:12px 16px;
+    }
+    .footerInner{
+      max-width:920px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .primary{
+      border:1px solid #111;background:#111;color:#fff;
+      border-radius:999px;padding:12px 16px;cursor:pointer;
+      font-size:14px;font-weight:650;
+    }
+    .primary:disabled{opacity:.45;cursor:not-allowed;}
+    .spin{
+      width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;border-radius:999px;display:inline-block;
+      animation:sp 1s linear infinite;vertical-align:-2px;margin-right:8px;
+    }
+    @keyframes sp {to{transform:rotate(360deg)}}
   </style>
 </head>
 
@@ -68,7 +118,7 @@
     <div class="top">
       <div>
         <div class="brand">Allnspyre | Hearing</div>
-        <div class="sub">Answer in order. You can always edit. We’ll handle the rest.</div>
+        <div class="sub">Fast, clean answers. We’ll do the thinking.</div>
       </div>
       <div class="pill"><span class="mono" id="planPill">plan: …</span></div>
     </div>
@@ -84,35 +134,56 @@
 
       <div class="grid" id="planGrid">
         <button class="opt" type="button" data-plan="explorer" aria-pressed="false">
-          <div><b>Explorer</b><br><small>$19</small></div><div>→</div>
+          <div><b>Explorer</b><br><small class="small">$19</small></div>
+          <div>→</div>
         </button>
         <button class="opt" type="button" data-plan="connoisseur" aria-pressed="false">
-          <div><b>Connoisseur</b><br><small>$39</small></div><div>→</div>
+          <div><b>Connoisseur</b><br><small class="small">$39</small></div>
+          <div>→</div>
         </button>
       </div>
 
-      <div class="note">Connoisseur lets you build up to <b>3 prefectures</b>.</div>
-      <div class="summary" id="planSummary" style="display:none"></div>
+      <div class="note">
+        Connoisseur: select up to <b>3 prefectures</b>. Then choose exactly <b>4 areas</b>.
+      </div>
     </section>
 
-    <!-- STEP 1: PREFECTURE + AREA_GROUP -->
-    <section class="card" id="step-where" style="display:none">
+    <!-- STEP 1: WHERE (NEW: one place multi-prefecture + 4 areas) -->
+    <section class="card" id="step-where">
       <div class="stepHead">
         <div>
           <div class="kicker">Step 1</div>
           <div class="h">Where are you visiting?</div>
         </div>
+        <div class="row">
+          <span class="tag" id="prefLimitTag">Prefectures: 0/1</span>
+          <span class="tag" id="areaLimitTag">Areas: 0/4</span>
+        </div>
       </div>
 
-      <div id="whereBlocks"></div>
+      <div class="twoCol">
+        <!-- Left: prefectures -->
+        <div class="panel">
+          <div class="panelTitle">Prefectures</div>
+          <div class="grid" id="prefGrid"></div>
+          <div class="small" id="prefHint"></div>
+        </div>
 
-      <div class="row" style="margin-top:12px" id="addBlockRow">
-        <button class="ghost" type="button" id="addBlockBtn">＋ Add another prefecture</button>
-        <span class="tag">Max 3</span>
+        <!-- Right: areas -->
+        <div class="panel">
+          <div class="panelTitle">Areas (choose exactly 4)</div>
+          <div class="small">These are <b>area_group</b> values from Airtable — no guessing.</div>
+          <div class="divider"></div>
+          <div id="areasWrap">
+            <div class="small">Select prefectures to see available areas.</div>
+          </div>
+          <div class="danger" id="whereErr"></div>
+        </div>
       </div>
 
-      <div class="danger" id="whereErr" style="display:none"></div>
-      <div class="summary" id="whereSummary" style="display:none"></div>
+      <div class="note">
+        Tip: pick 4 areas that match your actual movement. You can edit anytime.
+      </div>
     </section>
 
     <!-- STEP 2: WHO -->
@@ -123,23 +194,19 @@
           <div class="h">Who are you eating with?</div>
         </div>
       </div>
-
       <div class="grid" id="whoGrid"></div>
-      <div class="summary" id="whoSummary" style="display:none"></div>
     </section>
 
-    <!-- STEP 3: TIME & MOOD -->
+    <!-- STEP 3: VIBE -->
     <section class="card" id="step-vibe" style="display:none">
       <div class="stepHead">
         <div>
           <div class="kicker">Step 3</div>
-          <div class="h">What kind of time do you want? <span style="color:var(--muted);font-weight:500">(choose up to 2)</span></div>
+          <div class="h">What kind of time do you want? <span class="small">(choose up to 2)</span></div>
         </div>
       </div>
-
       <div class="grid" id="vibeGrid"></div>
-      <div class="danger" id="vibeErr" style="display:none"></div>
-      <div class="summary" id="vibeSummary" style="display:none"></div>
+      <div class="danger" id="vibeErr"></div>
     </section>
 
     <!-- STEP 4: FRICTION -->
@@ -147,12 +214,10 @@
       <div class="stepHead">
         <div>
           <div class="kicker">Step 4</div>
-          <div class="h">Prefer to avoid? <span style="color:var(--muted);font-weight:500">(optional)</span></div>
+          <div class="h">Prefer to avoid? <span class="small">(optional)</span></div>
         </div>
       </div>
-
       <div class="grid" id="frictionGrid"></div>
-      <div class="summary" id="frictionSummary" style="display:none"></div>
     </section>
 
     <!-- STEP 5: NO PREFERENCE -->
@@ -163,503 +228,412 @@
           <div class="h">If you’re not sure</div>
         </div>
       </div>
-
       <div class="grid" id="npGrid"></div>
-      <div class="summary" id="npSummary" style="display:none"></div>
     </section>
-
-    <!-- DEBUG (optional) -->
-    <div class="card" id="debugCard" style="display:none">
-      <div class="kicker">Debug</div>
-      <div class="note mono" id="debugOut"></div>
-    </div>
   </div>
 
   <div class="footerBar">
     <div class="footerInner">
       <div class="tag" id="readyTag">Not ready</div>
-      <button class="primary" id="continueBtn" disabled>Continue</button>
+      <button class="primary" id="continueBtn" disabled>Continue to payment</button>
     </div>
   </div>
 
 <script>
 (() => {
-  // ===== Static choices =====
   const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
 
-  // Airtable一致（best_with）
+  // Display label -> Airtable slug (best_with / best_vibe と一致させる：事故防止）
   const WHO = [
-    { label: "Solo", value: "solo" },
-    { label: "Partner", value: "partner" },
-    { label: "Friends", value: "friends" },
-    { label: "Family", value: "family" },
+    { label:"Solo", slug:"solo" },
+    { label:"Partner", slug:"partner" },
+    { label:"Friends", slug:"friends" },
+    { label:"Family", slug:"family" },
   ];
 
-  // Airtable一致（best_vibe）
   const VIBES = [
-    { label: "Quiet & reflective", value: "quiet_reflective" },
-    { label: "Slow & indulgent", value: "slow_indulgent" },
-    { label: "Deeply local", value: "deeply_local" },
-    { label: "Lively & social", value: "lively_social" },
+    { label:"Quiet & reflective", slug:"quiet_reflective" },
+    { label:"Slow & indulgent", slug:"slow_indulgent" },
+    { label:"Deeply local", slug:"deeply_local" },
+    { label:"Lively & social", slug:"lively_social" },
   ];
 
   const FRICTION = [
-    { label: "Long lines", value: "long_lines" },
-    { label: "Tourist-heavy places", value: "tourist_heavy" },
-    { label: "Very noisy spots", value: "very_noisy" },
+    { label:"Long lines", slug:"long_lines" },
+    { label:"Tourist-heavy places", slug:"tourist_heavy" },
+    { label:"Very noisy spots", slug:"very_noisy" },
   ];
 
-  const NP = [{ label: "No preference — pick for me", value: "no_preference" }];
+  const NP = [{ label:"No preference — pick for me", slug:"no_preference" }];
 
-  // ===== URL params =====
   const qs = new URLSearchParams(location.search);
   const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
-  const DEBUG = qs.get("debug") === "1";
 
-  // ===== State =====
   const state = {
     plan: (initialPlan === "connoisseur" ? "connoisseur" : "explorer"),
-    // blocks: [{prefecture, area_group, areas[], loadingAreas}]
-    blocks: [],
-    best_with: null,       // slug (solo etc)
-    best_vibe: [],         // slug array
-    friction: [],          // optional (we won't tag in Airtable now)
-    no_preference: false,
-    busy: false,
+    prefectures: [],      // multi
+    areasByPref: {},      // from API
+    selectedAreas: [],    // area_group values (must be exactly 4)
+    who: null,            // slug
+    vibes: [],            // slugs (max 2)
+    friction: [],         // slugs
+    noPreference: false,
+    loadingCheckout: false,
+    loadingAreas: false,
   };
 
-  // ===== DOM =====
+  // DOM
   const planPill = document.getElementById("planPill");
   const planGrid = document.getElementById("planGrid");
-  const planSummary = document.getElementById("planSummary");
 
-  const stepWhere = document.getElementById("step-where");
-  const whereBlocks = document.getElementById("whereBlocks");
-  const addBlockBtn = document.getElementById("addBlockBtn");
-  const addBlockRow = document.getElementById("addBlockRow");
+  const prefGrid = document.getElementById("prefGrid");
+  const prefLimitTag = document.getElementById("prefLimitTag");
+  const areaLimitTag = document.getElementById("areaLimitTag");
+  const prefHint = document.getElementById("prefHint");
+  const areasWrap = document.getElementById("areasWrap");
   const whereErr = document.getElementById("whereErr");
-  const whereSummary = document.getElementById("whereSummary");
 
   const stepWho = document.getElementById("step-who");
   const whoGrid = document.getElementById("whoGrid");
-  const whoSummary = document.getElementById("whoSummary");
 
   const stepVibe = document.getElementById("step-vibe");
   const vibeGrid = document.getElementById("vibeGrid");
   const vibeErr = document.getElementById("vibeErr");
-  const vibeSummary = document.getElementById("vibeSummary");
 
   const stepFriction = document.getElementById("step-friction");
   const frictionGrid = document.getElementById("frictionGrid");
-  const frictionSummary = document.getElementById("frictionSummary");
 
   const stepNp = document.getElementById("step-np");
   const npGrid = document.getElementById("npGrid");
-  const npSummary = document.getElementById("npSummary");
 
   const continueBtn = document.getElementById("continueBtn");
   const readyTag = document.getElementById("readyTag");
 
-  const debugCard = document.getElementById("debugCard");
-  const debugOut = document.getElementById("debugOut");
-  if (DEBUG) debugCard.style.display = "block";
-
-  // ===== Helpers =====
-  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-
-  function show(el){ el.style.display = ""; }
-  function hide(el){ el.style.display = "none"; }
-  function setErr(el, msg){
-    if (!msg){ hide(el); el.textContent=""; return; }
-    el.textContent = msg;
-    show(el);
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   }
-  function scrollToEl(el){
-    try{ el.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
-  }
-  function updatePlanPill(){ planPill.textContent = `plan: ${state.plan}`; }
-  function isConnoisseur(){ return state.plan === "connoisseur"; }
-  function maxBlocks(){ return isConnoisseur() ? 3 : 1; }
 
-  function setPressed(container, selector, matchFn){
+  function setPressed(container, selector, isOn){
     [...container.querySelectorAll(selector)].forEach(btn => {
-      btn.setAttribute("aria-pressed", matchFn(btn) ? "true" : "false");
+      btn.setAttribute("aria-pressed", isOn(btn) ? "true" : "false");
     });
   }
 
-  async function fetchAreas(prefecture){
-    const url = `/api/areas?prefecture=${encodeURIComponent(prefecture)}`;
-    const res = await fetch(url, { method:"GET" });
-    if (!res.ok) throw new Error("Failed to fetch areas");
-    const json = await res.json();
-    if (!Array.isArray(json.areas)) throw new Error("Bad response");
-    return json.areas.map(String);
+  function setErr(el, msg){
+    if (!msg){ el.style.display="none"; el.textContent=""; return; }
+    el.textContent = msg;
+    el.style.display="";
   }
 
-  function isWhereComplete(){
-    const completeCount = state.blocks.filter(b => b.prefecture && b.area_group).length;
-    if (completeCount === 0) return false;
-    for (const b of state.blocks){
-      if (b.prefecture && !b.area_group) return false;
+  function updatePlanPill(){
+    planPill.textContent = `plan: ${state.plan}`;
+  }
+
+  function maxPrefectures(){
+    // Explorer: 1 / Connoisseur: 3 （社長の確定）
+    return state.plan === "connoisseur" ? 3 : 1;
+  }
+
+  function updateLimitTags(){
+    prefLimitTag.textContent = `Prefectures: ${state.prefectures.length}/${maxPrefectures()}`;
+    areaLimitTag.textContent = `Areas: ${state.selectedAreas.length}/4`;
+    prefHint.textContent = state.plan === "connoisseur"
+      ? "Select up to 3 prefectures."
+      : "Explorer selects 1 prefecture.";
+  }
+
+  async function fetchAreasMulti(prefs){
+    const url = `/api/areas?prefectures=${encodeURIComponent(prefs.join(","))}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch areas");
+    return await res.json(); // {areasByPrefecture, areas}
+  }
+
+  function renderPlan(){
+    updatePlanPill();
+    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
+  }
+
+  function renderPrefGrid(){
+    prefGrid.innerHTML = "";
+    PREFECTURES.forEach(p => {
+      const on = state.prefectures.includes(p);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.dataset.pref = p;
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = async () => {
+        setErr(whereErr, "");
+
+        const onNow = state.prefectures.includes(p);
+        if (onNow){
+          // remove prefecture
+          state.prefectures = state.prefectures.filter(x => x !== p);
+        } else {
+          // add prefecture (respect limit)
+          if (state.prefectures.length >= maxPrefectures()){
+            setErr(whereErr, `You can choose up to ${maxPrefectures()} prefecture(s) for this plan.`);
+            return;
+          }
+          state.prefectures = [...state.prefectures, p];
+        }
+
+        // When prefectures change, clear selected areas (prevents stale mismatches)
+        state.selectedAreas = [];
+        state.areasByPref = {};
+
+        renderWhere(); // immediate UI update
+
+        if (state.prefectures.length === 0) return;
+
+        // fetch areas for selected prefectures
+        try{
+          state.loadingAreas = true;
+          renderWhere();
+          const data = await fetchAreasMulti(state.prefectures);
+          state.areasByPref = data.areasByPrefecture || {};
+        }catch(e){
+          setErr(whereErr, "Could not load areas. Please try again.");
+        }finally{
+          state.loadingAreas = false;
+          renderWhere();
+        }
+      };
+      prefGrid.appendChild(btn);
+    });
+  }
+
+  function toggleArea(area){
+    const has = state.selectedAreas.includes(area);
+    if (has){
+      state.selectedAreas = state.selectedAreas.filter(x => x !== area);
+      return;
     }
-    return true;
+    if (state.selectedAreas.length >= 4){
+      setErr(whereErr, "You must choose exactly 4 areas (max 4).");
+      return;
+    }
+    state.selectedAreas = [...state.selectedAreas, area];
+  }
+
+  function renderAreas(){
+    areasWrap.innerHTML = "";
+
+    if (state.prefectures.length === 0){
+      areasWrap.innerHTML = `<div class="small">Select prefectures to see available areas.</div>`;
+      return;
+    }
+
+    if (state.loadingAreas){
+      areasWrap.innerHTML = `<div class="small">Loading areas…</div>`;
+      return;
+    }
+
+    // Render grouped by prefecture (fast to scan)
+    const prefs = [...state.prefectures];
+    for (const p of prefs){
+      const list = state.areasByPref?.[p] || [];
+      const title = document.createElement("div");
+      title.className = "kicker";
+      title.style.marginTop = "6px";
+      title.textContent = p.toUpperCase();
+      areasWrap.appendChild(title);
+
+      if (list.length === 0){
+        const none = document.createElement("div");
+        none.className = "small";
+        none.textContent = "No areas found.";
+        areasWrap.appendChild(none);
+        continue;
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      grid.style.marginTop = "8px";
+
+      list.forEach(area => {
+        const on = state.selectedAreas.includes(area);
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.innerHTML = `<div><b>${escapeHtml(area)}</b></div><div>${on ? "✓" : "+"}</div>`;
+        btn.onclick = () => {
+          setErr(whereErr, "");
+          toggleArea(area);
+          renderWhere();
+          // if exactly 4, reveal next step immediately
+          if (state.selectedAreas.length === 4){
+            stepWho.style.display = "";
+            stepWho.scrollIntoView({behavior:"smooth", block:"start"});
+          }
+        };
+        grid.appendChild(btn);
+      });
+
+      areasWrap.appendChild(grid);
+    }
+
+    const helper = document.createElement("div");
+    helper.className = "small";
+    helper.style.marginTop = "10px";
+    helper.innerHTML = `Selected areas: <b>${escapeHtml(state.selectedAreas.length)}/4</b>`;
+    areasWrap.appendChild(helper);
+  }
+
+  function renderWhere(){
+    updateLimitTags();
+    renderPrefGrid();
+    renderAreas();
+
+    // gating: must be exactly 4 areas
+    if (state.selectedAreas.length === 4){
+      stepWho.style.display = "";
+    } else {
+      stepWho.style.display = "none";
+      stepVibe.style.display = "none";
+      stepFriction.style.display = "none";
+      stepNp.style.display = "none";
+      state.who = null;
+      state.vibes = [];
+      state.friction = [];
+      state.noPreference = false;
+      setErr(vibeErr, "");
+    }
+
+    updateFooter();
+  }
+
+  function renderWho(){
+    whoGrid.innerHTML = "";
+    WHO.forEach(w => {
+      const on = state.who === w.slug;
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>→</div>`;
+      btn.onclick = () => {
+        state.who = w.slug;
+        stepVibe.style.display = "";
+        stepVibe.scrollIntoView({behavior:"smooth", block:"start"});
+        renderAll(false);
+      };
+      whoGrid.appendChild(btn);
+    });
+  }
+
+  function renderVibe(){
+    vibeGrid.innerHTML = "";
+    setErr(vibeErr, "");
+    VIBES.forEach(v => {
+      const on = state.vibes.includes(v.slug);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(v.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        const has = state.vibes.includes(v.slug);
+        if (has){
+          state.vibes = state.vibes.filter(x => x !== v.slug);
+        } else {
+          if (state.vibes.length >= 2){
+            setErr(vibeErr, "You can choose up to 2.");
+            return;
+          }
+          state.vibes = [...state.vibes, v.slug];
+        }
+        if (state.vibes.length > 0){
+          stepFriction.style.display = "";
+          stepNp.style.display = "";
+        } else {
+          stepFriction.style.display = "none";
+          stepNp.style.display = "none";
+          state.friction = [];
+          state.noPreference = false;
+        }
+        renderAll(false);
+      };
+      vibeGrid.appendChild(btn);
+    });
+  }
+
+  function renderFriction(){
+    frictionGrid.innerHTML = "";
+    FRICTION.forEach(f => {
+      const on = state.friction.includes(f.slug);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(f.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = () => {
+        const has = state.friction.includes(f.slug);
+        state.friction = has ? state.friction.filter(x => x !== f.slug) : [...state.friction, f.slug];
+        renderAll(false);
+      };
+      frictionGrid.appendChild(btn);
+    });
+  }
+
+  function renderNP(){
+    npGrid.innerHTML = "";
+    const on = state.noPreference;
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.type = "button";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.innerHTML = `<div><b>${escapeHtml(NP[0].label)}</b></div><div>${on ? "✓" : "+"}</div>`;
+    btn.onclick = () => {
+      state.noPreference = !state.noPreference;
+      renderAll(false);
+    };
+    npGrid.appendChild(btn);
   }
 
   function canContinue(){
-    if (!state.plan) return false;
-    if (!isWhereComplete()) return false;
-    if (!state.best_with) return false;
-    if (state.best_vibe.length === 0) return false;
+    if (state.selectedAreas.length !== 4) return false; // MUST be 4
+    if (!state.who) return false;
+    if (state.vibes.length === 0) return false;
     return true;
   }
 
   function updateFooter(){
     const ok = canContinue();
-    continueBtn.disabled = !ok || state.busy;
     readyTag.textContent = ok ? "Ready" : "Not ready";
-    continueBtn.textContent = state.busy ? "Working…" : "Continue";
+    continueBtn.disabled = !ok || state.loadingCheckout;
+    continueBtn.innerHTML = state.loadingCheckout ? `<span class="spin"></span>Redirecting…` : `Continue to payment`;
   }
 
-  function renderDebug(){
-    if (!DEBUG) return;
-    debugOut.textContent = JSON.stringify({
-      plan: state.plan,
-      selections: state.blocks.filter(b => b.area_group).map(b => ({ prefecture: b.prefecture, area_group: b.area_group })),
-      best_with: state.best_with,
-      best_vibe: state.best_vibe,
-      friction: state.friction,
-      no_preference: state.no_preference
-    }, null, 2);
-  }
-
-  // ===== Render: Where blocks =====
-  async function renderWhere(){
-    show(stepWhere);
-    whereBlocks.innerHTML = "";
-    setErr(whereErr, "");
-
-    // Ensure at least one block exists
-    if (state.blocks.length === 0){
-      state.blocks.push({ prefecture:null, area_group:null, areas:[], loadingAreas:false });
-    }
-    // Trim blocks based on plan
-    if (state.blocks.length > maxBlocks()){
-      state.blocks = state.blocks.slice(0, maxBlocks());
-    }
-
-    // Add block button
-    if (isConnoisseur()){
-      show(addBlockRow);
-      addBlockBtn.disabled = state.blocks.length >= 3;
-    } else {
-      hide(addBlockRow);
-    }
-
-    state.blocks.forEach((b, idx) => {
-      const block = document.createElement("div");
-      block.className = "block";
-      block.style.marginTop = idx === 0 ? "0" : "12px";
-
-      const head = document.createElement("div");
-      head.className = "blockHead";
-
-      const title = document.createElement("div");
-      title.className = "blockTitle";
-      title.textContent = isConnoisseur() ? `Prefecture ${idx+1}` : "Prefecture";
-
-      const actions = document.createElement("div");
-      actions.className = "row";
-
-      if (isConnoisseur() && state.blocks.length > 1){
-        const del = document.createElement("button");
-        del.className = "miniBtn";
-        del.type = "button";
-        del.textContent = "Remove";
-        del.onclick = () => {
-          state.blocks.splice(idx, 1);
-          renderAll(false);
-        };
-        actions.appendChild(del);
-      }
-
-      head.appendChild(title);
-      head.appendChild(actions);
-      block.appendChild(head);
-
-      // Prefecture selection
-      const prefGrid = document.createElement("div");
-      prefGrid.className = "grid";
-
-      PREFECTURES.forEach(p => {
-        const btn = document.createElement("button");
-        btn.className = "opt";
-        btn.type = "button";
-        btn.setAttribute("aria-pressed", b.prefecture === p ? "true" : "false");
-        btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>→</div>`;
-
-        btn.onclick = async () => {
-          if (isConnoisseur()){
-            const dup = state.blocks.some((x, j) => j !== idx && x.prefecture === p);
-            if (dup){
-              setErr(whereErr, "You already selected that prefecture. Choose a different one.");
-              return;
-            }
-          }
-
-          setErr(whereErr, "");
-          b.prefecture = p;
-          b.area_group = null; // reset on change (事故防止)
-          b.areas = [];
-          b.loadingAreas = true;
-
-          renderAll(false);
-
-          try{
-            const areas = await fetchAreas(p);
-            b.areas = areas;
-          }catch(e){
-            b.areas = [];
-            setErr(whereErr, "Failed to load areas. Please try again.");
-          }finally{
-            b.loadingAreas = false;
-            renderAll(false);
-          }
-        };
-
-        prefGrid.appendChild(btn);
-      });
-
-      block.appendChild(prefGrid);
-
-      // Area group selection
-      const areaWrap = document.createElement("div");
-      areaWrap.style.marginTop = "12px";
-
-      const areaTitle = document.createElement("div");
-      areaTitle.className = "kicker";
-      areaTitle.textContent = "Area";
-      areaWrap.appendChild(areaTitle);
-
-      if (!b.prefecture){
-        const tip = document.createElement("div");
-        tip.className = "note";
-        tip.textContent = "Select a prefecture to see its areas.";
-        areaWrap.appendChild(tip);
-      } else if (b.loadingAreas){
-        const tip = document.createElement("div");
-        tip.className = "note";
-        tip.innerHTML = `Loading areas for <b>${escapeHtml(b.prefecture)}</b>…`;
-        areaWrap.appendChild(tip);
-      } else {
-        const areaGrid = document.createElement("div");
-        areaGrid.className = "grid";
-
-        b.areas.forEach(a => {
-          const btn = document.createElement("button");
-          btn.className = "opt";
-          btn.type = "button";
-          btn.setAttribute("aria-pressed", b.area_group === a ? "true" : "false");
-          btn.innerHTML = `<div><b>${escapeHtml(a)}</b></div><div>→</div>`;
-          btn.onclick = () => {
-            b.area_group = a;
-            renderAll(false);
-            if (isWhereComplete()){
-              show(stepWho);
-              scrollToEl(stepWho);
-            }
-          };
-          areaGrid.appendChild(btn);
-        });
-
-        if (b.areas.length === 0){
-          const tip = document.createElement("div");
-          tip.className = "note";
-          tip.textContent = "No areas found for this prefecture.";
-          areaWrap.appendChild(tip);
-        } else {
-          areaWrap.appendChild(areaGrid);
-        }
-      }
-
-      block.appendChild(areaWrap);
-      whereBlocks.appendChild(block);
-    });
-
-    if (isWhereComplete()){
-      const lines = state.blocks
-        .filter(b => b.prefecture && b.area_group)
-        .map(b => `• <b>${escapeHtml(b.prefecture)}</b> — ${escapeHtml(b.area_group)}`)
-        .join("<br>");
-      whereSummary.innerHTML = lines;
-      show(whereSummary);
-      show(stepWho);
-    } else {
-      hide(whereSummary);
-    }
-  }
-
-  // ===== Render: Who =====
-  function renderWho(){
-    whoGrid.innerHTML = "";
-    WHO.forEach(item => {
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", state.best_with === item.value ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(item.label)}</b></div><div>→</div>`;
-      btn.onclick = () => {
-        state.best_with = item.value; // slug保存
-        renderAll(false);
-        show(stepVibe);
-        scrollToEl(stepVibe);
-      };
-      whoGrid.appendChild(btn);
-    });
-
-    if (state.best_with){
-      const label = (WHO.find(x => x.value === state.best_with)?.label) || state.best_with;
-      whoSummary.innerHTML = `Selected: <b>${escapeHtml(label)}</b>`;
-      show(whoSummary);
-      show(stepVibe);
-    } else {
-      hide(whoSummary);
-    }
-  }
-
-  // ===== Render: Vibe =====
-  function renderVibe(){
-    vibeGrid.innerHTML = "";
-    setErr(vibeErr, "");
-
-    VIBES.forEach(item => {
-      const active = state.best_vibe.includes(item.value);
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(item.label)}</b></div><div>${active ? "✓" : "+"}</div>`;
-      btn.onclick = () => {
-        const has = state.best_vibe.includes(item.value);
-        if (has){
-          state.best_vibe = state.best_vibe.filter(x => x !== item.value);
-        } else {
-          if (state.best_vibe.length >= 2){
-            setErr(vibeErr, "You can choose up to 2.");
-            return;
-          }
-          state.best_vibe = [...state.best_vibe, item.value]; // slug保存
-        }
-        renderAll(false);
-        if (state.best_vibe.length > 0) show(stepFriction);
-      };
-      vibeGrid.appendChild(btn);
-    });
-
-    if (state.best_vibe.length){
-      const labels = state.best_vibe.map(v => (VIBES.find(x => x.value === v)?.label) || v);
-      vibeSummary.innerHTML = `Selected: <b>${escapeHtml(labels.join(" + "))}</b>`;
-      show(vibeSummary);
-      show(stepFriction);
-    } else {
-      hide(vibeSummary);
-    }
-  }
-
-  // ===== Render: Friction =====
-  function renderFriction(){
-    frictionGrid.innerHTML = "";
-    FRICTION.forEach(item => {
-      const active = state.friction.includes(item.value);
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(item.label)}</b></div><div>${active ? "✓" : "+"}</div>`;
-      btn.onclick = () => {
-        const has = state.friction.includes(item.value);
-        state.friction = has ? state.friction.filter(x => x !== item.value) : [...state.friction, item.value];
-        renderAll(false);
-        show(stepNp);
-      };
-      frictionGrid.appendChild(btn);
-    });
-
-    if (state.friction.length){
-      frictionSummary.innerHTML = `Avoid: <b>${escapeHtml(state.friction.join(", "))}</b>`;
-      show(frictionSummary);
-    } else hide(frictionSummary);
-
-    show(stepNp);
-  }
-
-  // ===== Render: No Preference =====
-  function renderNP(){
-    npGrid.innerHTML = "";
-    const active = state.no_preference;
-
-    const btn = document.createElement("button");
-    btn.className = "opt";
-    btn.type = "button";
-    btn.setAttribute("aria-pressed", active ? "true" : "false");
-    btn.innerHTML = `<div><b>${escapeHtml(NP[0].label)}</b></div><div>${active ? "✓" : "+"}</div>`;
-    btn.onclick = () => {
-      state.no_preference = !state.no_preference;
-      renderAll(false);
-    };
-    npGrid.appendChild(btn);
-
-    npSummary.innerHTML = active ? `Enabled: <b>${escapeHtml(NP[0].label)}</b>` : `Optional`;
-    show(npSummary);
-  }
-
-  // ===== Render All =====
   function renderAll(scroll=true){
-    updatePlanPill();
-
-    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
-
-    planSummary.innerHTML = `Selected: <b>${escapeHtml(state.plan)}</b>`;
-    show(planSummary);
-
-    renderWhere().then(() => {
-      if (isWhereComplete()){
-        show(stepWho);
-        renderWho();
-      } else {
-        hide(stepWho); hide(stepVibe); hide(stepFriction); hide(stepNp);
-      }
-
-      if (state.best_with){
-        show(stepVibe);
+    renderPlan();
+    renderWhere();
+    if (state.selectedAreas.length === 4){
+      renderWho();
+      if (state.who){
+        stepVibe.style.display = "";
         renderVibe();
       } else {
-        hide(stepVibe); hide(stepFriction); hide(stepNp);
+        stepVibe.style.display = "none";
       }
-
-      if (state.best_vibe.length){
-        show(stepFriction);
+      if (state.vibes.length > 0){
+        stepFriction.style.display = "";
+        stepNp.style.display = "";
         renderFriction();
-      } else {
-        hide(stepFriction); hide(stepNp);
-      }
-
-      if (state.best_vibe.length){
-        show(stepNp);
         renderNP();
+      } else {
+        stepFriction.style.display = "none";
+        stepNp.style.display = "none";
       }
-
-      updateFooter();
-      renderDebug();
-
-      if (scroll){
-        scrollToEl(document.getElementById("step-where"));
-      }
-    });
+    }
+    updateFooter();
+    if (scroll) document.getElementById("step-where").scrollIntoView({behavior:"smooth", block:"start"});
   }
 
-  // ===== Events =====
+  // Plan click
   planGrid.addEventListener("click", (e) => {
     const btn = e.target.closest(".opt[data-plan]");
     if (!btn) return;
@@ -667,76 +641,66 @@
     if (p !== "explorer" && p !== "connoisseur") return;
 
     state.plan = p;
+    // enforce prefecture limit immediately
+    const limit = maxPrefectures();
+    if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
 
-    // blocks adjustment
-    if (state.blocks.length === 0) state.blocks = [{prefecture:null, area_group:null, areas:[], loadingAreas:false}];
-    if (state.blocks.length > maxBlocks()) state.blocks = state.blocks.slice(0, maxBlocks());
+    // reset dependent selections for safety
+    state.selectedAreas = [];
+    state.areasByPref = {};
+    state.who = null;
+    state.vibes = [];
+    state.friction = [];
+    state.noPreference = false;
 
-    // URL reflect
     const u = new URL(location.href);
     u.searchParams.set("plan", state.plan);
     history.replaceState({}, "", u.toString());
 
-    show(stepWhere);
     renderAll();
   });
 
-  addBlockBtn.addEventListener("click", () => {
-    if (!isConnoisseur()) return;
-    if (state.blocks.length >= 3) return;
-    state.blocks.push({ prefecture:null, area_group:null, areas:[], loadingAreas:false });
-    renderAll(false);
-    setTimeout(() => {
-      const blocks = whereBlocks.querySelectorAll(".block");
-      const last = blocks[blocks.length - 1];
-      if (last) scrollToEl(last);
-    }, 20);
-  });
-
+  // Continue -> /api/checkout
   continueBtn.addEventListener("click", async () => {
-    if (!canContinue() || state.busy) return;
+    if (!canContinue() || state.loadingCheckout) return;
+    state.loadingCheckout = true;
+    updateFooter();
 
-    // hearing完成のため：このpayloadがAirtable抽出に刺さる形
     const payload = {
       plan: state.plan,
-      selections: state.blocks
-        .filter(b => b.area_group)
-        .map(b => ({ area_group: b.area_group })),   // ←Airtable一致
-      best_with: state.best_with,                    // ←solo etc
-      best_vibe: state.best_vibe,                    // ←deeply_local etc
-      friction: state.friction,                      // 任意（今は抽出に使わない想定）
-      no_preference: state.no_preference,
+      // IMPORTANT: send area_group values (Airtableと一致)
+      area_groups: state.selectedAreas,
+      who: state.who,           // slug (best_withと一致)
+      vibes: state.vibes,       // slugs (best_vibeと一致)
+      friction: state.friction, // slugs
+      no_preference: state.noPreference,
       source: "hearing.html"
     };
 
-    // まだ決済/結果に繋げないなら、とりあえず results.html にpayloadを渡して遷移（動作確認用）
-    // 後でここを /api/checkout に差し替える
-    state.busy = true;
-    updateFooter();
-
     try{
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      const u = new URL("/results.html", location.origin);
-      u.searchParams.set("payload", encoded);
-      location.href = u.toString();
+      const res = await fetch("/api/checkout", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("checkout failed");
+
+      const json = await res.json();
+      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
+      if (!checkoutUrl) throw new Error("no url");
+      location.href = checkoutUrl;
     }catch(e){
-      // fallback: stay
-      state.busy = false;
+      // If checkout isn't ready yet, at least show a clear error
+      alert("Checkout is not ready yet. Please set up /api/checkout first.");
+    }finally{
+      state.loadingCheckout = false;
       updateFooter();
-      alert("Failed to proceed. Please try again.");
     }
   });
 
-  // ===== Init =====
-  function init(){
-    updatePlanPill();
-    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
-    state.blocks = [{prefecture:null, area_group:null, areas:[], loadingAreas:false}];
-    show(stepWhere);
-    renderAll(false);
-  }
-
-  init();
+  // Init
+  renderAll(false);
 })();
 </script>
 </body>
