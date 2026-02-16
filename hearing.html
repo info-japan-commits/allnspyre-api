@@ -1,60 +1,428 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Hearing</title>
   <style>
-    body { font-family: Arial; padding: 40px; background: #f7f5f1; }
-    button { padding: 10px 14px; margin: 6px; }
+    :root{
+      --bg:#f7f5f1;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e8e5df;
+      --danger:#c62828;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+    }
+    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 92px;}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;}
+    .brand{font-weight:650;letter-spacing:.2px}
+    .sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      border:1px solid var(--line);border-radius:999px;
+      padding:8px 12px;font-size:13px;color:var(--muted);
+      background:rgba(255,255,255,.7);backdrop-filter:blur(8px);white-space:nowrap;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
+      padding:18px;margin-top:14px;
+    }
+    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;}
+    .kicker{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+    .h{font-size:18px;line-height:1.25;margin:6px 0 0;font-weight:650;}
+    .note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5;}
+    .danger{color:var(--danger);font-size:13px;margin-top:10px;display:none;}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+    @media (min-width:760px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
+    .opt{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      cursor:pointer;
+      background:#fff;
+      transition:transform .06s ease,border-color .06s ease;
+      min-height:44px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .opt:hover{border-color:#d7d2c8;transform:translateY(-1px);}
+    .opt[aria-pressed="true"]{border-color:#111;box-shadow:inset 0 0 0 1px #111;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border:1px solid var(--line);
+      border-radius:999px;font-size:12px;color:var(--muted);background:#fff;
+    }
+    .twoCol{display:grid;grid-template-columns:1fr;gap:12px;}
+    @media (min-width:860px){ .twoCol{grid-template-columns:1fr 1.35fr;} }
+    .panel{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(247,245,241,.55);
+    }
+    .panelTitle{font-weight:650;font-size:14px;margin:0 0 10px;}
+    .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35;}
+    .divider{height:1px;background:var(--line);margin:12px 0;}
+    .footerBar{
+      position:fixed;left:0;right:0;bottom:0;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(10px);
+      border-top:1px solid var(--line);
+      padding:12px 16px;
+    }
+    .footerInner{
+      max-width:920px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .primary{
+      border:1px solid #111;background:#111;color:#fff;
+      border-radius:999px;padding:12px 16px;cursor:pointer;
+      font-size:14px;font-weight:650;
+    }
+    .primary:disabled{opacity:.45;cursor:not-allowed;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
   </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">Allnspyre | Hearing</div>
+        <div class="sub">Fast, clean answers. We’ll do the thinking.</div>
+      </div>
+      <div class="pill"><span class="mono" id="planPill">plan: …</span></div>
+    </div>
 
-<h2>Hearing Test</h2>
-<p>Plan: <span id="plan"></span></p>
+    <section class="card">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 0</div>
+          <div class="h">Choose your plan</div>
+        </div>
+      </div>
+      <div class="grid" id="planGrid">
+        <button class="opt" type="button" data-plan="explorer" aria-pressed="false">
+          <div><b>Explorer</b><br><small class="small">$19</small></div><div>→</div>
+        </button>
+        <button class="opt" type="button" data-plan="connoisseur" aria-pressed="false">
+          <div><b>Connoisseur</b><br><small class="small">$39</small></div><div>→</div>
+        </button>
+      </div>
+      <div class="note" id="planNote"></div>
+    </section>
 
-<h3>Step 1: Choose Prefecture</h3>
-<div id="pref"></div>
+    <section class="card" id="step-where">
+      <div class="stepHead">
+        <div>
+          <div class="kicker">Step 1</div>
+          <div class="h">Where are you visiting?</div>
+        </div>
+        <div class="row">
+          <span class="tag" id="prefTag">Prefectures: 0/1</span>
+          <span class="tag" id="areaTag">Areas: 0/1</span>
+        </div>
+      </div>
 
-<h3>Step 2: Choose Area</h3>
-<div id="area"></div>
+      <div class="twoCol">
+        <div class="panel">
+          <div class="panelTitle">Prefectures</div>
+          <div class="grid" id="prefGrid"></div>
+          <div class="small" id="prefHint"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panelTitle">Areas (choose exactly <span id="needAreas">1</span>)</div>
+          <div class="small">These are <b>area_group</b> values from Airtable — no guessing.</div>
+          <div class="divider"></div>
+          <div id="areasWrap" class="small">Select prefectures to see available areas.</div>
+          <div class="danger" id="err"></div>
+        </div>
+      </div>
+
+      <div class="note">This step must match Airtable exactly. (area_group)</div>
+    </section>
+  </div>
+
+  <div class="footerBar">
+    <div class="footerInner">
+      <div class="tag" id="statusTag">Not ready</div>
+      <button class="primary" id="continueBtn" disabled>Continue</button>
+    </div>
+  </div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const plan = params.get("plan") || "explorer";
-document.getElementById("plan").innerText = plan;
+(() => {
+  const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
 
-const prefectures = ["Tokyo","Osaka"];
-const areas = {
-  Tokyo:["Tokyo Urban","Tokyo Suburban"],
-  Osaka:["Osaka Urban","Osaka Suburban"]
-};
+  const qs = new URLSearchParams(location.search);
+  const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
 
-let selectedPref = null;
-let selectedArea = null;
-
-const prefDiv = document.getElementById("pref");
-const areaDiv = document.getElementById("area");
-
-prefectures.forEach(p=>{
-  const b = document.createElement("button");
-  b.innerText = p;
-  b.onclick = ()=>{
-    selectedPref = p;
-    areaDiv.innerHTML = "";
-    areas[p].forEach(a=>{
-      const ab = document.createElement("button");
-      ab.innerText = a;
-      ab.onclick = ()=>{
-        selectedArea = a;
-        alert("Selected: " + selectedArea);
-      };
-      areaDiv.appendChild(ab);
-    });
+  const state = {
+    plan: (initialPlan === "connoisseur" ? "connoisseur" : "explorer"),
+    prefectures: [],
+    areasByPref: {},
+    selectedAreas: [],
+    loadingAreas: false,
   };
-  prefDiv.appendChild(b);
-});
-</script>
 
+  const planPill = document.getElementById("planPill");
+  const planGrid = document.getElementById("planGrid");
+  const planNote = document.getElementById("planNote");
+
+  const prefGrid = document.getElementById("prefGrid");
+  const prefTag = document.getElementById("prefTag");
+  const areaTag = document.getElementById("areaTag");
+  const prefHint = document.getElementById("prefHint");
+
+  const needAreasEl = document.getElementById("needAreas");
+  const areasWrap = document.getElementById("areasWrap");
+  const err = document.getElementById("err");
+
+  const statusTag = document.getElementById("statusTag");
+  const continueBtn = document.getElementById("continueBtn");
+
+  function maxPref(){
+    return state.plan === "connoisseur" ? 3 : 1;
+  }
+  function needAreas(){
+    return state.plan === "connoisseur" ? 4 : 1;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+  function setErr(msg){
+    if (!msg){ err.style.display="none"; err.textContent=""; return; }
+    err.style.display=""; err.textContent = msg;
+  }
+  function setPressed(container, selector, isOn){
+    [...container.querySelectorAll(selector)].forEach(btn => {
+      btn.setAttribute("aria-pressed", isOn(btn) ? "true" : "false");
+    });
+  }
+
+  async function fetchAreasMulti(prefs){
+    const url = `/api/areas?prefectures=${encodeURIComponent(prefs.join(","))}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch areas");
+    return await res.json(); // {areasByPrefecture}
+  }
+
+  function updateHeader(){
+    planPill.textContent = `plan: ${state.plan}`;
+    planNote.innerHTML =
+      `Explorer: choose <b>1 prefecture</b> and <b>1 area</b>. ` +
+      `Connoisseur: choose up to <b>3 prefectures</b> and exactly <b>4 areas</b>.`;
+
+    prefTag.textContent = `Prefectures: ${state.prefectures.length}/${maxPref()}`;
+    areaTag.textContent = `Areas: ${state.selectedAreas.length}/${needAreas()}`;
+    needAreasEl.textContent = String(needAreas());
+    prefHint.textContent = state.plan === "connoisseur"
+      ? "Select up to 3 prefectures."
+      : "Explorer selects 1 prefecture.";
+  }
+
+  function renderPlan(){
+    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
+  }
+
+  function renderPref(){
+    prefGrid.innerHTML = "";
+    PREFECTURES.forEach(p => {
+      const on = state.prefectures.includes(p);
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>${on ? "✓" : "+"}</div>`;
+      btn.onclick = async () => {
+        setErr("");
+
+        const already = state.prefectures.includes(p);
+        if (already){
+          state.prefectures = state.prefectures.filter(x => x !== p);
+        } else {
+          if (state.prefectures.length >= maxPref()){
+            setErr(`You can choose up to ${maxPref()} prefecture(s) for this plan.`);
+            return;
+          }
+          state.prefectures = [...state.prefectures, p];
+        }
+
+        // reset areas when prefectures change
+        state.selectedAreas = [];
+        state.areasByPref = {};
+        renderAll();
+
+        if (state.prefectures.length === 0) return;
+
+        try{
+          state.loadingAreas = true;
+          renderAll();
+          const data = await fetchAreasMulti(state.prefectures);
+          state.areasByPref = data.areasByPrefecture || {};
+        }catch(e){
+          setErr("Could not load areas. Please try again.");
+        }finally{
+          state.loadingAreas = false;
+          renderAll();
+        }
+      };
+      prefGrid.appendChild(btn);
+    });
+  }
+
+  function toggleArea(area){
+    const has = state.selectedAreas.includes(area);
+    if (has){
+      state.selectedAreas = state.selectedAreas.filter(x => x !== area);
+      return;
+    }
+    const need = needAreas();
+    if (state.selectedAreas.length >= need){
+      setErr(`You must choose exactly ${need} area(s).`);
+      return;
+    }
+    state.selectedAreas = [...state.selectedAreas, area];
+  }
+
+  function renderAreas(){
+    if (state.prefectures.length === 0){
+      areasWrap.className = "small";
+      areasWrap.innerHTML = "Select prefectures to see available areas.";
+      return;
+    }
+    if (state.loadingAreas){
+      areasWrap.className = "small";
+      areasWrap.innerHTML = "Loading areas…";
+      return;
+    }
+
+    const container = document.createElement("div");
+    state.prefectures.forEach(p => {
+      const list = state.areasByPref?.[p] || [];
+
+      const title = document.createElement("div");
+      title.className = "kicker";
+      title.style.marginTop = "6px";
+      title.textContent = p.toUpperCase();
+      container.appendChild(title);
+
+      if (list.length === 0){
+        const none = document.createElement("div");
+        none.className = "small";
+        none.textContent = "No areas found.";
+        container.appendChild(none);
+        return;
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      grid.style.marginTop = "8px";
+
+      list.forEach(area => {
+        const on = state.selectedAreas.includes(area);
+        const btn = document.createElement("button");
+        btn.className = "opt";
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.innerHTML = `<div><b>${escapeHtml(area)}</b></div><div>${on ? "✓" : "+"}</div>`;
+        btn.onclick = () => {
+          setErr("");
+          toggleArea(area);
+          renderAll();
+        };
+        grid.appendChild(btn);
+      });
+
+      container.appendChild(grid);
+    });
+
+    const helper = document.createElement("div");
+    helper.className = "small";
+    helper.style.marginTop = "10px";
+    helper.innerHTML = `Selected areas: <b>${escapeHtml(state.selectedAreas.length)}/${needAreas()}</b>`;
+    container.appendChild(helper);
+
+    areasWrap.className = "";
+    areasWrap.innerHTML = "";
+    areasWrap.appendChild(container);
+
+    const need = needAreas();
+    if (state.selectedAreas.length !== need){
+      setErr(`Choose exactly ${need} area(s) to continue.`);
+    } else {
+      setErr("");
+    }
+  }
+
+  function ready(){
+    return state.selectedAreas.length === needAreas();
+  }
+
+  function renderFooter(){
+    const ok = ready();
+    statusTag.textContent = ok ? "Ready" : "Not ready";
+    continueBtn.disabled = !ok;
+  }
+
+  function renderAll(){
+    updateHeader();
+    renderPlan();
+    renderPref();
+    renderAreas();
+    renderFooter();
+  }
+
+  // plan click
+  planGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".opt[data-plan]");
+    if (!btn) return;
+
+    state.plan = btn.dataset.plan === "connoisseur" ? "connoisseur" : "explorer";
+
+    // enforce pref limit
+    const limit = maxPref();
+    if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
+
+    // reset
+    state.selectedAreas = [];
+    state.areasByPref = {};
+    state.loadingAreas = false;
+    setErr("");
+
+    const u = new URL(location.href);
+    u.searchParams.set("plan", state.plan);
+    history.replaceState({}, "", u.toString());
+
+    renderAll();
+  });
+
+  continueBtn.addEventListener("click", () => {
+    // For now: show payload (next step will be checkout/results)
+    const payload = {
+      plan: state.plan,
+      prefectures: state.prefectures,
+      area_groups: state.selectedAreas,
+    };
+    alert("OK (Step1)\n" + JSON.stringify(payload, null, 2));
+  });
+
+  // init
+  renderAll();
+})();
+</script>
 </body>
 </html>
