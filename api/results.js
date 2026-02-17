@@ -1,6 +1,6 @@
 // /api/results.js
 // DB優先（Airtable purchases）→ 無ければStripeでretrieve（フォールバック）→ paid以外は402
-// results.html が期待する形式: { ok:true, plan, who, shops:[...] } に統一
+// 7件は area_groups に分散させて抽出（偏り防止）
 
 const AIRTABLE_API = "https://api.airtable.com/v0";
 
@@ -19,7 +19,6 @@ function requireEnv(name) {
 
 function normalizePaymentStatus(s) {
   const x = String(s || "").toLowerCase().trim();
-  // Airtable側の表記ゆれ吸収（必要なら追加）
   if (["paid", "succeeded", "success", "complete", "completed"].includes(x)) return "paid";
   if (["unpaid", "open", "pending", "failed", "canceled", "cancelled", "requires_payment_method"].includes(x))
     return "unpaid";
@@ -28,21 +27,28 @@ function normalizePaymentStatus(s) {
 
 function parseAreaGroups(v) {
   if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean);
-  if (typeof v === "string") {
-    return v
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean);
+  if (typeof v === "string" && v.trim()) {
+    return v.split(",").map(s => s.trim()).filter(Boolean);
   }
   return [];
 }
 
-// session_id 文字列に依存して “毎回同じ7件” を選ぶ（手動運用ゼロ/再現性重視）
-function seededPick(arr, n, seedStr) {
-  if (!Array.isArray(arr)) return [];
-  if (arr.length <= n) return arr;
+function uniq(arr) {
+  const out = [];
+  const seen = new Set();
+  for (const x of (arr || [])) {
+    const k = String(x || "").trim();
+    if (!k) continue;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(k);
+  }
+  return out;
+}
 
-  // xorshift32
+// session_id 依存で再現性あるシャッフル
+function seededShuffle(arr, seedStr) {
+  const a = arr.slice();
   let seed = 2166136261;
   for (let i = 0; i < seedStr.length; i++) {
     seed ^= seedStr.charCodeAt(i);
@@ -55,14 +61,11 @@ function seededPick(arr, n, seedStr) {
     x ^= x << 5;  x >>>= 0;
     return (x >>> 0) / 4294967296;
   };
-
-  // Fisher-Yates (seeded)
-  const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
-  return a.slice(0, n);
+  return a;
 }
 
 async function airtableGetRecords({ baseId, tableId, token, query }) {
@@ -148,23 +151,15 @@ async function airtableUpdateRecord({ baseId, tableId, token, recordId, fields }
 }
 
 async function getPurchaseBySessionId({ baseId, purchasesTableId, token, sessionId }) {
-  // Airtable: filterByFormula で完全一致検索
   const safe = sessionId.replace(/'/g, "\\'");
   const formula = `{session_id}='${safe}'`;
-
   const data = await airtableGetRecords({
     baseId,
     tableId: purchasesTableId,
     token,
-    query: {
-      maxRecords: 1,
-      filterByFormula: formula,
-      // created_at で並び替えたい場合は sort[0][field]=created_at 等も追加できる
-    },
+    query: { maxRecords: 1, filterByFormula: formula },
   });
-
-  const rec = (data.records || [])[0];
-  return rec || null;
+  return (data.records || [])[0] || null;
 }
 
 async function upsertPurchase({ baseId, purchasesTableId, token, existingRecord, fields }) {
@@ -177,12 +172,7 @@ async function upsertPurchase({ baseId, purchasesTableId, token, existingRecord,
       fields,
     });
   }
-  return airtableCreateRecord({
-    baseId,
-    tableId: purchasesTableId,
-    token,
-    fields,
-  });
+  return airtableCreateRecord({ baseId, tableId: purchasesTableId, token, fields });
 }
 
 async function stripeRetrieveCheckoutSession(sessionId) {
@@ -191,9 +181,7 @@ async function stripeRetrieveCheckoutSession(sessionId) {
 
   const r = await fetch(url, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${stripeKey}`,
-    },
+    headers: { Authorization: `Bearer ${stripeKey}` },
   });
 
   const text = await r.text();
@@ -211,11 +199,9 @@ async function stripeRetrieveCheckoutSession(sessionId) {
 }
 
 function inferPlanFromStripeSession(session) {
-  // 1) metadata.plan があれば最優先
   const metaPlan = session?.metadata?.plan;
   if (metaPlan) return String(metaPlan).toLowerCase();
 
-  // 2) line_items の price id で判定（Envの price_ を使う）
   const priceExplorer = process.env.STRIPE_PRICE_EXPLORER;
   const priceConnoisseur = process.env.STRIPE_PRICE_CONNOISSEUR;
 
@@ -225,23 +211,14 @@ function inferPlanFromStripeSession(session) {
     if (pid && priceExplorer && pid === priceExplorer) return "explorer";
     if (pid && priceConnoisseur && pid === priceConnoisseur) return "connoisseur";
   }
-
   return "";
 }
 
-async function getShopsByAreas({ baseId, shopsTableId, token, areaGroups, max = 7, seed }) {
-  if (!areaGroups.length) return [];
+// 重要：statusフィールドが無いと式が死ぬので、ここでは参照しない（壊れない方を優先）
+async function getShopsByArea({ baseId, shopsTableId, token, areaGroup }) {
+  const safe = String(areaGroup).replace(/'/g, "\\'");
+  const formula = `{area_group}='${safe}'`;
 
-  // Airtable filterByFormula: OR( {area_group}='A', {area_group}='B', ... ) AND status='active'（あれば）
-  const parts = areaGroups.map(g => `{area_group}='${String(g).replace(/'/g, "\\'")}'`);
-  const areaOr = `OR(${parts.join(",")})`;
-
-  // status フィールドが無い/空でも落ちないように、存在前提にはしない（ただしあれば効く）
-  // 「statusが空ならOK」も含めたい場合は OR({status}='', {status}='active') などに変える
-  const statusClause = `OR({status}='active',{status}='')`;
-  const formula = `AND(${areaOr},${statusClause})`;
-
-  // まず多めに取ってから seededPick で7件にする
   const data = await airtableGetRecords({
     baseId,
     tableId: shopsTableId,
@@ -254,17 +231,56 @@ async function getShopsByAreas({ baseId, shopsTableId, token, areaGroups, max = 
   });
 
   const records = data.records || [];
-  const shops = records.map(r => ({ id: r.id, ...(r.fields || {}) }));
+  return records.map(r => ({ id: r.id, ...(r.fields || {}) }));
+}
 
-  // 7件固定抽出（再現性）
-  return seededPick(shops, max, seed);
+async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total = 7, seed }) {
+  const areas = uniq(areaGroups);
+  if (!areas.length) return [];
+
+  // エリアごとに候補取得
+  const perAreaLists = {};
+  for (const ag of areas) {
+    perAreaLists[ag] = await getShopsByArea({ baseId, shopsTableId, token, areaGroup: ag });
+    // 再現性ある順にしておく
+    perAreaLists[ag] = seededShuffle(perAreaLists[ag], `${seed}:${ag}`);
+  }
+
+  // 均等割り当て（最低1）
+  const baseN = Math.max(1, Math.floor(total / areas.length));
+  let picks = [];
+
+  for (const ag of areas) {
+    const list = perAreaLists[ag] || [];
+    picks = picks.concat(list.slice(0, baseN));
+  }
+
+  // 余りをプールから埋める（重複除外）
+  const pickedIds = new Set(picks.map(s => s.id).filter(Boolean));
+  const pool = [];
+  for (const ag of areas) {
+    const list = perAreaLists[ag] || [];
+    for (const s of list) {
+      if (!s?.id) continue;
+      if (pickedIds.has(s.id)) continue;
+      pool.push(s);
+    }
+  }
+
+  const poolShuffled = seededShuffle(pool, `${seed}:pool`);
+  for (const s of poolShuffled) {
+    if (picks.length >= total) break;
+    picks.push(s);
+  }
+
+  // 最終：totalに切る（再現性維持）
+  picks = picks.slice(0, total);
+  return picks;
 }
 
 module.exports = async (req, res) => {
   try {
-    if (req.method !== "GET") {
-      return json(res, 405, { ok: false, error: "Method not allowed" });
-    }
+    if (req.method !== "GET") return json(res, 405, { ok: false, error: "Method not allowed" });
 
     const baseId = requireEnv("AIRTABLE_BASE_ID");
     const token = requireEnv("AIRTABLE_TOKEN");
@@ -272,21 +288,13 @@ module.exports = async (req, res) => {
     const shopsTableId = requireEnv("AIRTABLE_TABLE_ID");
 
     const sessionId = String(req.query?.session_id || "").trim();
-    if (!sessionId) {
-      return json(res, 400, { ok: false, error: "Missing session_id" });
-    }
+    if (!sessionId) return json(res, 400, { ok: false, error: "Missing session_id" });
 
-    // ① DB優先：purchases から session_id 検索
+    // ① DB優先
     let purchaseRec = null;
     try {
-      purchaseRec = await getPurchaseBySessionId({
-        baseId,
-        purchasesTableId,
-        token,
-        sessionId,
-      });
+      purchaseRec = await getPurchaseBySessionId({ baseId, purchasesTableId, token, sessionId });
     } catch (e) {
-      // Airtable自体が死んでる時は例外扱い → 500（ただし console.error は例外時のみ）
       console.error("[/api/results] Airtable purchases lookup failed:", e?.message || e);
       return json(res, 500, { ok: false, error: "Server error (purchases lookup)" });
     }
@@ -294,13 +302,12 @@ module.exports = async (req, res) => {
     let fields = purchaseRec?.fields || {};
     let paymentStatus = normalizePaymentStatus(fields.payment_status);
 
-    // ② purchases に無ければ Stripe でフォールバック確認（そして self-heal で保存）
+    // ② 無ければStripeフォールバック → paidならself-heal保存
     if (!purchaseRec) {
       let session = null;
       try {
         session = await stripeRetrieveCheckoutSession(sessionId);
       } catch (e) {
-        // session_id が不正 or Stripe側で見つからない等 → 未決済扱い（不正アクセス防止）
         return json(res, 402, { ok: false, error: "Unpaid (session not found)" });
       }
 
@@ -309,16 +316,13 @@ module.exports = async (req, res) => {
         session?.status === "complete" ||
         session?.payment_status === "succeeded";
 
-      if (!stripePaid) {
-        return json(res, 402, { ok: false, error: "Unpaid" });
-      }
+      if (!stripePaid) return json(res, 402, { ok: false, error: "Unpaid" });
 
       const plan = inferPlanFromStripeSession(session) || "";
       const who = session?.metadata?.who || "";
       const vibes = session?.metadata?.vibes || "";
       const area_groups = session?.metadata?.area_groups || session?.metadata?.areas || "";
 
-      // self-heal: purchases に保存（手動運用ゼロのため）
       try {
         const nowIso = new Date().toISOString();
         const upsertFields = {
@@ -334,9 +338,7 @@ module.exports = async (req, res) => {
           vibes: vibes || null,
         };
         const created = await upsertPurchase({
-          baseId,
-          purchasesTableId,
-          token,
+          baseId, purchasesTableId, token,
           existingRecord: null,
           fields: upsertFields,
         });
@@ -344,39 +346,29 @@ module.exports = async (req, res) => {
         fields = created.fields || {};
         paymentStatus = "paid";
       } catch (e) {
-        // 保存失敗でも results を止めない（取得はできてるので返す）
         console.error("[/api/results] Airtable purchases self-heal save failed:", e?.message || e);
-        fields = {
-          session_id: sessionId,
-          payment_status: "paid",
-          plan,
-          who,
-          vibes,
-          area_groups,
-        };
+        fields = { session_id: sessionId, payment_status: "paid", plan, who, vibes, area_groups };
         paymentStatus = "paid";
       }
     }
 
-    // ③ paid 以外は 402（未決済session_id直叩き対策）
-    if (paymentStatus !== "paid") {
-      return json(res, 402, { ok: false, error: "Unpaid" });
-    }
+    // ③ paid以外は402
+    if (paymentStatus !== "paid") return json(res, 402, { ok: false, error: "Unpaid" });
 
     const plan = String(fields.plan || "").toLowerCase().trim() || "explorer";
     const who = fields.who || "";
     const vibes = fields.vibes || "";
     const areaGroups = parseAreaGroups(fields.area_groups);
 
-    // ④ shops を Airtable (shops_master) から取得して 7件返す
+    // ④ エリア分散で7件
     let shops = [];
     try {
-      shops = await getShopsByAreas({
+      shops = await getShopsBalanced({
         baseId,
         shopsTableId,
         token,
         areaGroups,
-        max: 7,
+        total: 7,
         seed: sessionId,
       });
     } catch (e) {
@@ -387,7 +379,7 @@ module.exports = async (req, res) => {
     return json(res, 200, {
       ok: true,
       plan,
-      who: who || vibes || "", // results.html は who を PREFS に使うので、空なら vibes を代替
+      who: who || vibes || "",
       shops: Array.isArray(shops) ? shops : [],
     });
   } catch (e) {
