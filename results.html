@@ -1,389 +1,497 @@
-// /api/results.js
-// DB優先（Airtable purchases）→ 無ければStripeでretrieve（フォールバック）→ paid以外は402
-// 7件は area_groups に分散させて抽出（偏り防止）
-
-const AIRTABLE_API = "https://api.airtable.com/v0";
-
-function json(res, status, body) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
-  res.end(JSON.stringify(body));
-}
-
-function requireEnv(name) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env: ${name}`);
-  return v;
-}
-
-function normalizePaymentStatus(s) {
-  const x = String(s || "").toLowerCase().trim();
-  if (["paid", "succeeded", "success", "complete", "completed"].includes(x)) return "paid";
-  if (["unpaid", "open", "pending", "failed", "canceled", "cancelled", "requires_payment_method"].includes(x))
-    return "unpaid";
-  return x || "unknown";
-}
-
-function parseAreaGroups(v) {
-  if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean);
-  if (typeof v === "string" && v.trim()) {
-    return v.split(",").map(s => s.trim()).filter(Boolean);
-  }
-  return [];
-}
-
-function uniq(arr) {
-  const out = [];
-  const seen = new Set();
-  for (const x of (arr || [])) {
-    const k = String(x || "").trim();
-    if (!k) continue;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(k);
-  }
-  return out;
-}
-
-// session_id 依存で再現性あるシャッフル
-function seededShuffle(arr, seedStr) {
-  const a = arr.slice();
-  let seed = 2166136261;
-  for (let i = 0; i < seedStr.length; i++) {
-    seed ^= seedStr.charCodeAt(i);
-    seed = Math.imul(seed, 16777619);
-  }
-  let x = seed >>> 0;
-  const rnd = () => {
-    x ^= x << 13; x >>>= 0;
-    x ^= x >>> 17; x >>>= 0;
-    x ^= x << 5;  x >>>= 0;
-    return (x >>> 0) / 4294967296;
-  };
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-async function airtableGetRecords({ baseId, tableId, token, query }) {
-  const url = new URL(`${AIRTABLE_API}/${baseId}/${tableId}`);
-  Object.entries(query || {}).forEach(([k, v]) => {
-    if (v === undefined || v === null) return;
-    url.searchParams.set(k, String(v));
-  });
-
-  const r = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-    method: "GET",
-  });
-
-  const text = await r.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
-
-  if (!r.ok) {
-    const msg =
-      (data && data.error && (data.error.message || data.error.type)) ||
-      `Airtable error (${r.status})`;
-    const err = new Error(msg);
-    err.status = r.status;
-    err.airtable = data;
-    throw err;
-  }
-  return data;
-}
-
-async function airtableCreateRecord({ baseId, tableId, token, fields }) {
-  const url = `${AIRTABLE_API}/${baseId}/${tableId}`;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ fields }),
-  });
-
-  const text = await r.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
-
-  if (!r.ok) {
-    const msg =
-      (data && data.error && (data.error.message || data.error.type)) ||
-      `Airtable create error (${r.status})`;
-    const err = new Error(msg);
-    err.status = r.status;
-    err.airtable = data;
-    throw err;
-  }
-  return data;
-}
-
-async function airtableUpdateRecord({ baseId, tableId, token, recordId, fields }) {
-  const url = `${AIRTABLE_API}/${baseId}/${tableId}/${recordId}`;
-  const r = await fetch(url, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ fields }),
-  });
-
-  const text = await r.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
-
-  if (!r.ok) {
-    const msg =
-      (data && data.error && (data.error.message || data.error.type)) ||
-      `Airtable update error (${r.status})`;
-    const err = new Error(msg);
-    err.status = r.status;
-    err.airtable = data;
-    throw err;
-  }
-  return data;
-}
-
-async function getPurchaseBySessionId({ baseId, purchasesTableId, token, sessionId }) {
-  const safe = sessionId.replace(/'/g, "\\'");
-  const formula = `{session_id}='${safe}'`;
-  const data = await airtableGetRecords({
-    baseId,
-    tableId: purchasesTableId,
-    token,
-    query: { maxRecords: 1, filterByFormula: formula },
-  });
-  return (data.records || [])[0] || null;
-}
-
-async function upsertPurchase({ baseId, purchasesTableId, token, existingRecord, fields }) {
-  if (existingRecord && existingRecord.id) {
-    return airtableUpdateRecord({
-      baseId,
-      tableId: purchasesTableId,
-      token,
-      recordId: existingRecord.id,
-      fields,
-    });
-  }
-  return airtableCreateRecord({ baseId, tableId: purchasesTableId, token, fields });
-}
-
-async function stripeRetrieveCheckoutSession(sessionId) {
-  const stripeKey = requireEnv("STRIPE_SECRET_KEY");
-  const url = `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=line_items&expand[]=customer`;
-
-  const r = await fetch(url, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${stripeKey}` },
-  });
-
-  const text = await r.text();
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
-
-  if (!r.ok) {
-    const msg = (data && data.error && data.error.message) || `Stripe retrieve error (${r.status})`;
-    const err = new Error(msg);
-    err.status = r.status;
-    err.stripe = data;
-    throw err;
-  }
-  return data;
-}
-
-function inferPlanFromStripeSession(session) {
-  const metaPlan = session?.metadata?.plan;
-  if (metaPlan) return String(metaPlan).toLowerCase();
-
-  const priceExplorer = process.env.STRIPE_PRICE_EXPLORER;
-  const priceConnoisseur = process.env.STRIPE_PRICE_CONNOISSEUR;
-
-  const items = session?.line_items?.data || [];
-  for (const it of items) {
-    const pid = it?.price?.id;
-    if (pid && priceExplorer && pid === priceExplorer) return "explorer";
-    if (pid && priceConnoisseur && pid === priceConnoisseur) return "connoisseur";
-  }
-  return "";
-}
-
-// 重要：statusフィールドが無いと式が死ぬので、ここでは参照しない（壊れない方を優先）
-async function getShopsByArea({ baseId, shopsTableId, token, areaGroup }) {
-  const safe = String(areaGroup).replace(/'/g, "\\'");
-  const formula = `{area_group}='${safe}'`;
-
-  const data = await airtableGetRecords({
-    baseId,
-    tableId: shopsTableId,
-    token,
-    query: {
-      pageSize: 100,
-      maxRecords: 200,
-      filterByFormula: formula,
-    },
-  });
-
-  const records = data.records || [];
-  return records.map(r => ({ id: r.id, ...(r.fields || {}) }));
-}
-
-async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total = 7, seed }) {
-  const areas = uniq(areaGroups);
-  if (!areas.length) return [];
-
-  // エリアごとに候補取得
-  const perAreaLists = {};
-  for (const ag of areas) {
-    perAreaLists[ag] = await getShopsByArea({ baseId, shopsTableId, token, areaGroup: ag });
-    // 再現性ある順にしておく
-    perAreaLists[ag] = seededShuffle(perAreaLists[ag], `${seed}:${ag}`);
-  }
-
-  // 均等割り当て（最低1）
-  const baseN = Math.max(1, Math.floor(total / areas.length));
-  let picks = [];
-
-  for (const ag of areas) {
-    const list = perAreaLists[ag] || [];
-    picks = picks.concat(list.slice(0, baseN));
-  }
-
-  // 余りをプールから埋める（重複除外）
-  const pickedIds = new Set(picks.map(s => s.id).filter(Boolean));
-  const pool = [];
-  for (const ag of areas) {
-    const list = perAreaLists[ag] || [];
-    for (const s of list) {
-      if (!s?.id) continue;
-      if (pickedIds.has(s.id)) continue;
-      pool.push(s);
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Allnspyre | Your 7 picks</title>
+  <style>
+    :root{
+      --bg:#f7f5f1;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6b6b6b;
+      --line:#e8e5df;
+      --danger:#c62828;
+      --radius:20px;
+      --shadow: 0 14px 34px rgba(17,17,17,.08);
     }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      margin-bottom:18px;flex-wrap:wrap;
+    }
+    .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+    .chip{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;border-radius:999px;
+    }
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      line-height:1;
+      box-shadow: 0 1px 0 rgba(17,17,17,.03);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--text);
+    }
+    .btn:hover{filter:brightness(0.98)}
+    h1{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-size:64px;
+      letter-spacing:-0.02em;
+      margin:10px 0 8px;
+      line-height:1.0;
+    }
+    .sub{color:var(--muted);margin:0 0 14px}
+    .progress{
+      display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;margin-top:10px;flex-wrap:wrap;
+    }
+    .dotbar{display:flex;gap:6px;align-items:center;}
+    .dot{width:6px;height:6px;border-radius:999px;background:rgba(17,17,17,.12);}
+    .dot.active{background:rgba(17,17,17,.65);}
+    .hint{color:var(--muted);font-size:12px;}
+    .kbd{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);
+      background:#fff;padding:4px 8px;border-radius:8px;
+    }
+    .alert{
+      border:1px solid #f2b8b5;
+      background:#fff3f3;
+      color:var(--danger);
+      padding:14px 16px;
+      border-radius:14px;
+      margin:18px 0;
+      display:none;
+    }
+    .deck{
+      margin-top:16px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background: rgba(255,255,255,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .slide{
+      height: calc(100vh - 230px);
+      min-height: 560px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      background:#fff;
+    }
+    @media (max-width: 960px){
+      h1{font-size:44px}
+      .slide{grid-template-columns:1fr;height:auto;min-height:unset;}
+    }
+    @media (max-width: 600px){
+      h1{font-size:38px}
+    }
+    .media{
+      position:relative;
+      background:
+        radial-gradient(1200px 520px at 35% 25%, rgba(17,17,17,.09), rgba(17,17,17,0)),
+        linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
+      min-height: 320px;
+    }
+    .media img{width:100%;height:100%;object-fit:cover;display:block;}
+    .media .placeholder{
+      position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;
+      padding:18px;color:rgba(17,17,17,.35);font-size:13px;
+    }
+    .pane{
+      padding:22px 22px 18px;
+      display:flex;flex-direction:column;gap:12px;
+      background: rgba(255,255,255,.90);
+    }
+    .name{
+      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
+      font-size:30px;margin:0;line-height:1.18;letter-spacing:-0.01em;
+    }
+    .meta{font-size:14px;color:var(--muted);margin:0;}
+    .note{margin:10px 0 0;color:var(--text);font-size:14px;line-height:1.7;}
+    .note strong{font-weight:600}
+    .desc{
+      margin:12px 0 0;
+      padding-top:12px;
+      border-top:1px solid rgba(232,229,223,.7);
+      color:var(--text);
+      font-size:14px;
+      line-height:1.7;
+      white-space:pre-wrap;
+    }
+    .desc .label{color:var(--muted);font-size:12px;letter-spacing:.02em;text-transform:uppercase}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .tag{
+      font-size:12px;color:var(--text);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;border-radius:999px;
+    }
+    .nav{
+      margin-top:auto;
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+      padding-top:14px;border-top:1px solid rgba(232,229,223,.7);
+    }
+    .nav .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .skeleton{
+      height: calc(100vh - 230px);
+      min-height: 560px;
+      background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
+      background-size: 200% 200%;
+      animation: shimmer 1.2s infinite linear;
+    }
+    @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:100% 0%}}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="chips" id="chips">
+        <span class="chip">PLAN: —</span>
+        <span class="chip">PREFS: —</span>
+        <span class="chip">AREAS: —</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="prevBtn">←</button>
+        <button class="btn" id="nextBtn">→</button>
+        <button class="btn" id="retryBtn">Retry</button>
+        <button class="btn" id="backBtn">Back to Hearing</button>
+      </div>
+    </div>
+
+    <h1>Your 7 picks.</h1>
+    <p class="sub">Where locals actually eat — before the world finds out.</p>
+
+    <div class="progress">
+      <span id="progressText">—</span>
+      <span class="dotbar" id="dotbar"></span>
+      <span class="hint">Use <span class="kbd">←</span> <span class="kbd">→</span> / swipe</span>
+    </div>
+
+    <div class="alert" id="alertBox">
+      <strong>Failed</strong>
+      <div id="alertMsg" style="margin-top:6px;"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn" href="/hearing.html">Go to Hearing</a>
+        <button class="btn" id="useLastBtn" style="display:none;">Use last successful session</button>
+      </div>
+    </div>
+
+    <div class="deck" id="deck">
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+<script>
+  const deck = document.getElementById("deck");
+  const alertBox = document.getElementById("alertBox");
+  const alertMsg = document.getElementById("alertMsg");
+  const chips = document.getElementById("chips");
+
+  const retryBtn = document.getElementById("retryBtn");
+  const backBtn  = document.getElementById("backBtn");
+  const prevBtn  = document.getElementById("prevBtn");
+  const nextBtn  = document.getElementById("nextBtn");
+
+  const useLastBtn = document.getElementById("useLastBtn");
+
+  const progressText = document.getElementById("progressText");
+  const dotbar = document.getElementById("dotbar");
+
+  let shopsCache = [];
+  let idx = 0;
+
+  function setError(message){
+    alertMsg.textContent = message || "Unknown error";
+    alertBox.style.display = "block";
+  }
+  function clearError(){
+    alertBox.style.display = "none";
+    alertMsg.textContent = "";
+  }
+  function setLoading(){
+    deck.innerHTML = `<div class="skeleton"></div>`;
+    if(progressText) progressText.textContent = "—";
+    if(dotbar) dotbar.innerHTML = "";
   }
 
-  const poolShuffled = seededShuffle(pool, `${seed}:pool`);
-  for (const s of poolShuffled) {
-    if (picks.length >= total) break;
-    picks.push(s);
+  function uniq(arr){
+    const out = [];
+    const seen = new Set();
+    for(const x of (arr || [])){
+      const k = String(x || "").trim();
+      if(!k) continue;
+      if(seen.has(k)) continue;
+      seen.add(k);
+      out.push(k);
+    }
+    return out;
   }
 
-  // 最終：totalに切る（再現性維持）
-  picks = picks.slice(0, total);
-  return picks;
-}
+  function setChips(plan, prefs, areas){
+    chips.innerHTML = `
+      <span class="chip">PLAN: ${plan || "—"}</span>
+      <span class="chip">PREFS: ${prefs || "—"}</span>
+      <span class="chip">AREAS: ${areas || "—"}</span>
+    `;
+  }
 
-module.exports = async (req, res) => {
-  try {
-    if (req.method !== "GET") return json(res, 405, { ok: false, error: "Method not allowed" });
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, (m)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+  function toArray(v){
+    if (Array.isArray(v)) return v.map(String).map(s=>s.trim()).filter(Boolean);
+    if (typeof v === "string" && v.trim()){
+      // "A, B" も "A / B" も割る
+      return v.split(/[,/]/).map(s=>s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+  function titleCase(s){
+    const x = (s ?? "").toString().trim();
+    if(!x) return "";
+    return x.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+  }
 
-    const baseId = requireEnv("AIRTABLE_BASE_ID");
-    const token = requireEnv("AIRTABLE_TOKEN");
-    const purchasesTableId = requireEnv("AIRTABLE_PURCHASES_TABLE_ID");
-    const shopsTableId = requireEnv("AIRTABLE_TABLE_ID");
+  function buildTags(shop){
+    const tier = toArray(shop.tier);
+    const slot = toArray(shop.time_slot);
+    const bw = toArray(shop.best_with);
+    const bv = toArray(shop.best_vibe);
+    const genre = toArray(shop.genre);
+    const tags = [...tier, ...slot, ...bw, ...bv, ...genre].filter(Boolean);
+    return uniq(tags).slice(0, 10);
+  }
 
-    const sessionId = String(req.query?.session_id || "").trim();
-    if (!sessionId) return json(res, 400, { ok: false, error: "Missing session_id" });
+  function buildWhy(shop){
+    const tier = toArray(shop.tier);
+    const slot = toArray(shop.time_slot);
+    const bw = toArray(shop.best_with);
+    const bv = toArray(shop.best_vibe);
+    const lines = [];
+    if(slot.length) lines.push(`Best time: ${slot.slice(0,2).map(titleCase).join(", ")}.`);
+    if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
+    if(bv.length) lines.push(`Vibe: ${bv.slice(0,3).map(titleCase).join(", ")}.`);
+    if(tier.length) lines.push(`Tier: ${tier.slice(0,2).map(titleCase).join(", ")}.`);
+    return lines.join(" ");
+  }
 
-    // ① DB優先
-    let purchaseRec = null;
-    try {
-      purchaseRec = await getPurchaseBySessionId({ baseId, purchasesTableId, token, sessionId });
-    } catch (e) {
-      console.error("[/api/results] Airtable purchases lookup failed:", e?.message || e);
-      return json(res, 500, { ok: false, error: "Server error (purchases lookup)" });
+  function slideHtml(shop){
+    const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
+    const area = escapeHtml(shop.area_group || "");
+    const detail = escapeHtml(shop.area_detail || "");
+
+    const tags = buildTags(shop);
+    const why = escapeHtml(buildWhy(shop));
+
+    const desc = escapeHtml(shop.short_desc || shop.desc || shop.description || "");
+
+    const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
+
+    const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
+    const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
+
+    return `
+      <section class="slide" aria-label="result-slide">
+        <div class="media">
+          ${hasImg ? `<img src="${imgUrl}" alt="${name}" loading="lazy">` : `<div class="placeholder">Image coming soon.</div>`}
+        </div>
+
+        <div class="pane">
+          <div>
+            <h2 class="name">${name}</h2>
+            <p class="meta">${area}${detail ? " / " + detail : ""}</p>
+
+            <p class="note">
+              <strong>Why this pick:</strong><br/>
+              ${why || "Chosen for the moment you described."}
+            </p>
+
+            ${desc ? `
+              <div class="desc">
+                <div class="label">Artisan note</div>
+                ${desc}
+              </div>
+            ` : ""}
+
+            <div class="tags">
+              ${tags.map(t => `<span class="tag">${escapeHtml(titleCase(t))}</span>`).join("")}
+            </div>
+          </div>
+
+          <div class="nav">
+            <div class="left">
+              <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps</a>
+            </div>
+            <span class="hint" id="slideCounter"></span>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderDots(){
+    if(!dotbar) return;
+    dotbar.innerHTML = shopsCache.map((_, i) =>
+      `<span class="dot ${i===idx ? "active" : ""}"></span>`
+    ).join("");
+  }
+
+  function render(){
+    if(!shopsCache.length){
+      deck.innerHTML = "";
+      setError("No shops returned.");
+      if(progressText) progressText.textContent = "0 / 0";
+      if(dotbar) dotbar.innerHTML = "";
+      return;
     }
 
-    let fields = purchaseRec?.fields || {};
-    let paymentStatus = normalizePaymentStatus(fields.payment_status);
+    deck.innerHTML = slideHtml(shopsCache[idx]);
 
-    // ② 無ければStripeフォールバック → paidならself-heal保存
-    if (!purchaseRec) {
-      let session = null;
-      try {
-        session = await stripeRetrieveCheckoutSession(sessionId);
-      } catch (e) {
-        return json(res, 402, { ok: false, error: "Unpaid (session not found)" });
+    const total = shopsCache.length;
+    if(progressText) progressText.textContent = `${idx+1} / ${total}`;
+    renderDots();
+
+    const sc = document.getElementById("slideCounter");
+    if(sc) sc.textContent = `${idx+1} / ${total}`;
+  }
+
+  function next(){ if(idx < shopsCache.length - 1){ idx++; render(); } }
+  function prev(){ if(idx > 0){ idx--; render(); } }
+
+  function getSessionIdFromUrl(){
+    const u = new URL(location.href);
+    return u.searchParams.get("session_id");
+  }
+
+  function setSessionIdInUrl(sessionId){
+    const u = new URL(location.href);
+    u.searchParams.set("session_id", sessionId);
+    history.replaceState({}, "", u.toString());
+  }
+
+  async function load(){
+    clearError();
+    setLoading();
+
+    let sessionId = getSessionIdFromUrl();
+
+    if(!sessionId){
+      const last = localStorage.getItem("last_session_id") || "";
+      if(last){
+        useLastBtn.style.display = "inline-flex";
+        setError("Missing session_id. You can use the last successful session, or go back to Hearing.");
+        deck.innerHTML = "";
+        setChips("—","—","—");
+        return;
+      }else{
+        setError("Missing session_id. Please complete checkout and return to this page automatically.");
+        deck.innerHTML = "";
+        setChips("—","—","—");
+        return;
+      }
+    }
+
+    try{
+      const res = await fetch(`/api/results?session_id=${encodeURIComponent(sessionId)}`);
+      const data = await res.json().catch(()=> ({}));
+
+      if(!res.ok || !data.ok){
+        deck.innerHTML = "";
+        setChips("—", "—", "—");
+        setError(data.error || `results failed (${res.status})`);
+        return;
       }
 
-      const stripePaid =
-        session?.payment_status === "paid" ||
-        session?.status === "complete" ||
-        session?.payment_status === "succeeded";
+      localStorage.setItem("last_session_id", sessionId);
 
-      if (!stripePaid) return json(res, 402, { ok: false, error: "Unpaid" });
+      const plan = data.plan || "—";
+      const prefs = data.who ? data.who : "—";
 
-      const plan = inferPlanFromStripeSession(session) || "";
-      const who = session?.metadata?.who || "";
-      const vibes = session?.metadata?.vibes || "";
-      const area_groups = session?.metadata?.area_groups || session?.metadata?.areas || "";
+      const shops = Array.isArray(data.shops) ? data.shops : [];
+      const areaList = uniq(shops.map(s=>s.area_group).filter(Boolean));
+      const areas = areaList.slice(0,4).join(" / ") || "—";
 
-      try {
-        const nowIso = new Date().toISOString();
-        const upsertFields = {
-          session_id: sessionId,
-          payment_status: "paid",
-          amount_total: session?.amount_total ?? null,
-          currency: session?.currency ?? null,
-          plan: plan || null,
-          created_at: nowIso,
-          customer_email: session?.customer_details?.email || session?.customer_email || null,
-          area_groups: area_groups || null,
-          who: who || null,
-          vibes: vibes || null,
-        };
-        const created = await upsertPurchase({
-          baseId, purchasesTableId, token,
-          existingRecord: null,
-          fields: upsertFields,
-        });
-        purchaseRec = created;
-        fields = created.fields || {};
-        paymentStatus = "paid";
-      } catch (e) {
-        console.error("[/api/results] Airtable purchases self-heal save failed:", e?.message || e);
-        fields = { session_id: sessionId, payment_status: "paid", plan, who, vibes, area_groups };
-        paymentStatus = "paid";
+      setChips(plan, prefs, areas);
+
+      if(shops.length === 0){
+        deck.innerHTML = "";
+        setError("No shops returned.");
+        return;
       }
+
+      shopsCache = shops;
+      idx = 0;
+      render();
+    }catch(e){
+      deck.innerHTML = "";
+      setChips("—", "—", "—");
+      setError("Network or server error. Check Vercel Runtime Logs.");
     }
-
-    // ③ paid以外は402
-    if (paymentStatus !== "paid") return json(res, 402, { ok: false, error: "Unpaid" });
-
-    const plan = String(fields.plan || "").toLowerCase().trim() || "explorer";
-    const who = fields.who || "";
-    const vibes = fields.vibes || "";
-    const areaGroups = parseAreaGroups(fields.area_groups);
-
-    // ④ エリア分散で7件
-    let shops = [];
-    try {
-      shops = await getShopsBalanced({
-        baseId,
-        shopsTableId,
-        token,
-        areaGroups,
-        total: 7,
-        seed: sessionId,
-      });
-    } catch (e) {
-      console.error("[/api/results] Airtable shops lookup failed:", e?.message || e);
-      return json(res, 500, { ok: false, error: "Server error (shops lookup)" });
-    }
-
-    return json(res, 200, {
-      ok: true,
-      plan,
-      who: who || vibes || "",
-      shops: Array.isArray(shops) ? shops : [],
-    });
-  } catch (e) {
-    console.error("[/api/results] Fatal:", e?.message || e);
-    return json(res, 500, { ok: false, error: "Server error" });
   }
-};
+
+  retryBtn.addEventListener("click", load);
+
+  backBtn.addEventListener("click", () => {
+    const u = new URL(location.href);
+    const plan = (u.searchParams.get("plan") || "");
+    location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
+  });
+
+  nextBtn.addEventListener("click", next);
+  prevBtn.addEventListener("click", prev);
+
+  useLastBtn.addEventListener("click", () => {
+    const last = localStorage.getItem("last_session_id") || "";
+    if(!last) return;
+    setSessionIdInUrl(last);
+    useLastBtn.style.display = "none";
+    load();
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowRight") next();
+    if(e.key === "ArrowLeft") prev();
+  });
+
+  let startX = null;
+  deck.addEventListener("touchstart", (e) => {
+    startX = e.touches?.[0]?.clientX ?? null;
+  }, { passive:true });
+
+  deck.addEventListener("touchend", (e) => {
+    if(startX === null) return;
+    const endX = e.changedTouches?.[0]?.clientX ?? startX;
+    const dx = endX - startX;
+    if(Math.abs(dx) > 40){
+      if(dx < 0) next();
+      else prev();
+    }
+    startX = null;
+  }, { passive:true });
+
+  load();
+</script>
+</body>
+</html>
