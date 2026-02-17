@@ -126,16 +126,7 @@
     .meta{font-size:14px;color:var(--muted);margin:0;}
     .note{margin:10px 0 0;color:var(--text);font-size:14px;line-height:1.7;}
     .note strong{font-weight:600}
-    .desc{
-      margin:12px 0 0;
-      padding-top:12px;
-      border-top:1px solid rgba(232,229,223,.7);
-      color:var(--text);
-      font-size:14px;
-      line-height:1.7;
-      white-space:pre-wrap;
-    }
-    .desc .label{color:var(--muted);font-size:12px;letter-spacing:.02em;text-transform:uppercase}
+    .smallcap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:12px;}
     .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
     .tag{
       font-size:12px;color:var(--text);
@@ -232,20 +223,6 @@
     if(progressText) progressText.textContent = "—";
     if(dotbar) dotbar.innerHTML = "";
   }
-
-  function uniq(arr){
-    const out = [];
-    const seen = new Set();
-    for(const x of (arr || [])){
-      const k = String(x || "").trim();
-      if(!k) continue;
-      if(seen.has(k)) continue;
-      seen.add(k);
-      out.push(k);
-    }
-    return out;
-  }
-
   function setChips(plan, prefs, areas){
     chips.innerHTML = `
       <span class="chip">PLAN: ${plan || "—"}</span>
@@ -260,11 +237,8 @@
     }[m]));
   }
   function toArray(v){
-    if (Array.isArray(v)) return v.map(String).map(s=>s.trim()).filter(Boolean);
-    if (typeof v === "string" && v.trim()){
-      // "A, B" も "A / B" も割る
-      return v.split(/[,/]/).map(s=>s.trim()).filter(Boolean);
-    }
+    if (Array.isArray(v)) return v.filter(Boolean);
+    if (typeof v === "string" && v.trim()) return v.split(",").map(s=>s.trim()).filter(Boolean);
     return [];
   }
   function titleCase(s){
@@ -274,25 +248,42 @@
   }
 
   function buildTags(shop){
-    const tier = toArray(shop.tier);
-    const slot = toArray(shop.time_slot);
+    const tier = Array.isArray(shop.tier) ? shop.tier : (shop.tier ? [shop.tier] : []);
+    const slot = shop.time_slot ? [shop.time_slot] : [];
     const bw = toArray(shop.best_with);
     const bv = toArray(shop.best_vibe);
-    const genre = toArray(shop.genre);
-    const tags = [...tier, ...slot, ...bw, ...bv, ...genre].filter(Boolean);
-    return uniq(tags).slice(0, 10);
+    const tags = [...tier, ...slot, ...bw, ...bv].filter(Boolean);
+    return [...new Set(tags)].slice(0, 10);
   }
 
-  function buildWhy(shop){
-    const tier = toArray(shop.tier);
-    const slot = toArray(shop.time_slot);
+  // ✅ NOTE: prefer note_en; fallback to short_desc_2; fallback to short_desc
+  function getNote(shop){
+    const n = (shop.note_en || "").toString().trim();
+    if(n) return n;
+
+    // Airtable列名ブレ吸収（"short_desc 2" のようにスペースが入るケース）
+    const sd2 = (shop["short_desc 2"] || shop.short_desc_2 || shop.short_desc2 || "").toString().trim();
+    if(sd2) return sd2;
+
+    const sd = (shop.short_desc || "").toString().trim();
+    return sd;
+  }
+
+  // ✅ WHY: prefer why_en; fallback to data-driven summary (old behavior)
+  function getWhy(shop){
+    const w = (shop.why_en || "").toString().trim();
+    if(w) return w;
+
+    const tier = Array.isArray(shop.tier) ? shop.tier : (shop.tier ? [shop.tier] : []);
+    const slot = (shop.time_slot || "").toString().trim();
     const bw = toArray(shop.best_with);
     const bv = toArray(shop.best_vibe);
+
     const lines = [];
-    if(slot.length) lines.push(`Best time: ${slot.slice(0,2).map(titleCase).join(", ")}.`);
+    if(slot) lines.push(`Best time: ${titleCase(slot)}.`);
     if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
     if(bv.length) lines.push(`Vibe: ${bv.slice(0,3).map(titleCase).join(", ")}.`);
-    if(tier.length) lines.push(`Tier: ${tier.slice(0,2).map(titleCase).join(", ")}.`);
+    if(tier.length) lines.push(`Tier: ${tier.map(titleCase).join(", ")}.`);
     return lines.join(" ");
   }
 
@@ -302,9 +293,9 @@
     const detail = escapeHtml(shop.area_detail || "");
 
     const tags = buildTags(shop);
-    const why = escapeHtml(buildWhy(shop));
 
-    const desc = escapeHtml(shop.short_desc || shop.desc || shop.description || "");
+    const why = escapeHtml(getWhy(shop));
+    const note = escapeHtml(getNote(shop));
 
     const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
@@ -323,17 +314,15 @@
             <h2 class="name">${name}</h2>
             <p class="meta">${area}${detail ? " / " + detail : ""}</p>
 
-            <p class="note">
+            <p class="note" style="margin-top:14px;">
               <strong>Why this pick:</strong><br/>
-              ${why || "Chosen for the moment you described."}
+              ${why || "Selected to match your moment."}
             </p>
 
-            ${desc ? `
-              <div class="desc">
-                <div class="label">Artisan note</div>
-                ${desc}
-              </div>
-            ` : ""}
+            <div class="smallcap">Artisan note</div>
+            <p class="note" style="margin-top:6px;">
+              ${note || "—"}
+            </p>
 
             <div class="tags">
               ${tags.map(t => `<span class="tag">${escapeHtml(titleCase(t))}</span>`).join("")}
@@ -428,13 +417,12 @@
 
       const plan = data.plan || "—";
       const prefs = data.who ? data.who : "—";
-
-      const shops = Array.isArray(data.shops) ? data.shops : [];
-      const areaList = uniq(shops.map(s=>s.area_group).filter(Boolean));
-      const areas = areaList.slice(0,4).join(" / ") || "—";
-
+      const areas = Array.isArray(data.shops)
+        ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—")
+        : "—";
       setChips(plan, prefs, areas);
 
+      const shops = Array.isArray(data.shops) ? data.shops : [];
       if(shops.length === 0){
         deck.innerHTML = "";
         setError("No shops returned.");
