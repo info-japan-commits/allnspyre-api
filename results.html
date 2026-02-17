@@ -12,7 +12,7 @@
       --muted:#6b6b6b;
       --line:#e8e5df;
       --danger:#c62828;
-      --radius:20px;
+      --radius:22px;
       --shadow: 0 14px 34px rgba(17,17,17,.08);
     }
     *{box-sizing:border-box}
@@ -22,10 +22,17 @@
       color:var(--text);
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
+
+    .wrap{max-width:920px;margin:0 auto;padding:26px 16px 70px;}
+
+    /* Top bar */
     .topbar{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;
-      margin-bottom:18px;flex-wrap:wrap;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
     .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
     .chip{
@@ -33,6 +40,7 @@
       border:1px solid var(--line);
       background:#fff;
       padding:6px 10px;border-radius:999px;
+      white-space:nowrap;
     }
     .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .btn{
@@ -49,18 +57,45 @@
       align-items:center;
       gap:6px;
       color:var(--text);
+      user-select:none;
     }
-    .btn:hover{filter:brightness(0.98)}
+    .btn:hover{filter:brightness(0.985)}
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{
+      background:transparent;
+      box-shadow:none;
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    /* Header */
     h1{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:64px;
+      font-size:60px;
       letter-spacing:-0.02em;
-      margin:10px 0 8px;
+      margin:10px 0 6px;
       line-height:1.0;
+      text-align:center;
     }
-    .sub{color:var(--muted);margin:0 0 14px}
+    .sub{
+      color:var(--muted);
+      margin:0 0 12px;
+      text-align:center;
+    }
+
+    /* Progress row */
     .progress{
-      display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;margin-top:10px;flex-wrap:wrap;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      align-items:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:10px;
+      flex-wrap:wrap;
     }
     .dotbar{display:flex;gap:6px;align-items:center;}
     .dot{width:6px;height:6px;border-radius:999px;background:rgba(17,17,17,.12);}
@@ -71,83 +106,164 @@
       border:1px solid var(--line);
       background:#fff;padding:4px 8px;border-radius:8px;
     }
+
+    /* Alert */
     .alert{
       border:1px solid #f2b8b5;
       background:#fff3f3;
       color:var(--danger);
       padding:14px 16px;
       border-radius:14px;
-      margin:18px 0;
+      margin:18px auto 0;
       display:none;
+      max-width:720px;
     }
-    .deck{
+
+    /* Card deck */
+    .stage{
       margin-top:16px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .card{
+      width:min(720px, 100%);
       border:1px solid var(--line);
       border-radius:var(--radius);
-      background: rgba(255,255,255,.55);
+      background:rgba(255,255,255,.92);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .slide{
-      height: calc(100vh - 230px);
-      min-height: 560px;
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      background:#fff;
-    }
-    @media (max-width: 960px){
-      h1{font-size:44px}
-      .slide{grid-template-columns:1fr;height:auto;min-height:unset;}
-    }
-    @media (max-width: 600px){
-      h1{font-size:38px}
-    }
-    .media{
+
+    /* Optional image banner (only shown if img exists) */
+    .hero{
       position:relative;
+      width:100%;
+      height:220px;
       background:
-        radial-gradient(1200px 520px at 35% 25%, rgba(17,17,17,.09), rgba(17,17,17,0)),
-        linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,.02));
-      min-height: 320px;
+        radial-gradient(1200px 520px at 30% 20%, rgba(17,17,17,.08), rgba(17,17,17,0)),
+        linear-gradient(180deg, rgba(17,17,17,.05), rgba(17,17,17,.02));
     }
-    .media img{width:100%;height:100%;object-fit:cover;display:block;}
-    .media .placeholder{
-      position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;
-      padding:18px;color:rgba(17,17,17,.35);font-size:13px;
+    .hero img{
+      width:100%;height:100%;
+      object-fit:cover;display:block;
+      filter:saturate(1.05);
     }
-    .pane{
-      padding:22px 22px 18px;
-      display:flex;flex-direction:column;gap:12px;
-      background: rgba(255,255,255,.90);
+    .hero .overlay{
+      position:absolute;inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0) 55%, rgba(0,0,0,.10));
+      pointer-events:none;
+    }
+
+    .body{
+      padding:18px 18px 16px;
+    }
+
+    .titleRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
     }
     .name{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:30px;margin:0;line-height:1.18;letter-spacing:-0.01em;
+      font-size:30px;
+      margin:0;
+      line-height:1.15;
+      letter-spacing:-0.01em;
     }
-    .meta{font-size:14px;color:var(--muted);margin:0;}
-    .note{margin:10px 0 0;color:var(--text);font-size:14px;line-height:1.7;}
-    .note strong{font-weight:600}
-    .smallcap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:12px;}
-    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .tag{
-      font-size:12px;color:var(--text);
+    .meta{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .pill{
       border:1px solid var(--line);
       background:#fff;
-      padding:6px 10px;border-radius:999px;
+      color:var(--muted);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+      align-self:flex-start;
     }
-    .nav{
-      margin-top:auto;
-      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
-      padding-top:14px;border-top:1px solid rgba(232,229,223,.7);
+
+    .section{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(232,229,223,.8);
     }
-    .nav .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .label{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin:0 0 8px;
+    }
+    .copy{
+      margin:0;
+      font-size:14px;
+      line-height:1.75;
+      color:var(--text);
+    }
+    .copy strong{font-weight:650}
+
+    .tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .tag{
+      font-size:12px;
+      color:rgba(17,17,17,.92);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;
+      border-radius:999px;
+      opacity:.92;
+    }
+
+    .footer{
+      padding:12px 18px 16px;
+      border-top:1px solid rgba(232,229,223,.8);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .counter{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    /* Skeleton */
     .skeleton{
-      height: calc(100vh - 230px);
-      min-height: 560px;
+      width:min(720px, 100%);
+      height:520px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
       background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
       background-size: 200% 200%;
       animation: shimmer 1.2s infinite linear;
+      box-shadow: var(--shadow);
     }
     @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:100% 0%}}
+
+    @media (max-width: 720px){
+      h1{font-size:44px}
+      .hero{height:190px}
+      .name{font-size:26px}
+    }
+    @media (max-width: 420px){
+      h1{font-size:38px}
+      .hero{height:170px}
+      .body{padding:16px}
+      .footer{padding:12px 16px 14px}
+    }
   </style>
 </head>
 
@@ -186,13 +302,13 @@
       </div>
     </div>
 
-    <div class="deck" id="deck">
+    <div class="stage" id="stage">
       <div class="skeleton"></div>
     </div>
   </div>
 
 <script>
-  const deck = document.getElementById("deck");
+  const stage = document.getElementById("stage");
   const alertBox = document.getElementById("alertBox");
   const alertMsg = document.getElementById("alertMsg");
   const chips = document.getElementById("chips");
@@ -201,7 +317,6 @@
   const backBtn  = document.getElementById("backBtn");
   const prevBtn  = document.getElementById("prevBtn");
   const nextBtn  = document.getElementById("nextBtn");
-
   const useLastBtn = document.getElementById("useLastBtn");
 
   const progressText = document.getElementById("progressText");
@@ -219,9 +334,11 @@
     alertMsg.textContent = "";
   }
   function setLoading(){
-    deck.innerHTML = `<div class="skeleton"></div>`;
+    stage.innerHTML = `<div class="skeleton"></div>`;
     if(progressText) progressText.textContent = "—";
     if(dotbar) dotbar.innerHTML = "";
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
   }
   function setChips(plan, prefs, areas){
     chips.innerHTML = `
@@ -256,12 +373,11 @@
     return [...new Set(tags)].slice(0, 10);
   }
 
-  // ✅ NOTE: prefer note_en; fallback to short_desc_2; fallback to short_desc
+  // Prefer note_en; fallback to short_desc 2; fallback to short_desc
   function getNote(shop){
     const n = (shop.note_en || "").toString().trim();
     if(n) return n;
 
-    // Airtable列名ブレ吸収（"short_desc 2" のようにスペースが入るケース）
     const sd2 = (shop["short_desc 2"] || shop.short_desc_2 || shop.short_desc2 || "").toString().trim();
     if(sd2) return sd2;
 
@@ -269,7 +385,7 @@
     return sd;
   }
 
-  // ✅ WHY: prefer why_en; fallback to data-driven summary (old behavior)
+  // Prefer why_en; fallback to auto summary from tags
   function getWhy(shop){
     const w = (shop.why_en || "").toString().trim();
     if(w) return w;
@@ -287,56 +403,63 @@
     return lines.join(" ");
   }
 
-  function slideHtml(shop){
+  function mapsUrlFor(shop){
+    const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
+    return `https://www.google.com/maps/search/?api=1&query=${q}`;
+  }
+
+  function cardHtml(shop){
     const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
     const area = escapeHtml(shop.area_group || "");
     const detail = escapeHtml(shop.area_detail || "");
-
     const tags = buildTags(shop);
 
     const why = escapeHtml(getWhy(shop));
     const note = escapeHtml(getNote(shop));
 
-    const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
-
     const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
     const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
 
+    const mapsUrl = mapsUrlFor(shop);
+
     return `
-      <section class="slide" aria-label="result-slide">
-        <div class="media">
-          ${hasImg ? `<img src="${imgUrl}" alt="${name}" loading="lazy">` : `<div class="placeholder">Image coming soon.</div>`}
-        </div>
+      <article class="card" aria-label="result-card">
+        ${hasImg ? `
+          <div class="hero">
+            <img src="${imgUrl}" alt="${name}" loading="lazy">
+            <div class="overlay"></div>
+          </div>
+        ` : ``}
 
-        <div class="pane">
-          <div>
-            <h2 class="name">${name}</h2>
-            <p class="meta">${area}${detail ? " / " + detail : ""}</p>
+        <div class="body">
+          <div class="titleRow">
+            <div>
+              <h2 class="name">${name}</h2>
+              <p class="meta">${area}${detail ? " / " + detail : ""}</p>
+            </div>
+            <span class="pill" aria-label="card-counter">${idx+1} / ${shopsCache.length}</span>
+          </div>
 
-            <p class="note" style="margin-top:14px;">
-              <strong>Why this pick:</strong><br/>
-              ${why || "Selected to match your moment."}
-            </p>
+          <div class="section">
+            <p class="label">Why this pick</p>
+            <p class="copy">${why || "Selected to match your moment."}</p>
+          </div>
 
-            <div class="smallcap">Artisan note</div>
-            <p class="note" style="margin-top:6px;">
-              ${note || "—"}
-            </p>
+          <div class="section">
+            <p class="label">Artisan note</p>
+            <p class="copy">${note || "—"}</p>
 
-            <div class="tags">
+            <div class="tags" aria-label="tags">
               ${tags.map(t => `<span class="tag">${escapeHtml(titleCase(t))}</span>`).join("")}
             </div>
           </div>
-
-          <div class="nav">
-            <div class="left">
-              <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps</a>
-            </div>
-            <span class="hint" id="slideCounter"></span>
-          </div>
         </div>
-      </section>
+
+        <div class="footer">
+          <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps →</a>
+          <span class="counter">${idx+1} / ${shopsCache.length}</span>
+        </div>
+      </article>
     `;
   }
 
@@ -349,21 +472,23 @@
 
   function render(){
     if(!shopsCache.length){
-      deck.innerHTML = "";
+      stage.innerHTML = "";
       setError("No shops returned.");
       if(progressText) progressText.textContent = "0 / 0";
       if(dotbar) dotbar.innerHTML = "";
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
       return;
     }
 
-    deck.innerHTML = slideHtml(shopsCache[idx]);
+    stage.innerHTML = cardHtml(shopsCache[idx]);
 
     const total = shopsCache.length;
     if(progressText) progressText.textContent = `${idx+1} / ${total}`;
     renderDots();
 
-    const sc = document.getElementById("slideCounter");
-    if(sc) sc.textContent = `${idx+1} / ${total}`;
+    prevBtn.disabled = (idx === 0);
+    nextBtn.disabled = (idx === total - 1);
   }
 
   function next(){ if(idx < shopsCache.length - 1){ idx++; render(); } }
@@ -391,12 +516,12 @@
       if(last){
         useLastBtn.style.display = "inline-flex";
         setError("Missing session_id. You can use the last successful session, or go back to Hearing.");
-        deck.innerHTML = "";
+        stage.innerHTML = "";
         setChips("—","—","—");
         return;
       }else{
         setError("Missing session_id. Please complete checkout and return to this page automatically.");
-        deck.innerHTML = "";
+        stage.innerHTML = "";
         setChips("—","—","—");
         return;
       }
@@ -407,7 +532,7 @@
       const data = await res.json().catch(()=> ({}));
 
       if(!res.ok || !data.ok){
-        deck.innerHTML = "";
+        stage.innerHTML = "";
         setChips("—", "—", "—");
         setError(data.error || `results failed (${res.status})`);
         return;
@@ -424,7 +549,7 @@
 
       const shops = Array.isArray(data.shops) ? data.shops : [];
       if(shops.length === 0){
-        deck.innerHTML = "";
+        stage.innerHTML = "";
         setError("No shops returned.");
         return;
       }
@@ -433,7 +558,7 @@
       idx = 0;
       render();
     }catch(e){
-      deck.innerHTML = "";
+      stage.innerHTML = "";
       setChips("—", "—", "—");
       setError("Network or server error. Check Vercel Runtime Logs.");
     }
@@ -463,12 +588,13 @@
     if(e.key === "ArrowLeft") prev();
   });
 
+  // Swipe on the card area
   let startX = null;
-  deck.addEventListener("touchstart", (e) => {
+  stage.addEventListener("touchstart", (e) => {
     startX = e.touches?.[0]?.clientX ?? null;
   }, { passive:true });
 
-  deck.addEventListener("touchend", (e) => {
+  stage.addEventListener("touchend", (e) => {
     if(startX === null) return;
     const endX = e.changedTouches?.[0]?.clientX ?? startX;
     const dx = endX - startX;
