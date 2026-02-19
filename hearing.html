@@ -289,9 +289,7 @@
   const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
 
-  // -----------------------
-  // GA helpers (no-crash)
-  // -----------------------
+  // ---- GA helpers (no-crash) ----
   function gaSafeEvent(name, params){
     try{
       if (typeof window.gtag === "function"){
@@ -300,6 +298,20 @@
     }catch(_){}
   }
   function planValue(plan){ return (plan === "connoisseur") ? 39 : 19; }
+
+  // GA4 client_id from _ga cookie: "GA1.1.1234567890.1234567890" -> "1234567890.1234567890"
+  function getGaClientId(){
+    try{
+      const m = document.cookie.match(/(?:^|;\s*)_ga=([^;]+)/);
+      if(!m) return "";
+      const v = decodeURIComponent(m[1] || "");
+      const parts = v.split(".");
+      if(parts.length >= 4) return `${parts[2]}.${parts[3]}`;
+      return "";
+    }catch(_){
+      return "";
+    }
+  }
 
   function maxPref(){ return state.plan === "connoisseur" ? 3 : 1; }
   function needAreas(){ return state.plan === "connoisseur" ? 4 : 1; }
@@ -382,7 +394,6 @@
           state.prefectures = [...state.prefectures, p];
         }
 
-        // reset when prefectures change
         state.selectedAreas = [];
         state.areasByPref = {};
         resetDownstream();
@@ -466,7 +477,6 @@
         btn.onclick = () => {
           setErr("");
           toggleArea(area);
-          // area change resets downstream
           resetDownstream();
           renderAll();
         };
@@ -507,7 +517,6 @@
       btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
       btn.onclick = () => {
         state.who = w.slug;
-        // who change resets downstream vibe-related
         state.vibes = [];
         state.friction = [];
         state.noPreference = false;
@@ -602,7 +611,6 @@
     renderPref();
     renderAreas();
 
-    // Step2 gate
     if (state.selectedAreas.length === needAreas()){
       stepWho.style.display = "";
       renderWho();
@@ -615,7 +623,6 @@
       return;
     }
 
-    // Step3 gate
     if (state.who){
       stepVibe.style.display = "";
       renderVibes();
@@ -627,7 +634,6 @@
       return;
     }
 
-    // Step4/5 gate (vibe chosen)
     if (state.vibes.length > 0){
       stepFriction.style.display = "";
       stepNp.style.display = "";
@@ -641,7 +647,6 @@
     renderFooter();
   }
 
-  // plan click
   planGrid.addEventListener("click", (e) => {
     const btn = e.target.closest(".opt[data-plan]");
     if (!btn) return;
@@ -651,7 +656,6 @@
     const limit = maxPref();
     if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
 
-    // reset
     state.selectedAreas = [];
     state.areasByPref = {};
     resetDownstream();
@@ -662,7 +666,6 @@
     u.searchParams.set("plan", state.plan);
     history.replaceState({}, "", u.toString());
 
-    // GA: plan_select
     gaSafeEvent("select_item", {
       item_list_name: "plan",
       items: [{
@@ -676,13 +679,14 @@
     renderAll();
   });
 
-  // Continue -> /api/checkout (redirect to Stripe)
   continueBtn.addEventListener("click", async () => {
     if (!ready() || state.loadingCheckout) {
       if (!state.who) setWhoErr("Please choose who you are eating with.");
       if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
       return;
     }
+
+    const ga_client_id = getGaClientId(); // ✅ これをStripe metadataまで運ぶ
 
     const payload = {
       plan: state.plan,
@@ -692,10 +696,10 @@
       vibes: state.vibes,
       friction: state.friction,
       no_preference: state.noPreference,
+      ga_client_id, // ✅ 追加
       source: "hearing.html"
     };
 
-    // GA: user completed hearing (form-ish)
     gaSafeEvent("hearing_complete", {
       plan: state.plan,
       areas_count: state.selectedAreas.length,
@@ -706,7 +710,6 @@
       no_preference: !!state.noPreference
     });
 
-    // GA: begin_checkout (right before Stripe redirect)
     gaSafeEvent("begin_checkout", {
       currency: "USD",
       value: planValue(state.plan),
@@ -741,7 +744,6 @@
     }
   });
 
-  // init
   renderAll();
 })();
 </script>
