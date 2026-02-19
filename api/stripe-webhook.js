@@ -1,20 +1,4 @@
-// api/stripe_webhook.js
-// URL: https://allnspyre-api.vercel.app/api/stripe_webhook
-// Required ENV:
-// - STRIPE_SECRET_KEY
-// - STRIPE_WEBHOOK_SECRET
-// - AIRTABLE_TOKEN
-// - AIRTABLE_BASE_ID
-// - AIRTABLE_PURCHASES_TABLE_ID
-//
-// Optional ENV (GA4 purchase):
-// - GA4_MEASUREMENT_ID
-// - GA4_API_SECRET
-//
-// Optional ENV (payments DB ingest via internal API):
-// - PAYMENTS_INGEST_URL
-// - PAYMENTS_INGEST_SECRET
-
+// api/stripe-webhook.js
 const Stripe = require("stripe");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -30,6 +14,13 @@ async function readRawBody(req) {
   });
 }
 
+async function getFetch() {
+  return (
+    global.fetch ||
+    (await import("node-fetch").then((m) => m.default).catch(() => null))
+  );
+}
+
 async function airtableRequest(path, { method = "GET", body } = {}) {
   const baseId = process.env.AIRTABLE_BASE_ID;
   const token = process.env.AIRTABLE_TOKEN;
@@ -39,11 +30,7 @@ async function airtableRequest(path, { method = "GET", body } = {}) {
   }
 
   const url = `https://api.airtable.com/v0/${baseId}${path}`;
-
-  const _fetch =
-    global.fetch ||
-    (await import("node-fetch").then((m) => m.default).catch(() => null));
-
+  const _fetch = await getFetch();
   if (!_fetch) throw new Error("fetch is not available");
 
   const res = await _fetch(url, {
@@ -135,38 +122,20 @@ function safeString(v) {
 }
 
 function normalizePlan(mdPlan) {
-  const raw = (mdPlan || "").toString().trim().toLowerCase();
-  if (raw === "connoisseur") return "Connoisseur";
-  if (raw === "explorer") return "Explorer";
-  return safeString(mdPlan || "");
+  const rawPlan = (mdPlan || "").toString().trim().toLowerCase();
+  return rawPlan === "connoisseur" ? "Connoisseur"
+       : rawPlan === "explorer" ? "Explorer"
+       : safeString(mdPlan || "");
 }
 
-function toUsdAmount(amountMinor, currency) {
-  // Stripe amount_total is in the smallest currency unit (e.g. cents for USD).
-  // For GA4 value, send decimal major units.
-  const cur = (currency || "").toLowerCase();
-  const minor = typeof amountMinor === "number" ? amountMinor : 0;
+async function sendGa4Purchase({ clientId, measurementId, apiSecret, sessionId, value, currency, plan }) {
+  const _fetch = await getFetch();
+  if (!_fetch) throw new Error("fetch is not available");
 
-  // For now we assume USD only in your business model.
-  // If you later support 0-decimal currencies, handle here.
-  const major = minor / 100;
-  return Math.round(major * 100) / 100;
-}
-
-async function sendGa4Purchase({ clientId, transactionId, value, currency, plan }) {
-  const measurementId = process.env.GA4_MEASUREMENT_ID;
-  const apiSecret = process.env.GA4_API_SECRET;
-
-  if (!measurementId || !apiSecret) return; // GA4送信を有効にしてない
-
-  if (!clientId) {
-    // client_id が無いと GA4 MP は受け付けるが、計測が弱くなる/紐付かない可能性
-    // ただし“ゼロよりマシ”なので送るかは方針次第。ここでは送らない（確実性優先）
-    console.error("[stripe-webhook] GA4 client_id missing; skip purchase MP");
-    return;
-  }
-
-  const endpoint = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(measurementId)}&api_secret=${encodeURIComponent(apiSecret)}`;
+  const url =
+    `https://www.google-analytics.com/mp/collect` +
+    `?measurement_id=${encodeURIComponent(measurementId)}` +
+    `&api_secret=${encodeURIComponent(apiSecret)}`;
 
   const payload = {
     client_id: clientId,
@@ -174,61 +143,31 @@ async function sendGa4Purchase({ clientId, transactionId, value, currency, plan 
       {
         name: "purchase",
         params: {
-          transaction_id: transactionId,
-          currency: (currency || "usd").toUpperCase(),
-          value: value,
+          transaction_id: sessionId,
+          currency: (currency || "usd").toString().toUpperCase(),
+          value: Number.isFinite(value) ? value : 0,
           items: [
             {
-              item_id: (plan || "").toString().toLowerCase(),
-              item_name: plan,
-              price: value,
-              quantity: 1
-            }
-          ]
-        }
-      }
-    ]
+              item_id: (plan || "plan").toString(),
+              item_name: (plan || "Plan").toString(),
+              price: Number.isFinite(value) ? value : 0,
+              quantity: 1,
+            },
+          ],
+        },
+      },
+    ],
   };
 
-  const _fetch =
-    global.fetch ||
-    (await import("node-fetch").then((m) => m.default).catch(() => null));
-  if (!_fetch) throw new Error("fetch is not available");
-
-  const res = await _fetch(endpoint, {
+  const r = await _fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    console.error("[stripe-webhook] GA4 MP failed:", res.status, t);
-  }
-}
-
-async function postPaymentIngest(payment) {
-  const url = process.env.PAYMENTS_INGEST_URL;
-  const secret = process.env.PAYMENTS_INGEST_SECRET;
-  if (!url || !secret) return;
-
-  const _fetch =
-    global.fetch ||
-    (await import("node-fetch").then((m) => m.default).catch(() => null));
-  if (!_fetch) throw new Error("fetch is not available");
-
-  const res = await _fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Ingest-Secret": secret
-    },
-    body: JSON.stringify(payment)
-  });
-
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    console.error("[stripe-webhook] payments ingest failed:", res.status, t);
+  if (!r.ok) {
+    const t = await r.text().catch(() => "");
+    throw new Error(`GA4 MP error (${r.status}): ${t}`);
   }
 }
 
@@ -279,31 +218,32 @@ module.exports = async (req, res) => {
       return;
     }
 
+    const plan = normalizePlan(md.plan);
     const paymentStatus = safeString(session.payment_status || "unpaid");
+
     const createdAt = session.created
       ? new Date(session.created * 1000).toISOString()
       : new Date().toISOString();
 
-    const amountTotalMinor =
+    const amountTotalCents =
       typeof session.amount_total === "number" ? session.amount_total : 0;
 
     const currency = safeString(session.currency || "usd");
     const customerEmail = safeString(
       (session.customer_details && session.customer_details.email) ||
-        session.customer_email ||
-        ""
+      session.customer_email ||
+      ""
     );
 
-    const plan = normalizePlan(md.plan || "");
     const areaGroups = safeString(md.area_groups || md.areaGroups || "");
     const who = safeString(md.who || "");
     const vibes = safeString(md.vibes || "");
-    const gaClientId = safeString(md.ga_client_id || "");
+    const gaClientId = safeString(md.ga_client_id || md.gaClientId || "");
 
-    // 1) Airtable (現行の動作を維持)
+    // ✅ Airtable upsert（列名は purchases 側に合わせる）
     await upsertPurchaseBySessionId(sessionId, {
       payment_status: paymentStatus,
-      amount_total: amountTotalMinor,
+      amount_total: amountTotalCents,
       currency,
       plan,
       created_at: createdAt,
@@ -311,37 +251,29 @@ module.exports = async (req, res) => {
       area_groups: areaGroups,
       who,
       vibes,
-      ga_client_id: gaClientId,
+      ga_client_id: gaClientId, // ✅ purchases に ga_client_id 列が必要
     });
 
-    // 2) GA4 purchase（確定時のみ）
-    const value = toUsdAmount(amountTotalMinor, currency);
-    await sendGa4Purchase({
-      clientId: gaClientId,
-      transactionId: sessionId,
-      value,
-      currency,
-      plan
-    });
+    // ✅ GA4 Measurement Protocol purchase（client_id 必須）
+    const measurementId = process.env.GA4_MEASUREMENT_ID || process.env.GA4_MEASUREMENT;
+    const apiSecret = process.env.GA4_API_SECRET;
 
-    // 3) payments保存（DB側に寄せたい場合：任意）
-    //   → 本体側で transaction_id=sessionId を unique にして upsert すれば二重耐性もOK
-    await postPaymentIngest({
-      provider: "stripe",
-      plan: (plan || "").toString().toLowerCase(), // "explorer"/"connoisseur"寄せ
-      amount: amountTotalMinor,
-      currency: currency,
-      status: paymentStatus,
-      transaction_id: sessionId,
-      customer_email: customerEmail,
-      created_at: createdAt,
-      meta: {
-        area_groups: areaGroups,
-        who,
-        vibes,
-        ga_client_id: gaClientId
-      }
-    });
+    if (!measurementId || !apiSecret) {
+      console.error("[stripe-webhook] GA4 env missing; skip purchase MP");
+    } else if (!gaClientId) {
+      console.error("[stripe-webhook] GA4 client_id missing; skip purchase MP");
+    } else {
+      const value = amountTotalCents ? amountTotalCents / 100 : 0;
+      await sendGa4Purchase({
+        clientId: gaClientId,
+        measurementId,
+        apiSecret,
+        sessionId,
+        value,
+        currency,
+        plan,
+      });
+    }
 
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
