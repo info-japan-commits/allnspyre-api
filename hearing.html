@@ -289,6 +289,18 @@
   const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
 
+  // -----------------------
+  // GA helpers (no-crash)
+  // -----------------------
+  function gaSafeEvent(name, params){
+    try{
+      if (typeof window.gtag === "function"){
+        window.gtag("event", name, params || {});
+      }
+    }catch(_){}
+  }
+  function planValue(plan){ return (plan === "connoisseur") ? 39 : 19; }
+
   function maxPref(){ return state.plan === "connoisseur" ? 3 : 1; }
   function needAreas(){ return state.plan === "connoisseur" ? 4 : 1; }
 
@@ -650,6 +662,17 @@
     u.searchParams.set("plan", state.plan);
     history.replaceState({}, "", u.toString());
 
+    // GA: plan_select
+    gaSafeEvent("select_item", {
+      item_list_name: "plan",
+      items: [{
+        item_id: state.plan,
+        item_name: state.plan,
+        price: planValue(state.plan),
+        quantity: 1
+      }]
+    });
+
     renderAll();
   });
 
@@ -661,17 +684,39 @@
       return;
     }
 
-   const payload = {
-  plan: state.plan,
-  prefectures: state.prefectures,
-  area_groups: state.selectedAreas,
-  who: state.who,        // ← 修正
-  vibes: state.vibes,    // ← 修正
-  friction: state.friction,
-  no_preference: state.noPreference,
-  source: "hearing.html"
-};
+    const payload = {
+      plan: state.plan,
+      prefectures: state.prefectures,
+      area_groups: state.selectedAreas,
+      who: state.who,
+      vibes: state.vibes,
+      friction: state.friction,
+      no_preference: state.noPreference,
+      source: "hearing.html"
+    };
 
+    // GA: user completed hearing (form-ish)
+    gaSafeEvent("hearing_complete", {
+      plan: state.plan,
+      areas_count: state.selectedAreas.length,
+      prefectures_count: state.prefectures.length,
+      who: state.who,
+      vibes: (state.vibes || []).join(","),
+      friction_count: (state.friction || []).length,
+      no_preference: !!state.noPreference
+    });
+
+    // GA: begin_checkout (right before Stripe redirect)
+    gaSafeEvent("begin_checkout", {
+      currency: "USD",
+      value: planValue(state.plan),
+      items: [{
+        item_id: state.plan,
+        item_name: state.plan,
+        price: planValue(state.plan),
+        quantity: 1
+      }]
+    });
 
     try{
       state.loadingCheckout = true;
