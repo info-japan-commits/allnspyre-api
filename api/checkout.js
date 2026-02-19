@@ -1,6 +1,5 @@
 // /api/checkout.js
 const STRIPE_API = "https://api.stripe.com/v1";
-const DEFAULT_CURRENCY = "usd";
 
 function json(res, status, body) {
   res.statusCode = status;
@@ -17,6 +16,7 @@ function requireEnv(name) {
 
 function getBaseUrl(req) {
   if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, "");
+
   const proto =
     (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim() || "https";
   const host = (req.headers["x-forwarded-host"] || req.headers.host || "").toString();
@@ -29,6 +29,7 @@ function pickPriceId(plan) {
   return requireEnv("STRIPE_PRICE_EXPLORER");
 }
 
+// hearing からの入力を metadata に詰める（壊れないよう “あるものだけ”）
 function buildMetadata(body, plan) {
   const md = {};
   md.plan = String(plan || "").toLowerCase().trim() || "explorer";
@@ -37,12 +38,13 @@ function buildMetadata(body, plan) {
   const vibes = body?.vibes ?? body?.vibe ?? "";
   const areas = body?.area_groups ?? body?.areas ?? body?.area_group ?? "";
 
-  // ✅ GA4 client_id（Measurement Protocol 用）
-  const gaClientId = body?.ga_client_id ?? body?.client_id ?? "";
+  // ✅ 追加：GA client_id（Measurement Protocol 用）
+  const gaClientId = body?.ga_client_id ?? body?.gaClientId ?? "";
 
   if (who) md.who = String(who);
   if (vibes) md.vibes = Array.isArray(vibes) ? vibes.join(",") : String(vibes);
   if (areas) md.area_groups = Array.isArray(areas) ? areas.join(",") : String(areas);
+
   if (gaClientId) md.ga_client_id = String(gaClientId);
 
   return md;
@@ -109,14 +111,16 @@ module.exports = async (req, res) => {
       cancel_url: cancelUrl,
       billing_address_collection: "auto",
 
+      // metadata[*]
       ...Object.fromEntries(Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])),
 
+      // line_items[0]
       "line_items[0][price]": priceId,
       "line_items[0][quantity]": 1,
-      currency: DEFAULT_CURRENCY,
     };
 
     const session = await stripePostForm("/checkout/sessions", stripeKey, params);
+
     return json(res, 200, { ok: true, url: session.url, id: session.id });
   } catch (e) {
     console.error("[/api/checkout] error:", e?.message || e);
