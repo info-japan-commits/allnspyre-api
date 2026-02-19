@@ -6,13 +6,8 @@
   <title>Allnspyre | Hearing</title>
   <style>
     :root{
-      --bg:#f7f5f1;
-      --card:#ffffff;
-      --text:#111;
-      --muted:#6b6b6b;
-      --line:#e8e5df;
-      --danger:#c62828;
-      --radius:18px;
+      --bg:#f7f5f1; --card:#ffffff; --text:#111; --muted:#6b6b6b;
+      --line:#e8e5df; --danger:#c62828; --radius:18px;
     }
     *{box-sizing:border-box}
     body{
@@ -21,690 +16,165 @@
       color:var(--text);
       background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
     }
-    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 92px;}
-    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;}
-    .brand{font-weight:650;letter-spacing:.2px}
-    .sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
-    .pill{
-      display:inline-flex;gap:8px;align-items:center;
-      border:1px solid var(--line);border-radius:999px;
-      padding:8px 12px;font-size:13px;color:var(--muted);
-      background:rgba(255,255,255,.7);backdrop-filter:blur(8px);white-space:nowrap;
-    }
+    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 120px;}
     .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:var(--radius);
+      padding:18px;margin-top:18px;
       box-shadow:0 6px 18px rgba(0,0,0,.04);
-      padding:18px;margin-top:14px;
     }
-    .stepHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;}
-    .kicker{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
-    .h{font-size:18px;line-height:1.25;margin:6px 0 0;font-weight:650;}
-    .note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5;}
-    .danger{color:var(--danger);font-size:13px;margin-top:10px;display:none;}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-    @media (min-width:760px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
+    .h{font-size:18px;font-weight:600;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
     .opt{
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 12px;
-      cursor:pointer;
-      background:#fff;
-      transition:transform .06s ease,border-color .06s ease;
-      min-height:44px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      border-radius:12px;padding:12px;
+      cursor:pointer;background:#fff;
     }
-    .opt:hover{border-color:#d7d2c8;transform:translateY(-1px);}
-    .opt[aria-pressed="true"]{border-color:#111;box-shadow:inset 0 0 0 1px #111;}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border:1px solid var(--line);
-      border-radius:999px;font-size:12px;color:var(--muted);background:#fff;
+    .opt[aria-pressed="true"]{
+      border-color:#111; box-shadow:inset 0 0 0 1px #111;
     }
-    .twoCol{display:grid;grid-template-columns:1fr;gap:12px;}
-    @media (min-width:860px){ .twoCol{grid-template-columns:1fr 1.35fr;} }
-    .panel{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      background:rgba(247,245,241,.55);
-    }
-    .panelTitle{font-weight:650;font-size:14px;margin:0 0 10px;}
-    .small{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35;}
-    .divider{height:1px;background:var(--line);margin:12px 0;}
-    .footerBar{
+    .footer{
       position:fixed;left:0;right:0;bottom:0;
-      background:rgba(255,255,255,.9);
-      backdrop-filter:blur(10px);
-      border-top:1px solid var(--line);
-      padding:12px 16px;
+      background:#fff;border-top:1px solid var(--line);
+      padding:16px;text-align:center;
     }
-    .footerInner{
-      max-width:920px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    button.primary{
+      background:#111;color:#fff;
+      border:none;border-radius:999px;
+      padding:12px 22px;font-weight:600;
+      cursor:pointer;
     }
-    .primary{
-      border:1px solid #111;background:#111;color:#fff;
-      border-radius:999px;padding:12px 16px;cursor:pointer;
-      font-size:14px;font-weight:650;
-    }
-    .primary:disabled{opacity:.45;cursor:not-allowed;}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
-    .spin{
-      width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
-      border-top-color:#fff;border-radius:999px;display:inline-block;
-      animation:sp 1s linear infinite;vertical-align:-2px;margin-right:8px;
-    }
-    @keyframes sp {to{transform:rotate(360deg)}}
+    button.primary:disabled{opacity:.4}
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <div class="top">
-      <div>
-        <div class="brand">Allnspyre | Hearing</div>
-        <div class="sub">Fast, clean answers. We’ll do the thinking.</div>
+
+    <div class="card">
+      <div class="h">Choose Plan</div>
+      <div class="grid" id="planGrid">
+        <button class="opt" data-plan="explorer">$19 Explorer</button>
+        <button class="opt" data-plan="connoisseur">$39 Connoisseur</button>
       </div>
-      <div class="pill"><span class="mono" id="planPill">plan: …</span></div>
     </div>
 
-    <section class="card">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 0</div>
-          <div class="h">Choose your plan</div>
-        </div>
+    <div class="card">
+      <div class="h">Who are you eating with?</div>
+      <div class="grid" id="whoGrid">
+        <button class="opt" data-who="solo">Solo</button>
+        <button class="opt" data-who="partner">Partner</button>
+        <button class="opt" data-who="friends">Friends</button>
+        <button class="opt" data-who="family">Family</button>
       </div>
-      <div class="grid" id="planGrid">
-        <button class="opt" type="button" data-plan="explorer" aria-pressed="false">
-          <div><b>Explorer</b><br><small class="small">$19</small></div><div>→</div>
-        </button>
-        <button class="opt" type="button" data-plan="connoisseur" aria-pressed="false">
-          <div><b>Connoisseur</b><br><small class="small">$39</small></div><div>→</div>
-        </button>
+    </div>
+
+    <div class="card">
+      <div class="h">Vibe (choose 1)</div>
+      <div class="grid" id="vibeGrid">
+        <button class="opt" data-vibe="quiet_reflective">Quiet</button>
+        <button class="opt" data-vibe="slow_indulgent">Slow</button>
+        <button class="opt" data-vibe="deeply_local">Local</button>
+        <button class="opt" data-vibe="lively_social">Lively</button>
       </div>
-      <div class="note" id="planNote"></div>
-    </section>
-
-    <!-- STEP 1 -->
-    <section class="card" id="step-where">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 1</div>
-          <div class="h">Where are you visiting?</div>
-        </div>
-        <div class="row">
-          <span class="tag" id="prefTag">Prefectures: 0/1</span>
-          <span class="tag" id="areaTag">Areas: 0/1</span>
-        </div>
-      </div>
-
-      <div class="twoCol">
-        <div class="panel">
-          <div class="panelTitle">Prefectures</div>
-          <div class="grid" id="prefGrid"></div>
-          <div class="small" id="prefHint"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panelTitle">Areas (choose exactly <span id="needAreas">1</span>)</div>
-          <div class="small">These are <b>area_group</b> values from Airtable — no guessing.</div>
-          <div class="divider"></div>
-          <div id="areasWrap" class="small">Select prefectures to see available areas.</div>
-          <div class="danger" id="err"></div>
-        </div>
-      </div>
-
-      <div class="note">This step must match Airtable exactly. (area_group)</div>
-    </section>
-
-    <!-- STEP 2 -->
-    <section class="card" id="step-who" style="display:none">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 2</div>
-          <div class="h">Who are you eating with?</div>
-        </div>
-      </div>
-      <div class="grid" id="whoGrid"></div>
-      <div class="danger" id="whoErr"></div>
-    </section>
-
-    <!-- STEP 3 -->
-    <section class="card" id="step-vibe" style="display:none">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 3</div>
-          <div class="h">What kind of time do you want? <span class="small">(choose up to 2)</span></div>
-        </div>
-        <div class="row">
-          <span class="tag" id="vibeTag">Vibe: 0/2</span>
-        </div>
-      </div>
-      <div class="grid" id="vibeGrid"></div>
-      <div class="danger" id="vibeErr"></div>
-    </section>
-
-    <!-- STEP 4 -->
-    <section class="card" id="step-friction" style="display:none">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 4</div>
-          <div class="h">Prefer to avoid? <span class="small">(optional)</span></div>
-        </div>
-      </div>
-      <div class="grid" id="frictionGrid"></div>
-      <div class="note">This is a quiet filter. It won’t change your “vibe tags.”</div>
-    </section>
-
-    <!-- STEP 5 -->
-    <section class="card" id="step-np" style="display:none">
-      <div class="stepHead">
-        <div>
-          <div class="kicker">Step 5</div>
-          <div class="h">If you’re not sure</div>
-        </div>
-      </div>
-      <div class="grid" id="npGrid"></div>
-    </section>
+    </div>
 
   </div>
 
-  <div class="footerBar">
-    <div class="footerInner">
-      <div class="tag" id="statusTag">Not ready</div>
-      <button class="primary" id="continueBtn" disabled>Continue to payment</button>
-    </div>
+  <div class="footer">
+    <button class="primary" id="continueBtn" disabled>
+      Continue to payment
+    </button>
   </div>
 
 <script>
 (() => {
-  const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
-  const WHO = [
-    { label:"Solo", slug:"solo" },
-    { label:"Partner", slug:"partner" },
-    { label:"Friends", slug:"friends" },
-    { label:"Family", slug:"family" },
-  ];
-  const VIBES = [
-    { label:"Quiet & reflective", slug:"quiet_reflective" },
-    { label:"Slow & indulgent", slug:"slow_indulgent" },
-    { label:"Deeply local", slug:"deeply_local" },
-    { label:"Lively & social", slug:"lively_social" },
-  ];
-  const FRICTION = [
-    { label:"Long lines", slug:"long_lines" },
-    { label:"Tourist-heavy places", slug:"tourist_heavy" },
-    { label:"Very noisy spots", slug:"very_noisy" },
-  ];
-  const NP = [{ label:"No preference — pick for me", slug:"no_preference" }];
 
-  const qs = new URLSearchParams(location.search);
-  const initialPlan = (qs.get("plan") || "explorer").toLowerCase();
+  // ============================
+  // 🔥 100% GA client_id 発行
+  // ============================
+  function getOrCreateClientId(){
+    const key = "aiinspyre_ga_cid";
+    const saved = localStorage.getItem(key);
+    if (saved) return saved;
+
+    const cid = Date.now() + "." + Math.floor(Math.random()*1e9);
+    localStorage.setItem(key, cid);
+    return cid;
+  }
 
   const state = {
-    plan: (initialPlan === "connoisseur" ? "connoisseur" : "explorer"),
-    prefectures: [],
-    areasByPref: {},
-    selectedAreas: [],
+    plan: null,
     who: null,
-    vibes: [],
-    friction: [],
-    noPreference: false,
-    loadingAreas: false,
-    loadingCheckout: false,
+    vibe: null
   };
 
-  const planPill = document.getElementById("planPill");
   const planGrid = document.getElementById("planGrid");
-  const planNote = document.getElementById("planNote");
-
-  const prefGrid = document.getElementById("prefGrid");
-  const prefTag = document.getElementById("prefTag");
-  const areaTag = document.getElementById("areaTag");
-  const prefHint = document.getElementById("prefHint");
-
-  const needAreasEl = document.getElementById("needAreas");
-  const areasWrap = document.getElementById("areasWrap");
-  const err = document.getElementById("err");
-
-  const stepWho = document.getElementById("step-who");
   const whoGrid = document.getElementById("whoGrid");
-  const whoErr = document.getElementById("whoErr");
-
-  const stepVibe = document.getElementById("step-vibe");
   const vibeGrid = document.getElementById("vibeGrid");
-  const vibeErr = document.getElementById("vibeErr");
-  const vibeTag = document.getElementById("vibeTag");
-
-  const stepFriction = document.getElementById("step-friction");
-  const frictionGrid = document.getElementById("frictionGrid");
-
-  const stepNp = document.getElementById("step-np");
-  const npGrid = document.getElementById("npGrid");
-
-  const statusTag = document.getElementById("statusTag");
   const continueBtn = document.getElementById("continueBtn");
 
-  function maxPref(){ return state.plan === "connoisseur" ? 3 : 1; }
-  function needAreas(){ return state.plan === "connoisseur" ? 4 : 1; }
+  function updateButton(){
+    continueBtn.disabled = !(state.plan && state.who && state.vibe);
+  }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-  }
-  function setErr(msg){
-    if (!msg){ err.style.display="none"; err.textContent=""; return; }
-    err.style.display=""; err.textContent = msg;
-  }
-  function setWhoErr(msg){
-    if (!msg){ whoErr.style.display="none"; whoErr.textContent=""; return; }
-    whoErr.style.display=""; whoErr.textContent = msg;
-  }
-  function setVibeErr(msg){
-    if (!msg){ vibeErr.style.display="none"; vibeErr.textContent=""; return; }
-    vibeErr.style.display=""; vibeErr.textContent = msg;
-  }
-  function setPressed(container, selector, isOn){
-    [...container.querySelectorAll(selector)].forEach(btn => {
-      btn.setAttribute("aria-pressed", isOn(btn) ? "true" : "false");
+  function toggleSelection(container, attr, key){
+    container.querySelectorAll(".opt").forEach(btn=>{
+      btn.setAttribute("aria-pressed","false");
     });
+    event.target.setAttribute("aria-pressed","true");
+    state[key] = event.target.dataset[attr];
+    updateButton();
   }
 
-  async function fetchAreasMulti(prefs){
-    const url = `/api/areas?prefectures=${encodeURIComponent(prefs.join(","))}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch areas");
-    return await res.json(); // {areasByPrefecture}
-  }
-
-  function updateHeader(){
-    planPill.textContent = `plan: ${state.plan}`;
-    planNote.innerHTML =
-      `Explorer: choose <b>1 prefecture</b> and <b>1 area</b>. ` +
-      `Connoisseur: choose up to <b>3 prefectures</b> and exactly <b>4 areas</b>.`;
-
-    prefTag.textContent = `Prefectures: ${state.prefectures.length}/${maxPref()}`;
-    areaTag.textContent = `Areas: ${state.selectedAreas.length}/${needAreas()}`;
-    needAreasEl.textContent = String(needAreas());
-    prefHint.textContent = state.plan === "connoisseur"
-      ? "Select up to 3 prefectures."
-      : "Explorer selects 1 prefecture.";
-
-    vibeTag.textContent = `Vibe: ${state.vibes.length}/2`;
-  }
-
-  function renderPlan(){
-    setPressed(planGrid, ".opt[data-plan]", (btn) => btn.dataset.plan === state.plan);
-  }
-
-  function resetDownstream(){
-    state.who = null;
-    state.vibes = [];
-    state.friction = [];
-    state.noPreference = false;
-  }
-
-  function renderPref(){
-    prefGrid.innerHTML = "";
-    PREFECTURES.forEach(p => {
-      const on = state.prefectures.includes(p);
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(p)}</b></div><div>${on ? "✓" : "+"}</div>`;
-      btn.onclick = async () => {
-        setErr(""); setWhoErr(""); setVibeErr("");
-
-        const already = state.prefectures.includes(p);
-        if (already){
-          state.prefectures = state.prefectures.filter(x => x !== p);
-        } else {
-          if (state.prefectures.length >= maxPref()){
-            setErr(`You can choose up to ${maxPref()} prefecture(s) for this plan.`);
-            return;
-          }
-          state.prefectures = [...state.prefectures, p];
-        }
-
-        state.selectedAreas = [];
-        state.areasByPref = {};
-        resetDownstream();
-
-        renderAll();
-
-        if (state.prefectures.length === 0) return;
-
-        try{
-          state.loadingAreas = true;
-          renderAll();
-          const data = await fetchAreasMulti(state.prefectures);
-          state.areasByPref = data.areasByPrefecture || {};
-        }catch(e){
-          setErr("Could not load areas. Please try again.");
-        }finally{
-          state.loadingAreas = false;
-          renderAll();
-        }
-      };
-      prefGrid.appendChild(btn);
-    });
-  }
-
-  function toggleArea(area){
-    const has = state.selectedAreas.includes(area);
-    if (has){
-      state.selectedAreas = state.selectedAreas.filter(x => x !== area);
-      return;
-    }
-    const need = needAreas();
-    if (state.selectedAreas.length >= need){
-      setErr(`You must choose exactly ${need} area(s).`);
-      return;
-    }
-    state.selectedAreas = [...state.selectedAreas, area];
-  }
-
-  function renderAreas(){
-    if (state.prefectures.length === 0){
-      areasWrap.className = "small";
-      areasWrap.innerHTML = "Select prefectures to see available areas.";
-      return;
-    }
-    if (state.loadingAreas){
-      areasWrap.className = "small";
-      areasWrap.innerHTML = "Loading areas…";
-      return;
-    }
-
-    const container = document.createElement("div");
-
-    state.prefectures.forEach(p => {
-      const list = state.areasByPref?.[p] || [];
-
-      const title = document.createElement("div");
-      title.className = "kicker";
-      title.style.marginTop = "6px";
-      title.textContent = p.toUpperCase();
-      container.appendChild(title);
-
-      if (list.length === 0){
-        const none = document.createElement("div");
-        none.className = "small";
-        none.textContent = "No areas found.";
-        container.appendChild(none);
-        return;
-      }
-
-      const grid = document.createElement("div");
-      grid.className = "grid";
-      grid.style.marginTop = "8px";
-
-      list.forEach(area => {
-        const on = state.selectedAreas.includes(area);
-        const btn = document.createElement("button");
-        btn.className = "opt";
-        btn.type = "button";
-        btn.setAttribute("aria-pressed", on ? "true" : "false");
-        btn.innerHTML = `<div><b>${escapeHtml(area)}</b></div><div>${on ? "✓" : "+"}</div>`;
-        btn.onclick = () => {
-          setErr("");
-          toggleArea(area);
-          resetDownstream();
-          renderAll();
-        };
-        grid.appendChild(btn);
-      });
-
-      container.appendChild(grid);
-    });
-
-    const helper = document.createElement("div");
-    helper.className = "small";
-    helper.style.marginTop = "10px";
-    helper.innerHTML = `Selected areas: <b>${escapeHtml(state.selectedAreas.length)}/${needAreas()}</b>`;
-    container.appendChild(helper);
-
-    areasWrap.className = "";
-    areasWrap.innerHTML = "";
-    areasWrap.appendChild(container);
-
-    const need = needAreas();
-    if (state.selectedAreas.length !== need){
-      setErr(`Choose exactly ${need} area(s) to continue.`);
-    } else {
-      setErr("");
-    }
-  }
-
-  function renderWho(){
-    whoGrid.innerHTML = "";
-    setWhoErr("");
-
-    WHO.forEach(w => {
-      const on = state.who === w.slug;
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
-      btn.onclick = () => {
-        state.who = w.slug;
-        state.vibes = [];
-        state.friction = [];
-        state.noPreference = false;
-        renderAll();
-        stepVibe.scrollIntoView({behavior:"smooth", block:"start"});
-      };
-      whoGrid.appendChild(btn);
-    });
-  }
-
-  function renderVibes(){
-    vibeGrid.innerHTML = "";
-    setVibeErr("");
-
-    VIBES.forEach(v => {
-      const on = state.vibes.includes(v.slug);
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(v.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
-      btn.onclick = () => {
-        setVibeErr("");
-        const has = state.vibes.includes(v.slug);
-        if (has){
-          state.vibes = state.vibes.filter(x => x !== v.slug);
-        } else {
-          if (state.vibes.length >= 2){
-            setVibeErr("You can choose up to 2.");
-            return;
-          }
-          state.vibes = [...state.vibes, v.slug];
-        }
-        renderAll();
-        if (state.vibes.length > 0){
-          stepFriction.scrollIntoView({behavior:"smooth", block:"start"});
-        }
-      };
-      vibeGrid.appendChild(btn);
-    });
-  }
-
-  function renderFriction(){
-    frictionGrid.innerHTML = "";
-    FRICTION.forEach(f => {
-      const on = state.friction.includes(f.slug);
-      const btn = document.createElement("button");
-      btn.className = "opt";
-      btn.type = "button";
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.innerHTML = `<div><b>${escapeHtml(f.label)}</b></div><div>${on ? "✓" : "+"}</div>`;
-      btn.onclick = () => {
-        const has = state.friction.includes(f.slug);
-        state.friction = has ? state.friction.filter(x => x !== f.slug) : [...state.friction, f.slug];
-        renderAll();
-      };
-      frictionGrid.appendChild(btn);
-    });
-  }
-
-  function renderNoPreference(){
-    npGrid.innerHTML = "";
-    const on = state.noPreference;
-    const btn = document.createElement("button");
-    btn.className = "opt";
-    btn.type = "button";
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.innerHTML = `<div><b>${escapeHtml(NP[0].label)}</b></div><div>${on ? "✓" : "+"}</div>`;
-    btn.onclick = () => {
-      state.noPreference = !state.noPreference;
-      renderAll();
-    };
-    npGrid.appendChild(btn);
-  }
-
-  function ready(){
-    return (state.selectedAreas.length === needAreas())
-      && !!state.who
-      && (state.vibes.length > 0);
-  }
-
-  function renderFooter(){
-    const ok = ready();
-    statusTag.textContent = ok ? "Ready" : "Not ready";
-    continueBtn.disabled = !ok || state.loadingCheckout;
-    continueBtn.innerHTML = state.loadingCheckout ? `<span class="spin"></span>Redirecting…` : `Continue to payment`;
-  }
-
-  function renderAll(){
-    updateHeader();
-    renderPlan();
-    renderPref();
-    renderAreas();
-
-    if (state.selectedAreas.length === needAreas()){
-      stepWho.style.display = "";
-      renderWho();
-    } else {
-      stepWho.style.display = "none";
-      stepVibe.style.display = "none";
-      stepFriction.style.display = "none";
-      stepNp.style.display = "none";
-      renderFooter();
-      return;
-    }
-
-    if (state.who){
-      stepVibe.style.display = "";
-      renderVibes();
-    } else {
-      stepVibe.style.display = "none";
-      stepFriction.style.display = "none";
-      stepNp.style.display = "none";
-      renderFooter();
-      return;
-    }
-
-    if (state.vibes.length > 0){
-      stepFriction.style.display = "";
-      stepNp.style.display = "";
-      renderFriction();
-      renderNoPreference();
-    } else {
-      stepFriction.style.display = "none";
-      stepNp.style.display = "none";
-    }
-
-    renderFooter();
-  }
-
-  // ✅ GA client_id（cookieから確実に拾う：gtag不要）
-  function getGaClientId(){
-    try{
-      // _ga=GA1.1.1234567890.1234567890 → "1234567890.1234567890"
-      const m = document.cookie.match(/(?:^|;\s*)_ga=GA\d+\.\d+\.(\d+\.\d+)/);
-      return m ? (m[1] || "") : "";
-    }catch(e){
-      return "";
-    }
-  }
-
-  planGrid.addEventListener("click", (e) => {
-    const btn = e.target.closest(".opt[data-plan]");
-    if (!btn) return;
-
-    state.plan = btn.dataset.plan === "connoisseur" ? "connoisseur" : "explorer";
-
-    const limit = maxPref();
-    if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
-
-    state.selectedAreas = [];
-    state.areasByPref = {};
-    resetDownstream();
-    state.loadingAreas = false;
-    setErr(""); setWhoErr(""); setVibeErr("");
-
-    const u = new URL(location.href);
-    u.searchParams.set("plan", state.plan);
-    history.replaceState({}, "", u.toString());
-
-    renderAll();
+  planGrid.addEventListener("click", (e)=>{
+    if(!e.target.dataset.plan) return;
+    toggleSelection(planGrid, "plan", "plan");
   });
 
-  // Continue -> /api/checkout (redirect to Stripe)
-  continueBtn.addEventListener("click", async () => {
-    if (!ready() || state.loadingCheckout) {
-      if (!state.who) setWhoErr("Please choose who you are eating with.");
-      if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
-      return;
-    }
+  whoGrid.addEventListener("click", (e)=>{
+    if(!e.target.dataset.who) return;
+    toggleSelection(whoGrid, "who", "who");
+  });
 
-    // ✅ purchase MP のために GA client_id を回収（cookie）
-    const ga_client_id = getGaClientId();
+  vibeGrid.addEventListener("click", (e)=>{
+    if(!e.target.dataset.vibe) return;
+    toggleSelection(vibeGrid, "vibe", "vibe");
+  });
+
+  continueBtn.addEventListener("click", async () => {
+
+    const ga_client_id = getOrCreateClientId();
 
     const payload = {
       plan: state.plan,
-      prefectures: state.prefectures,
-      area_groups: state.selectedAreas,
       who: state.who,
-      vibes: state.vibes,
-      friction: state.friction,
-      no_preference: state.noPreference,
-      source: "hearing.html",
-      ga_client_id, // ✅ これがStripe metadataへ行く
+      vibes: state.vibe,
+      ga_client_id
     };
 
-    try{
-      state.loadingCheckout = true;
-      renderFooter();
+    continueBtn.disabled = true;
+    continueBtn.textContent = "Redirecting...";
 
+    try{
       const res = await fetch("/api/checkout", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("checkout failed");
       const json = await res.json();
-      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
-      if (!checkoutUrl) throw new Error("no url returned");
-      location.href = checkoutUrl;
+      location.href = json.url;
     }catch(e){
-      alert("Checkout not ready yet. Implement /api/checkout next.");
-    }finally{
-      state.loadingCheckout = false;
-      renderFooter();
+      alert("Checkout error");
+      continueBtn.disabled = false;
+      continueBtn.textContent = "Continue to payment";
     }
   });
 
-  // init
-  renderAll();
 })();
 </script>
+
 </body>
 </html>
