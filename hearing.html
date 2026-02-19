@@ -623,17 +623,15 @@
     renderFooter();
   }
 
-  // ✅ GA client_id 取得（ここが追加）
+  // ✅ GA client_id（cookieから確実に拾う：gtag不要）
   function getGaClientId(){
-    return new Promise((resolve) => {
-      try{
-        if (typeof gtag !== "function") return resolve("");
-        // Measurement ID は固定（Studio側の全体タグと一致）
-        gtag("get", "G-WPQTZYR6MG", "client_id", (cid) => resolve(cid || ""));
-      }catch(e){
-        resolve("");
-      }
-    });
+    try{
+      // _ga=GA1.1.1234567890.1234567890 → "1234567890.1234567890"
+      const m = document.cookie.match(/(?:^|;\s*)_ga=GA\d+\.\d+\.(\d+\.\d+)/);
+      return m ? (m[1] || "") : "";
+    }catch(e){
+      return "";
+    }
   }
 
   planGrid.addEventListener("click", (e) => {
@@ -666,8 +664,8 @@
       return;
     }
 
-    // ✅ purchase MP のために GA client_id を回収
-    const ga_client_id = await getGaClientId();
+    // ✅ purchase MP のために GA client_id を回収（cookie）
+    const ga_client_id = getGaClientId();
 
     const payload = {
       plan: state.plan,
@@ -678,7 +676,7 @@
       friction: state.friction,
       no_preference: state.noPreference,
       source: "hearing.html",
-      ga_client_id, // ✅ 追加
+      ga_client_id, // ✅ これがStripe metadataへ行く
     };
 
     try{
