@@ -1,180 +1,172 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Allnspyre | Hearing</title>
-  <style>
-    :root{
-      --bg:#f7f5f1; --card:#ffffff; --text:#111; --muted:#6b6b6b;
-      --line:#e8e5df; --danger:#c62828; --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
-      background: linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
-    }
-    .wrap{max-width:920px;margin:0 auto;padding:28px 18px 120px;}
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:18px;margin-top:18px;
-      box-shadow:0 6px 18px rgba(0,0,0,.04);
-    }
-    .h{font-size:18px;font-weight:600;margin-bottom:12px}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .opt{
-      border:1px solid var(--line);
-      border-radius:12px;padding:12px;
-      cursor:pointer;background:#fff;
-    }
-    .opt[aria-pressed="true"]{
-      border-color:#111; box-shadow:inset 0 0 0 1px #111;
-    }
-    .footer{
-      position:fixed;left:0;right:0;bottom:0;
-      background:#fff;border-top:1px solid var(--line);
-      padding:16px;text-align:center;
-    }
-    button.primary{
-      background:#111;color:#fff;
-      border:none;border-radius:999px;
-      padding:12px 22px;font-weight:600;
-      cursor:pointer;
-    }
-    button.primary:disabled{opacity:.4}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Allnspyre | Hearing</title>
+
+<!-- GAタグ（必須） -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WPQTZYR6MG"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WPQTZYR6MG');
+</script>
+
+<style>
+body{font-family:system-ui;background:#f7f5f1;margin:0;padding:40px}
+.card{background:#fff;border:1px solid #eee;border-radius:16px;padding:20px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button{padding:12px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer}
+button.active{border:2px solid #000}
+.primary{background:#000;color:#fff;border:none;padding:14px 20px;border-radius:999px}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
 
-    <div class="card">
-      <div class="h">Choose Plan</div>
-      <div class="grid" id="planGrid">
-        <button class="opt" data-plan="explorer">$19 Explorer</button>
-        <button class="opt" data-plan="connoisseur">$39 Connoisseur</button>
-      </div>
-    </div>
+<h2>Choose Plan</h2>
+<div class="card grid" id="planGrid">
+<button data-plan="explorer">$19 Explorer</button>
+<button data-plan="connoisseur">$39 Connoisseur</button>
+</div>
 
-    <div class="card">
-      <div class="h">Who are you eating with?</div>
-      <div class="grid" id="whoGrid">
-        <button class="opt" data-who="solo">Solo</button>
-        <button class="opt" data-who="partner">Partner</button>
-        <button class="opt" data-who="friends">Friends</button>
-        <button class="opt" data-who="family">Family</button>
-      </div>
-    </div>
+<h2>Select Prefecture</h2>
+<div class="card grid" id="prefGrid"></div>
 
-    <div class="card">
-      <div class="h">Vibe (choose 1)</div>
-      <div class="grid" id="vibeGrid">
-        <button class="opt" data-vibe="quiet_reflective">Quiet</button>
-        <button class="opt" data-vibe="slow_indulgent">Slow</button>
-        <button class="opt" data-vibe="deeply_local">Local</button>
-        <button class="opt" data-vibe="lively_social">Lively</button>
-      </div>
-    </div>
+<h2>Select Area</h2>
+<div class="card grid" id="areaGrid"></div>
 
-  </div>
+<h2>Who are you eating with?</h2>
+<div class="card grid" id="whoGrid"></div>
 
-  <div class="footer">
-    <button class="primary" id="continueBtn" disabled>
-      Continue to payment
-    </button>
-  </div>
+<h2>Vibe (choose 1)</h2>
+<div class="card grid" id="vibeGrid"></div>
+
+<br>
+<button class="primary" id="continueBtn">Continue to payment</button>
 
 <script>
-(() => {
+const PREFS = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+const WHO = ["solo","partner","friends","family"];
+const VIBES = ["quiet_reflective","slow_indulgent","deeply_local","lively_social"];
 
-  // ============================
-  // 🔥 100% GA client_id 発行
-  // ============================
-  function getOrCreateClientId(){
-    const key = "aiinspyre_ga_cid";
-    const saved = localStorage.getItem(key);
-    if (saved) return saved;
+let state = {
+plan:null,
+pref:null,
+area:null,
+who:null,
+vibe:null
+};
 
-    const cid = Date.now() + "." + Math.floor(Math.random()*1e9);
-    localStorage.setItem(key, cid);
-    return cid;
-  }
+const planGrid = document.getElementById("planGrid");
+const prefGrid = document.getElementById("prefGrid");
+const areaGrid = document.getElementById("areaGrid");
+const whoGrid = document.getElementById("whoGrid");
+const vibeGrid = document.getElementById("vibeGrid");
 
-  const state = {
-    plan: null,
-    who: null,
-    vibe: null
-  };
+function renderPrefs(){
+prefGrid.innerHTML="";
+PREFS.forEach(p=>{
+const b=document.createElement("button");
+b.textContent=p;
+if(state.pref===p)b.classList.add("active");
+b.onclick=()=>{state.pref=p;state.area=null;renderAll();loadAreas();}
+prefGrid.appendChild(b);
+});
+}
 
-  const planGrid = document.getElementById("planGrid");
-  const whoGrid = document.getElementById("whoGrid");
-  const vibeGrid = document.getElementById("vibeGrid");
-  const continueBtn = document.getElementById("continueBtn");
+async function loadAreas(){
+if(!state.pref)return;
+const r=await fetch(`/api/areas?prefectures=${state.pref}`);
+const j=await r.json();
+const list=j.areasByPrefecture?.[state.pref]||[];
+areaGrid.innerHTML="";
+list.forEach(a=>{
+const b=document.createElement("button");
+b.textContent=a;
+if(state.area===a)b.classList.add("active");
+b.onclick=()=>{state.area=a;renderAll();}
+areaGrid.appendChild(b);
+});
+}
 
-  function updateButton(){
-    continueBtn.disabled = !(state.plan && state.who && state.vibe);
-  }
+function renderWho(){
+whoGrid.innerHTML="";
+WHO.forEach(w=>{
+const b=document.createElement("button");
+b.textContent=w;
+if(state.who===w)b.classList.add("active");
+b.onclick=()=>{state.who=w;renderAll();}
+whoGrid.appendChild(b);
+});
+}
 
-  function toggleSelection(container, attr, key){
-    container.querySelectorAll(".opt").forEach(btn=>{
-      btn.setAttribute("aria-pressed","false");
-    });
-    event.target.setAttribute("aria-pressed","true");
-    state[key] = event.target.dataset[attr];
-    updateButton();
-  }
+function renderVibes(){
+vibeGrid.innerHTML="";
+VIBES.forEach(v=>{
+const b=document.createElement("button");
+b.textContent=v;
+if(state.vibe===v)b.classList.add("active");
+b.onclick=()=>{state.vibe=v;renderAll();}
+vibeGrid.appendChild(b);
+});
+}
 
-  planGrid.addEventListener("click", (e)=>{
-    if(!e.target.dataset.plan) return;
-    toggleSelection(planGrid, "plan", "plan");
-  });
+function renderPlan(){
+[...planGrid.children].forEach(btn=>{
+btn.classList.toggle("active",btn.dataset.plan===state.plan);
+});
+}
 
-  whoGrid.addEventListener("click", (e)=>{
-    if(!e.target.dataset.who) return;
-    toggleSelection(whoGrid, "who", "who");
-  });
+function renderAll(){
+renderPlan();
+renderPrefs();
+renderWho();
+renderVibes();
+}
 
-  vibeGrid.addEventListener("click", (e)=>{
-    if(!e.target.dataset.vibe) return;
-    toggleSelection(vibeGrid, "vibe", "vibe");
-  });
+planGrid.addEventListener("click",e=>{
+const btn=e.target.closest("button");
+if(!btn)return;
+state.plan=btn.dataset.plan;
+renderAll();
+});
 
-  continueBtn.addEventListener("click", async () => {
+function getGaClientId(){
+return new Promise(resolve=>{
+if(typeof gtag!=="function")return resolve("");
+gtag("get","G-WPQTZYR6MG","client_id",cid=>resolve(cid||""));
+});
+}
 
-    const ga_client_id = getOrCreateClientId();
+document.getElementById("continueBtn").onclick=async()=>{
+if(!state.plan||!state.pref||!state.area||!state.who||!state.vibe){
+alert("Complete all selections");
+return;
+}
 
-    const payload = {
-      plan: state.plan,
-      who: state.who,
-      vibes: state.vibe,
-      ga_client_id
-    };
+const ga_client_id=await getGaClientId();
 
-    continueBtn.disabled = true;
-    continueBtn.textContent = "Redirecting...";
+const res=await fetch("/api/checkout",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+plan:state.plan,
+prefectures:[state.pref],
+area_groups:[state.area],
+who:state.who,
+vibes:[state.vibe],
+ga_client_id
+})
+});
 
-    try{
-      const res = await fetch("/api/checkout", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
-      });
+const j=await res.json();
+location.href=j.url;
+};
 
-      const json = await res.json();
-      location.href = json.url;
-    }catch(e){
-      alert("Checkout error");
-      continueBtn.disabled = false;
-      continueBtn.textContent = "Continue to payment";
-    }
-  });
-
-})();
+renderAll();
 </script>
-
 </body>
 </html>
