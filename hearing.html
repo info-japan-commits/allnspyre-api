@@ -222,9 +222,6 @@
 
 <script>
 (() => {
-  // ✅ GA4 Measurement ID（FIX）
-  const GA4_MEASUREMENT_ID = "G-WPQTZYR6MG";
-
   const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
   const WHO = [
     { label:"Solo", slug:"solo" },
@@ -373,7 +370,6 @@
           state.prefectures = [...state.prefectures, p];
         }
 
-        // reset when prefectures change
         state.selectedAreas = [];
         state.areasByPref = {};
         resetDownstream();
@@ -627,41 +623,19 @@
     renderFooter();
   }
 
-  // ✅ GA4 client_id を取得（MP purchase に必須）
-  function getGaClientId({ timeoutMs = 1200 } = {}){
+  // ✅ GA client_id 取得（ここが追加）
+  function getGaClientId(){
     return new Promise((resolve) => {
-      // 1) 既に保存済みなら即返す
-      const cached = localStorage.getItem("ga_client_id");
-      if (cached && cached.length >= 8) return resolve(cached);
-
-      // 2) gtag が無い/未初期化なら諦めて空で返す（purchase MP は webhook 側がスキップする）
-      if (typeof window.gtag !== "function") return resolve("");
-
-      let done = false;
-      const timer = setTimeout(() => {
-        if (done) return;
-        done = true;
-        resolve(localStorage.getItem("ga_client_id") || "");
-      }, timeoutMs);
-
       try{
-        // gtag('get', measurement_id, 'client_id', cb)
-        window.gtag("get", GA4_MEASUREMENT_ID, "client_id", (cid) => {
-          if (done) return;
-          done = true;
-          clearTimeout(timer);
-          const v = (cid || "").toString().trim();
-          if (v) localStorage.setItem("ga_client_id", v);
-          resolve(v);
-        });
-      }catch(_){
-        clearTimeout(timer);
+        if (typeof gtag !== "function") return resolve("");
+        // Measurement ID は固定（Studio側の全体タグと一致）
+        gtag("get", "G-WPQTZYR6MG", "client_id", (cid) => resolve(cid || ""));
+      }catch(e){
         resolve("");
       }
     });
   }
 
-  // plan click
   planGrid.addEventListener("click", (e) => {
     const btn = e.target.closest(".opt[data-plan]");
     if (!btn) return;
@@ -692,8 +666,8 @@
       return;
     }
 
-    // ✅ ここで ga_client_id を取得して payload に乗せる
-    const gaClientId = await getGaClientId();
+    // ✅ purchase MP のために GA client_id を回収
+    const ga_client_id = await getGaClientId();
 
     const payload = {
       plan: state.plan,
@@ -704,7 +678,7 @@
       friction: state.friction,
       no_preference: state.noPreference,
       source: "hearing.html",
-      ga_client_id: gaClientId, // ✅ 追加
+      ga_client_id, // ✅ 追加
     };
 
     try{
@@ -732,9 +706,6 @@
 
   // init
   renderAll();
-
-  // ✅ 背景で一度 client_id を取って localStorage に入れておく（成功率UP）
-  getGaClientId().catch(()=>{});
 })();
 </script>
 </body>
