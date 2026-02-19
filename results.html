@@ -325,6 +325,17 @@
   let shopsCache = [];
   let idx = 0;
 
+  // -----------------------
+  // GA helpers (no-crash)
+  // -----------------------
+  function gaSafeEvent(name, params){
+    try{
+      if (typeof window.gtag === "function"){
+        window.gtag("event", name, params || {});
+      }
+    }catch(_){}
+  }
+
   function setError(message){
     alertMsg.textContent = message || "Unknown error";
     alertBox.style.display = "block";
@@ -557,6 +568,22 @@
       shopsCache = shops;
       idx = 0;
       render();
+
+      // GA: view_results (only once per session_id)
+      try{
+        const onceKey = `ga_view_results_sent_${sessionId}`;
+        if (!sessionStorage.getItem(onceKey)){
+          const areasCount = new Set(shops.map(s => s.area_group).filter(Boolean)).size || undefined;
+          gaSafeEvent("view_results", {
+            session_id: sessionId,
+            plan: plan,
+            shops_count: shops.length,
+            areas_count: areasCount
+          });
+          sessionStorage.setItem(onceKey, "1");
+        }
+      }catch(_){}
+
     }catch(e){
       stage.innerHTML = "";
       setChips("—", "—", "—");
