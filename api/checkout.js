@@ -1,7 +1,6 @@
 // /api/checkout.js
-// Stripe Checkout セッション作成（Live/TestどちらでもEnvに従って動く）
-
 const STRIPE_API = "https://api.stripe.com/v1";
+const DEFAULT_CURRENCY = "usd";
 
 function json(res, status, body) {
   res.statusCode = status;
@@ -37,7 +36,9 @@ function buildMetadata(body, plan) {
   const who = body?.who ?? body?.prefs ?? body?.with ?? "";
   const vibes = body?.vibes ?? body?.vibe ?? "";
   const areas = body?.area_groups ?? body?.areas ?? body?.area_group ?? "";
-  const gaClientId = body?.ga_client_id ?? body?.gaClientId ?? "";
+
+  // ✅ GA4 client_id（Measurement Protocol 用）
+  const gaClientId = body?.ga_client_id ?? body?.client_id ?? "";
 
   if (who) md.who = String(who);
   if (vibes) md.vibes = Array.isArray(vibes) ? vibes.join(",") : String(vibes);
@@ -67,7 +68,9 @@ async function stripePostForm(path, token, params) {
 
   const text = await r.text();
   let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (_) {}
 
   if (!r.ok) {
     const msg = data?.error?.message || `Stripe error (${r.status})`;
@@ -105,9 +108,12 @@ module.exports = async (req, res) => {
       success_url: successUrl,
       cancel_url: cancelUrl,
       billing_address_collection: "auto",
+
       ...Object.fromEntries(Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])),
+
       "line_items[0][price]": priceId,
       "line_items[0][quantity]": 1,
+      currency: DEFAULT_CURRENCY,
     };
 
     const session = await stripePostForm("/checkout/sessions", stripeKey, params);
