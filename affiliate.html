@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Allnspyre Affiliate</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #141210;
+      color: #FDFBF7;
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    .logo {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #8a7e6e;
+      margin-bottom: 48px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: normal;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      color: #FDFBF7;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #8a7e6e;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    .reward-block {
+      border: 1px solid #2a2520;
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+
+    .reward-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #2a2520;
+      font-size: 14px;
+    }
+
+    .reward-row:last-child {
+      border-bottom: none;
+    }
+
+    .reward-label { color: #8a7e6e; }
+    .reward-value { color: #FDFBF7; }
+    .reward-amount { color: #c9a96e; font-size: 16px; }
+
+    /* タブ切り替え */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      border-bottom: 1px solid #2a2520;
+    }
+
+    .tab {
+      padding: 12px 24px;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #8a7e6e;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s;
+    }
+
+    .tab.active {
+      color: #FDFBF7;
+      border-bottom-color: #c9a96e;
+    }
+
+    /* フォーム */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8a7e6e;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: #1c1916;
+      border: 1px solid #2a2520;
+      color: #FDFBF7;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #c9a96e;
+    }
+
+    button {
+      width: 100%;
+      background: #c9a96e;
+      color: #141210;
+      border: none;
+      padding: 14px;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .message {
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px;
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+      background: #1c1916;
+      border-left: 2px solid #c9a96e;
+      color: #FDFBF7;
+    }
+
+    .message.error {
+      display: block;
+      background: #1c1916;
+      border-left: 2px solid #8a4a4a;
+      color: #e0a0a0;
+    }
+
+    /* ダッシュボード */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #2a2520;
+      margin-bottom: 32px;
+    }
+
+    .stat-cell {
+      background: #141210;
+      padding: 24px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8a7e6e;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      color: #FDFBF7;
+    }
+
+    .stat-value.highlight { color: #c9a96e; }
+
+    .link-block {
+      background: #1c1916;
+      border: 1px solid #2a2520;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .link-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8a7e6e;
+      margin-bottom: 12px;
+    }
+
+    .link-value {
+      font-size: 13px;
+      color: #c9a96e;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+
+    .copy-btn {
+      width: auto;
+      padding: 8px 20px;
+      font-size: 11px;
+      margin-top: 0;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #8a7e6e;
+      line-height: 1.7;
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Allnspyre</div>
+
+    <!-- 報酬説明 -->
+    <h1>Share what locals actually eat.</h1>
+    <p class="subtitle">
+      Earn a commission every time someone books through your link.
+      No minimums. Paid monthly via PayPal or Wise.
+    </p>
+
+    <div class="reward-block">
+      <div class="reward-row">
+        <span class="reward-label">Explorer plan</span>
+        <span class="reward-amount">$5 / sale</span>
+      </div>
+      <div class="reward-row">
+        <span class="reward-label">Connoisseur plan</span>
+        <span class="reward-amount">$12 / sale</span>
+      </div>
+      <div class="reward-row">
+        <span class="reward-label">Cookie window</span>
+        <span class="reward-value">30 days</span>
+      </div>
+      <div class="reward-row">
+        <span class="reward-label">Payment</span>
+        <span class="reward-value">Monthly · PayPal or Wise</span>
+      </div>
+    </div>
+
+    <!-- タブ -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('register')">Join</div>
+      <div class="tab" onclick="switchTab('login')">My Dashboard</div>
+    </div>
+
+    <!-- 登録パネル -->
+    <div class="panel active" id="panel-register">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="reg-name" placeholder="Paolo" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>PayPal or Wise Email (for payouts)</label>
+        <input type="email" id="reg-paypal" placeholder="payout@example.com" />
+      </div>
+      <button id="reg-btn" onclick="register()">Get My Affiliate Link</button>
+      <div class="message" id="reg-message"></div>
+    </div>
+
+    <!-- ログインパネル -->
+    <div class="panel" id="panel-login">
+      <div class="form-group">
+        <label>Affiliate ID</label>
+        <input type="text" id="login-id" placeholder="your-id" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" />
+      </div>
+      <button id="login-btn" onclick="login()">View Dashboard</button>
+      <div class="message" id="login-message"></div>
+    </div>
+
+    <!-- ダッシュボード -->
+    <div class="dashboard" id="dashboard">
+      <div class="stat-grid">
+        <div class="stat-cell">
+          <div class="stat-label">Clicks</div>
+          <div class="stat-value" id="dash-clicks">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Sales</div>
+          <div class="stat-value" id="dash-purchases">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Total Earned</div>
+          <div class="stat-value highlight" id="dash-earnings">$0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Unpaid</div>
+          <div class="stat-value highlight" id="dash-unpaid">$0</div>
+        </div>
+      </div>
+
+      <div class="link-block">
+        <div class="link-label">Your Affiliate Link</div>
+        <div class="link-value" id="dash-link"></div>
+        <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+      </div>
+
+      <p class="note">
+        Payments are processed on the 10th of each month for the previous month's earnings.
+        Minimum payout is $20.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = "https://allnspyre-api.vercel.app";
+    const SITE_BASE = "https://aiinspyre.com";
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'register') || (i === 1 && tab === 'login'));
+      });
+      document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('dashboard').classList.remove('active');
+    }
+
+    function showMessage(id, type, text) {
+      const el = document.getElementById(id);
+      el.className = `message ${type}`;
+      el.textContent = text;
+    }
+
+    async function register() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const paypal = document.getElementById('reg-paypal').value.trim();
+
+      if (!name || !email) {
+        showMessage('reg-message', 'error', 'Please fill in your name and email.');
+        return;
+      }
+
+      const btn = document.getElementById('reg-btn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/affiliate-register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, paypal_or_wise: paypal }),
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          showMessage('reg-message', 'success',
+            `Your affiliate ID is: ${data.affiliate_id}\n\nYour link: ${SITE_BASE}/?ref=${data.affiliate_id}\n\nSave your ID — you'll need it to access your dashboard.`
+          );
+        } else {
+          showMessage('reg-message', 'error', data.error || 'Something went wrong.');
+        }
+      } catch (e) {
+        showMessage('reg-message', 'error', 'Network error. Please try again.');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Get My Affiliate Link';
+    }
+
+    async function login() {
+      const id = document.getElementById('login-id').value.trim().toLowerCase();
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+
+      if (!id || !email) {
+        showMessage('login-message', 'error', 'Please enter your ID and email.');
+        return;
+      }
+
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/affiliate-stats?id=${encodeURIComponent(id)}&email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (data.ok) {
+          document.getElementById('panel-login').classList.remove('active');
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+          const dash = document.getElementById('dashboard');
+          dash.classList.add('active');
+
+          document.getElementById('dash-clicks').textContent = data.total_clicks;
+          document.getElementById('dash-purchases').textContent = data.total_purchases;
+          document.getElementById('dash-earnings').textContent = `$${data.total_earnings}`;
+          document.getElementById('dash-unpaid').textContent = `$${data.unpaid}`;
+
+          const link = `${SITE_BASE}/?ref=${data.affiliate_id}`;
+          document.getElementById('dash-link').textContent = link;
+        } else {
+          showMessage('login-message', 'error', 'ID or email not found.');
+        }
+      } catch (e) {
+        showMessage('login-message', 'error', 'Network error. Please try again.');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'View Dashboard';
+    }
+
+    function copyLink() {
+      const link = document.getElementById('dash-link').textContent;
+      navigator.clipboard.writeText(link).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied';
+        setTimeout(() => btn.textContent = 'Copy Link', 2000);
+      });
+    }
+  </script>
+</body>
+</html>
