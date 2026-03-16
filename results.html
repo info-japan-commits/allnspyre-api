@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Your 7 picks</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WPQTZYR6MG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WPQTZYR6MG');
+  </script>
   <style>
     :root{
       --bg:#f7f5f1;
@@ -25,7 +33,6 @@
 
     .wrap{max-width:920px;margin:0 auto;padding:26px 16px 70px;}
 
-    /* Top bar */
     .topbar{
       display:flex;
       justify-content:space-between;
@@ -71,7 +78,6 @@
       transform:none;
     }
 
-    /* Header */
     h1{
       font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
       font-size:60px;
@@ -86,7 +92,6 @@
       text-align:center;
     }
 
-    /* Progress row */
     .progress{
       display:flex;
       justify-content:center;
@@ -107,7 +112,6 @@
       background:#fff;padding:4px 8px;border-radius:8px;
     }
 
-    /* Alert */
     .alert{
       border:1px solid #f2b8b5;
       background:#fff3f3;
@@ -119,7 +123,6 @@
       max-width:720px;
     }
 
-    /* Card deck */
     .stage{
       margin-top:16px;
       display:flex;
@@ -135,7 +138,6 @@
       overflow:hidden;
     }
 
-    /* Optional image banner (only shown if img exists) */
     .hero{
       position:relative;
       width:100%;
@@ -163,476 +165,4 @@
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .name{
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      font-size:30px;
-      margin:0;
-      line-height:1.15;
-      letter-spacing:-0.01em;
-    }
-    .meta{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:14px;
-    }
-    .pill{
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--muted);
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      white-space:nowrap;
-      align-self:flex-start;
-    }
-
-    .section{
-      margin-top:12px;
-      padding-top:12px;
-      border-top:1px solid rgba(232,229,223,.8);
-    }
-    .label{
-      font-size:11px;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      color:var(--muted);
-      margin:0 0 8px;
-    }
-    .copy{
-      margin:0;
-      font-size:14px;
-      line-height:1.75;
-      color:var(--text);
-    }
-    .copy strong{font-weight:650}
-
-    .tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px;
-    }
-    .tag{
-      font-size:12px;
-      color:rgba(17,17,17,.92);
-      border:1px solid var(--line);
-      background:#fff;
-      padding:6px 10px;
-      border-radius:999px;
-      opacity:.92;
-    }
-
-    .footer{
-      padding:12px 18px 16px;
-      border-top:1px solid rgba(232,229,223,.8);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .counter{
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    /* Skeleton */
-    .skeleton{
-      width:min(720px, 100%);
-      height:520px;
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      background: linear-gradient(90deg, #ffffff 0%, #f3f1ec 50%, #ffffff 100%);
-      background-size: 200% 200%;
-      animation: shimmer 1.2s infinite linear;
-      box-shadow: var(--shadow);
-    }
-    @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:100% 0%}}
-
-    @media (max-width: 720px){
-      h1{font-size:44px}
-      .hero{height:190px}
-      .name{font-size:26px}
-    }
-    @media (max-width: 420px){
-      h1{font-size:38px}
-      .hero{height:170px}
-      .body{padding:16px}
-      .footer{padding:12px 16px 14px}
-    }
-  </style>
-</head>
-
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="chips" id="chips">
-        <span class="chip">PLAN: —</span>
-        <span class="chip">PREFS: —</span>
-        <span class="chip">AREAS: —</span>
-      </div>
-
-      <div class="actions">
-        <button class="btn" id="prevBtn">←</button>
-        <button class="btn" id="nextBtn">→</button>
-        <button class="btn" id="retryBtn">Retry</button>
-        <button class="btn" id="backBtn">Back to Hearing</button>
-      </div>
-    </div>
-
-    <h1>Your 7 picks.</h1>
-    <p class="sub">Where locals actually eat — before the world finds out.</p>
-
-    <div class="progress">
-      <span id="progressText">—</span>
-      <span class="dotbar" id="dotbar"></span>
-      <span class="hint">Use <span class="kbd">←</span> <span class="kbd">→</span> / swipe</span>
-    </div>
-
-    <div class="alert" id="alertBox">
-      <strong>Failed</strong>
-      <div id="alertMsg" style="margin-top:6px;"></div>
-      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn" href="/hearing.html">Go to Hearing</a>
-        <button class="btn" id="useLastBtn" style="display:none;">Use last successful session</button>
-      </div>
-    </div>
-
-    <div class="stage" id="stage">
-      <div class="skeleton"></div>
-    </div>
-  </div>
-
-<script>
-  const stage = document.getElementById("stage");
-  const alertBox = document.getElementById("alertBox");
-  const alertMsg = document.getElementById("alertMsg");
-  const chips = document.getElementById("chips");
-
-  const retryBtn = document.getElementById("retryBtn");
-  const backBtn  = document.getElementById("backBtn");
-  const prevBtn  = document.getElementById("prevBtn");
-  const nextBtn  = document.getElementById("nextBtn");
-  const useLastBtn = document.getElementById("useLastBtn");
-
-  const progressText = document.getElementById("progressText");
-  const dotbar = document.getElementById("dotbar");
-
-  let shopsCache = [];
-  let idx = 0;
-
-  // -----------------------
-  // GA helpers (no-crash)
-  // -----------------------
-  function gaSafeEvent(name, params){
-    try{
-      if (typeof window.gtag === "function"){
-        window.gtag("event", name, params || {});
-      }
-    }catch(_){}
-  }
-
-  function setError(message){
-    alertMsg.textContent = message || "Unknown error";
-    alertBox.style.display = "block";
-  }
-  function clearError(){
-    alertBox.style.display = "none";
-    alertMsg.textContent = "";
-  }
-  function setLoading(){
-    stage.innerHTML = `<div class="skeleton"></div>`;
-    if(progressText) progressText.textContent = "—";
-    if(dotbar) dotbar.innerHTML = "";
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
-  }
-  function setChips(plan, prefs, areas){
-    chips.innerHTML = `
-      <span class="chip">PLAN: ${plan || "—"}</span>
-      <span class="chip">PREFS: ${prefs || "—"}</span>
-      <span class="chip">AREAS: ${areas || "—"}</span>
-    `;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, (m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-  }
-  function toArray(v){
-    if (Array.isArray(v)) return v.filter(Boolean);
-    if (typeof v === "string" && v.trim()) return v.split(",").map(s=>s.trim()).filter(Boolean);
-    return [];
-  }
-  function titleCase(s){
-    const x = (s ?? "").toString().trim();
-    if(!x) return "";
-    return x.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
-  }
-
-  function buildTags(shop){
-    const tier = Array.isArray(shop.tier) ? shop.tier : (shop.tier ? [shop.tier] : []);
-    const slot = shop.time_slot ? [shop.time_slot] : [];
-    const bw = toArray(shop.best_with);
-    const bv = toArray(shop.best_vibe);
-    const tags = [...tier, ...slot, ...bw, ...bv].filter(Boolean);
-    return [...new Set(tags)].slice(0, 10);
-  }
-
-  // Prefer note_en; fallback to short_desc 2; fallback to short_desc
-  function getNote(shop){
-    const n = (shop.note_en || "").toString().trim();
-    if(n) return n;
-
-    const sd2 = (shop["short_desc 2"] || shop.short_desc_2 || shop.short_desc2 || "").toString().trim();
-    if(sd2) return sd2;
-
-    const sd = (shop.short_desc || "").toString().trim();
-    return sd;
-  }
-
-  // Prefer why_en; fallback to auto summary from tags
-  function getWhy(shop){
-    const w = (shop.why_en || "").toString().trim();
-    if(w) return w;
-
-    const tier = Array.isArray(shop.tier) ? shop.tier : (shop.tier ? [shop.tier] : []);
-    const slot = (shop.time_slot || "").toString().trim();
-    const bw = toArray(shop.best_with);
-    const bv = toArray(shop.best_vibe);
-
-    const lines = [];
-    if(slot) lines.push(`Best time: ${titleCase(slot)}.`);
-    if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
-    if(bv.length) lines.push(`Vibe: ${bv.slice(0,3).map(titleCase).join(", ")}.`);
-    if(tier.length) lines.push(`Tier: ${tier.map(titleCase).join(", ")}.`);
-    return lines.join(" ");
-  }
-
-  function mapsUrlFor(shop){
-    const q = encodeURIComponent(`${shop.shop_name || shop.shop || ""} ${shop.area_detail || shop.area_group || ""}`.trim());
-    return `https://www.google.com/maps/search/?api=1&query=${q}`;
-  }
-
-  function cardHtml(shop){
-    const name = escapeHtml(shop.shop_name || shop.shop || "Untitled");
-    const area = escapeHtml(shop.area_group || "");
-    const detail = escapeHtml(shop.area_detail || "");
-    const tags = buildTags(shop);
-
-    const why = escapeHtml(getWhy(shop));
-    const note = escapeHtml(getNote(shop));
-
-    const hasImg = !!(shop.photo_url || shop.image_url || shop.image);
-    const imgUrl = escapeHtml(shop.photo_url || shop.image_url || shop.image || "");
-
-    const mapsUrl = mapsUrlFor(shop);
-
-    return `
-      <article class="card" aria-label="result-card">
-        ${hasImg ? `
-          <div class="hero">
-            <img src="${imgUrl}" alt="${name}" loading="lazy">
-            <div class="overlay"></div>
-          </div>
-        ` : ``}
-
-        <div class="body">
-          <div class="titleRow">
-            <div>
-              <h2 class="name">${name}</h2>
-              <p class="meta">${area}${detail ? " / " + detail : ""}</p>
-            </div>
-            <span class="pill" aria-label="card-counter">${idx+1} / ${shopsCache.length}</span>
-          </div>
-
-          <div class="section">
-            <p class="label">Why this pick</p>
-            <p class="copy">${why || "Selected to match your moment."}</p>
-          </div>
-
-          <div class="section">
-            <p class="label">Artisan note</p>
-            <p class="copy">${note || "—"}</p>
-
-            <div class="tags" aria-label="tags">
-              ${tags.map(t => `<span class="tag">${escapeHtml(titleCase(t))}</span>`).join("")}
-            </div>
-          </div>
-        </div>
-
-        <div class="footer">
-          <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps →</a>
-          <span class="counter">${idx+1} / ${shopsCache.length}</span>
-        </div>
-      </article>
-    `;
-  }
-
-  function renderDots(){
-    if(!dotbar) return;
-    dotbar.innerHTML = shopsCache.map((_, i) =>
-      `<span class="dot ${i===idx ? "active" : ""}"></span>`
-    ).join("");
-  }
-
-  function render(){
-    if(!shopsCache.length){
-      stage.innerHTML = "";
-      setError("No shops returned.");
-      if(progressText) progressText.textContent = "0 / 0";
-      if(dotbar) dotbar.innerHTML = "";
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
-      return;
-    }
-
-    stage.innerHTML = cardHtml(shopsCache[idx]);
-
-    const total = shopsCache.length;
-    if(progressText) progressText.textContent = `${idx+1} / ${total}`;
-    renderDots();
-
-    prevBtn.disabled = (idx === 0);
-    nextBtn.disabled = (idx === total - 1);
-  }
-
-  function next(){ if(idx < shopsCache.length - 1){ idx++; render(); } }
-  function prev(){ if(idx > 0){ idx--; render(); } }
-
-  function getSessionIdFromUrl(){
-    const u = new URL(location.href);
-    return u.searchParams.get("session_id");
-  }
-
-  function setSessionIdInUrl(sessionId){
-    const u = new URL(location.href);
-    u.searchParams.set("session_id", sessionId);
-    history.replaceState({}, "", u.toString());
-  }
-
-  async function load(){
-    clearError();
-    setLoading();
-
-    let sessionId = getSessionIdFromUrl();
-
-    if(!sessionId){
-      const last = localStorage.getItem("last_session_id") || "";
-      if(last){
-        useLastBtn.style.display = "inline-flex";
-        setError("Missing session_id. You can use the last successful session, or go back to Hearing.");
-        stage.innerHTML = "";
-        setChips("—","—","—");
-        return;
-      }else{
-        setError("Missing session_id. Please complete checkout and return to this page automatically.");
-        stage.innerHTML = "";
-        setChips("—","—","—");
-        return;
-      }
-    }
-
-    try{
-      const res = await fetch(`/api/results?session_id=${encodeURIComponent(sessionId)}`);
-      const data = await res.json().catch(()=> ({}));
-
-      if(!res.ok || !data.ok){
-        stage.innerHTML = "";
-        setChips("—", "—", "—");
-        setError(data.error || `results failed (${res.status})`);
-        return;
-      }
-
-      localStorage.setItem("last_session_id", sessionId);
-
-      const plan = data.plan || "—";
-      const prefs = data.who ? data.who : "—";
-      const areas = Array.isArray(data.shops)
-        ? (data.shops.map(s=>s.area_group).filter(Boolean).slice(0,4).join(" / ") || "—")
-        : "—";
-      setChips(plan, prefs, areas);
-
-      const shops = Array.isArray(data.shops) ? data.shops : [];
-      if(shops.length === 0){
-        stage.innerHTML = "";
-        setError("No shops returned.");
-        return;
-      }
-
-      shopsCache = shops;
-      idx = 0;
-      render();
-
-      // GA: view_results (only once per session_id)
-      try{
-        const onceKey = `ga_view_results_sent_${sessionId}`;
-        if (!sessionStorage.getItem(onceKey)){
-          const areasCount = new Set(shops.map(s => s.area_group).filter(Boolean)).size || undefined;
-          gaSafeEvent("view_results", {
-            session_id: sessionId,
-            plan: plan,
-            shops_count: shops.length,
-            areas_count: areasCount
-          });
-          sessionStorage.setItem(onceKey, "1");
-        }
-      }catch(_){}
-
-    }catch(e){
-      stage.innerHTML = "";
-      setChips("—", "—", "—");
-      setError("Network or server error. Check Vercel Runtime Logs.");
-    }
-  }
-
-  retryBtn.addEventListener("click", load);
-
-  backBtn.addEventListener("click", () => {
-    const u = new URL(location.href);
-    const plan = (u.searchParams.get("plan") || "");
-    location.href = `/hearing.html${plan ? "?plan="+encodeURIComponent(plan) : ""}`;
-  });
-
-  nextBtn.addEventListener("click", next);
-  prevBtn.addEventListener("click", prev);
-
-  useLastBtn.addEventListener("click", () => {
-    const last = localStorage.getItem("last_session_id") || "";
-    if(!last) return;
-    setSessionIdInUrl(last);
-    useLastBtn.style.display = "none";
-    load();
-  });
-
-  window.addEventListener("keydown", (e) => {
-    if(e.key === "ArrowRight") next();
-    if(e.key === "ArrowLeft") prev();
-  });
-
-  // Swipe on the card area
-  let startX = null;
-  stage.addEventListener("touchstart", (e) => {
-    startX = e.touches?.[0]?.clientX ?? null;
-  }, { passive:true });
-
-  stage.addEventListener("touchend", (e) => {
-    if(startX === null) return;
-    const endX = e.changedTouches?.[0]?.clientX ?? startX;
-    const dx = endX - startX;
-    if(Math.abs(dx) > 40){
-      if(dx < 0) next();
-      else prev();
-    }
-    startX = null;
-  }, { passive:true });
-
-  load();
-</script>
-</body>
-</html>
+      gap:1
