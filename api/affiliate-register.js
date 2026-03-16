@@ -4,6 +4,9 @@ const AIRTABLE_API = "https://api.airtable.com/v0";
 function json(res, status, body) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Cache-Control", "no-store");
   res.end(JSON.stringify(body));
 }
@@ -15,6 +18,16 @@ function generateId(name) {
 }
 
 module.exports = async (req, res) => {
+  // OPTIONSリクエスト対応
+  if (req.method === "OPTIONS") {
+    res.statusCode = 200;
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.end();
+    return;
+  }
+
   try {
     if (req.method !== "POST") return json(res, 405, { ok: false, error: "Method not allowed" });
 
@@ -76,12 +89,3 @@ module.exports = async (req, res) => {
     return json(res, 500, { ok: false, error: "Server error" });
   }
 };
-```
-
----
-
-## 作業手順
-```
-① affiliate.html をGitHubのルートに追加
-② api/affiliate-register.js をGitHubに追加
-③ pushしてVercelに自動デプロイ
