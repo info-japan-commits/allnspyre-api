@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre | Hearing</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WPQTZYR6MG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WPQTZYR6MG');
+  </script>
   <style>
     :root{
       --bg:#f7f5f1;
@@ -106,7 +114,7 @@
     <div class="top">
       <div>
         <div class="brand">Allnspyre | Hearing</div>
-        <div class="sub">Fast, clean answers. We’ll do the thinking.</div>
+        <div class="sub">Fast, clean answers. We'll do the thinking.</div>
       </div>
       <div class="pill"><span class="mono" id="planPill">plan: …</span></div>
     </div>
@@ -129,7 +137,6 @@
       <div class="note" id="planNote"></div>
     </section>
 
-    <!-- STEP 1 -->
     <section class="card" id="step-where">
       <div class="stepHead">
         <div>
@@ -161,7 +168,6 @@
       <div class="note">This step must match Airtable exactly. (area_group)</div>
     </section>
 
-    <!-- STEP 2 -->
     <section class="card" id="step-who" style="display:none">
       <div class="stepHead">
         <div>
@@ -173,7 +179,6 @@
       <div class="danger" id="whoErr"></div>
     </section>
 
-    <!-- STEP 3 -->
     <section class="card" id="step-vibe" style="display:none">
       <div class="stepHead">
         <div>
@@ -188,7 +193,6 @@
       <div class="danger" id="vibeErr"></div>
     </section>
 
-    <!-- STEP 4 -->
     <section class="card" id="step-friction" style="display:none">
       <div class="stepHead">
         <div>
@@ -197,15 +201,14 @@
         </div>
       </div>
       <div class="grid" id="frictionGrid"></div>
-      <div class="note">This is a quiet filter. It won’t change your “vibe tags.”</div>
+      <div class="note">This is a quiet filter. It won't change your "vibe tags."</div>
     </section>
 
-    <!-- STEP 5 -->
     <section class="card" id="step-np" style="display:none">
       <div class="stepHead">
         <div>
           <div class="kicker">Step 5</div>
-          <div class="h">If you’re not sure</div>
+          <div class="h">If you're not sure</div>
         </div>
       </div>
       <div class="grid" id="npGrid"></div>
@@ -317,7 +320,7 @@
     const url = `/api/areas?prefectures=${encodeURIComponent(prefs.join(","))}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch areas");
-    return await res.json(); // {areasByPrefecture}
+    return await res.json();
   }
 
   function updateHeader(){
@@ -370,7 +373,6 @@
           state.prefectures = [...state.prefectures, p];
         }
 
-        // reset when prefectures change
         state.selectedAreas = [];
         state.areasByPref = {};
         resetDownstream();
@@ -454,7 +456,6 @@
         btn.onclick = () => {
           setErr("");
           toggleArea(area);
-          // area change resets downstream
           resetDownstream();
           renderAll();
         };
@@ -495,7 +496,6 @@
       btn.innerHTML = `<div><b>${escapeHtml(w.label)}</b></div><div>${on ? "✓" : "→"}</div>`;
       btn.onclick = () => {
         state.who = w.slug;
-        // who change resets downstream vibe-related
         state.vibes = [];
         state.friction = [];
         state.noPreference = false;
@@ -590,7 +590,6 @@
     renderPref();
     renderAreas();
 
-    // Step2 gate
     if (state.selectedAreas.length === needAreas()){
       stepWho.style.display = "";
       renderWho();
@@ -603,7 +602,6 @@
       return;
     }
 
-    // Step3 gate
     if (state.who){
       stepVibe.style.display = "";
       renderVibes();
@@ -615,7 +613,6 @@
       return;
     }
 
-    // Step4/5 gate (vibe chosen)
     if (state.vibes.length > 0){
       stepFriction.style.display = "";
       stepNp.style.display = "";
@@ -629,7 +626,6 @@
     renderFooter();
   }
 
-  // plan click
   planGrid.addEventListener("click", (e) => {
     const btn = e.target.closest(".opt[data-plan]");
     if (!btn) return;
@@ -637,83 +633,4 @@
     state.plan = btn.dataset.plan === "connoisseur" ? "connoisseur" : "explorer";
 
     const limit = maxPref();
-    if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
-
-    // reset
-    state.selectedAreas = [];
-    state.areasByPref = {};
-    resetDownstream();
-    state.loadingAreas = false;
-    setErr(""); setWhoErr(""); setVibeErr("");
-
-    const u = new URL(location.href);
-    u.searchParams.set("plan", state.plan);
-    history.replaceState({}, "", u.toString());
-
-    renderAll();
-  });
-
-  // ==========================================
-  // ✅ 追加：必ず ga_client_id を作る（cookie/gtag依存ゼロ）
-  // ==========================================
-  function getOrCreateClientId(){
-    const key = "aiinspyre_ga_cid";
-    const saved = localStorage.getItem(key);
-    if (saved) return saved;
-    const cid = `${Math.floor(Date.now()/1000)}.${Math.floor(Math.random()*1e9)}`;
-    localStorage.setItem(key, cid);
-    return cid;
-  }
-
-  // Continue -> /api/checkout (redirect to Stripe)
-  continueBtn.addEventListener("click", async () => {
-    if (!ready() || state.loadingCheckout) {
-      if (!state.who) setWhoErr("Please choose who you are eating with.");
-      if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
-      return;
-    }
-
-    // ✅ ここが今回の目的：空にしない
-    const ga_client_id = getOrCreateClientId();
-
-    const payload = {
-      plan: state.plan,
-      prefectures: state.prefectures,
-      area_groups: state.selectedAreas,
-      who: state.who,
-      vibes: state.vibes,
-      friction: state.friction,
-      no_preference: state.noPreference,
-      source: "hearing.html",
-      ga_client_id, // ✅ 追加
-    };
-
-    try{
-      state.loadingCheckout = true;
-      renderFooter();
-
-      const res = await fetch("/api/checkout", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("checkout failed");
-      const json = await res.json();
-      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
-      if (!checkoutUrl) throw new Error("no url returned");
-      location.href = checkoutUrl;
-    }catch(e){
-      alert("Checkout not ready yet. Implement /api/checkout next.");
-    }finally{
-      state.loadingCheckout = false;
-      renderFooter();
-    }
-  });
-
-  // init
-  renderAll();
-})();
-</script>
-</body>
-</html>
+    if (state.prefectures.length > limit) stat
