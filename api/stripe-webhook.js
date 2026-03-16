@@ -111,6 +111,58 @@ async function upsertPurchaseBySessionId(sessionId, fields) {
   }
 }
 
+// アフィリエイト報酬を更新する関数
+async function updateAffiliateOnPurchase(affiliateId, plan) {
+  const baseId = process.env.AIRTABLE_BASE_ID;
+  const token = process.env.AIRTABLE_TOKEN;
+  const affiliatesTableId = process.env.AIRTABLE_AFFILIATES_TABLE_ID;
+
+  if (!baseId || !token || !affiliatesTableId || !affiliateId) return;
+
+  const _fetch = await getFetch();
+  if (!_fetch) return;
+
+  // 報酬額を決定
+  const reward = plan.toLowerCase() === "connoisseur" ? 12 : 5;
+
+  // affiliateレコードを検索
+  const formula = encodeURIComponent(`{affiliate_id}="${affiliateId}"`);
+  const url = `https://api.airtable.com/v0/${baseId}/${affiliatesTableId}?filterByFormula=${formula}&maxRecords=1`;
+
+  const r = await _fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const data = await r.json();
+  const record = (data.records || [])[0];
+  if (!record) {
+    console.error("[stripe-webhook] affiliate not found:", affiliateId);
+    return;
+  }
+
+  const current = record.fields || {};
+  const newPurchases = (Number(current.total_purchases) || 0) + 1;
+  const newEarnings = (Number(current.total_earnings) || 0) + reward;
+
+  // 更新
+  const updateUrl = `https://api.airtable.com/v0/${baseId}/${affiliatesTableId}/${record.id}`;
+  await _fetch(updateUrl, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fields: {
+        total_purchases: newPurchases,
+        total_earnings: newEarnings,
+      },
+    }),
+  });
+
+  console.log(`[stripe-webhook] affiliate ${affiliateId} updated: +${reward}`);
+}
+
 function safeString(v) {
   if (v === null || v === undefined) return "";
   if (typeof v === "string") return v;
@@ -239,8 +291,9 @@ module.exports = async (req, res) => {
     const who = safeString(md.who || "");
     const vibes = safeString(md.vibes || "");
     const gaClientId = safeString(md.ga_client_id || md.gaClientId || "");
+    const affiliateId = safeString(md.affiliate_id || "");
 
-    // ✅ Airtable upsert（列名は purchases 側に合わせる）
+    // Airtable upsert
     await upsertPurchaseBySessionId(sessionId, {
       payment_status: paymentStatus,
       amount_total: amountTotalCents,
@@ -251,10 +304,20 @@ module.exports = async (req, res) => {
       area_groups: areaGroups,
       who,
       vibes,
-      ga_client_id: gaClientId, // ✅ purchases に ga_client_id 列が必要
+      ga_client_id: gaClientId,
+      affiliate_id: affiliateId,
     });
 
-    // ✅ GA4 Measurement Protocol purchase（client_id 必須）
+    // アフィリエイト報酬更新
+    if (affiliateId && paymentStatus === "paid") {
+      try {
+        await updateAffiliateOnPurchase(affiliateId, plan);
+      } catch (e) {
+        console.error("[stripe-webhook] affiliate update failed:", e?.message || e);
+      }
+    }
+
+    // GA4 Measurement Protocol
     const measurementId = process.env.GA4_MEASUREMENT_ID || process.env.GA4_MEASUREMENT;
     const apiSecret = process.env.GA4_API_SECRET;
 
