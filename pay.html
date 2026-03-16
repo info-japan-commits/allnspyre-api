@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Allnspyre — Almost there</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WPQTZYR6MG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WPQTZYR6MG');
+  </script>
   <style>
     :root{
       --bg:#ffffff;
@@ -171,7 +179,7 @@
             <button class="btn secondary" id="btnBack">Back to hearing</button>
           </div>
           <div class="note">
-            After purchase, you’ll be redirected to your results page automatically.
+            After purchase, you'll be redirected to your results page automatically.
           </div>
           <div class="err" id="errBox" style="display:none;"></div>
         </div>
@@ -188,27 +196,7 @@
   </div>
 
 <script>
-/**
- * PAY.HTML (robust)
- * - Reads ALL choices from URL parameters (not localStorage)
- * - Creates Stripe Checkout Session via API_BASE /api/stripe/checkout (expected)
- * - Redirects to Stripe
- *
- * Required params:
- *   plan=explorer|connoisseur
- * Optional:
- *   prefs=Tokyo,Osaka (comma-separated)
- *   areas=Tokyo Urban,Osaka Suburban (comma-separated)
- *   who=Solo|Partner|Friends|Family (or comma-separated)
- *   mood=Deeply local|Quiet & reflective (or comma-separated)
- *   avoid=Long lines|Tourist-heavy places (or comma-separated)
- *
- * It also forwards the same params to success_url so results can render.
- */
-
 const API_BASE = (() => {
-  // Prefer same origin
-  // (If you ever move domains, this still works.)
   return location.origin;
 })();
 
@@ -280,39 +268,31 @@ function renderPills(label, arr) {
 function buildPayloadFromUrl() {
   const p = qs();
   const plan = normalizePlan(p.get('plan'));
-
   const prefs = splitList(p.get('prefs'));
   const areas = splitList(p.get('areas'));
-
-  const who = splitList(p.get('who'));     // allow single or multi
-  const mood = splitList(p.get('mood'));   // allow single or multi
-  const avoid = splitList(p.get('avoid')); // allow single or multi
-
+  const who = splitList(p.get('who'));
+  const mood = splitList(p.get('mood'));
+  const avoid = splitList(p.get('avoid'));
   return { plan, prefs, areas, who, mood, avoid };
 }
 
 function encodeList(arr) {
   if (!arr || !arr.length) return '';
-  // encode each item safely, then join with comma
   return arr.map(v => encodeURIComponent(v)).join(',');
 }
 
 function buildSuccessUrl(payload) {
-  // results.html must be able to read these
   const u = new URL(API_BASE + '/results.html');
   u.searchParams.set('plan', payload.plan);
-
   if (payload.prefs?.length) u.searchParams.set('prefs', encodeList(payload.prefs));
   if (payload.areas?.length) u.searchParams.set('areas', encodeList(payload.areas));
   if (payload.who?.length) u.searchParams.set('who', encodeList(payload.who));
   if (payload.mood?.length) u.searchParams.set('mood', encodeList(payload.mood));
   if (payload.avoid?.length) u.searchParams.set('avoid', encodeList(payload.avoid));
-
   return u.toString();
 }
 
 function buildCancelUrl(payload) {
-  // back to hearing with same plan
   const u = new URL(API_BASE + '/hearing.html');
   u.searchParams.set('plan', payload.plan);
   return u.toString();
@@ -321,7 +301,6 @@ function buildCancelUrl(payload) {
 function fillSummary(payload) {
   document.getElementById('planBadge').textContent = 'PLAN: ' + titleCasePlan(payload.plan);
   document.getElementById('vPlan').textContent = titleCasePlan(payload.plan);
-
   document.getElementById('vPrefs').textContent = payload.prefs.length ? payload.prefs.join(', ') : '—';
   document.getElementById('vAreas').textContent = payload.areas.length ? payload.areas.join(', ') : '—';
   document.getElementById('vWho').textContent = payload.who.length ? payload.who.join(', ') : '—';
@@ -338,13 +317,7 @@ function fillSummary(payload) {
 }
 
 async function createStripeCheckoutSession(payload) {
-  // This endpoint must exist on your Vercel API:
-  // POST /api/stripe/checkout
-  // Body: { plan, success_url, cancel_url, metadata }
-  //
-  // Response: { ok:true, url:"https://checkout.stripe.com/..." } or { ok:false, error:"..." }
   const endpoint = API_BASE + '/api/stripe/checkout';
-
   const success_url = buildSuccessUrl(payload);
   const cancel_url  = buildCancelUrl(payload);
 
@@ -352,7 +325,6 @@ async function createStripeCheckoutSession(payload) {
     plan: payload.plan,
     success_url,
     cancel_url,
-    // Keep metadata small. Stripe metadata has limits.
     metadata: {
       plan: payload.plan,
       prefs: (payload.prefs || []).join('|'),
@@ -381,8 +353,6 @@ async function createStripeCheckoutSession(payload) {
 }
 
 function requireMinimum(payload) {
-  // You can loosen/tighten rules here.
-  // For paid plans, at least 1 prefecture and 1 area is recommended.
   if (!payload.plan) return 'plan is required';
   if (!payload.prefs.length) return 'prefs is required';
   if (!payload.areas.length) return 'areas is required';
@@ -393,14 +363,19 @@ function requireMinimum(payload) {
   const payload = buildPayloadFromUrl();
   fillSummary(payload);
 
-  // Back button
+  // GA4イベント送信
+  if (typeof gtag === "function") {
+    gtag("event", "checkout_started", {
+      plan: payload.plan,
+    });
+  }
+
   document.getElementById('btnBack').addEventListener('click', () => {
     const u = new URL(API_BASE + '/hearing.html');
     u.searchParams.set('plan', payload.plan);
     location.href = u.toString();
   });
 
-  // Checkout button
   document.getElementById('btnCheckout').addEventListener('click', async () => {
     clearError();
 
@@ -422,7 +397,6 @@ function requireMinimum(payload) {
     }
   });
 
-  // If plan missing, show strong error immediately
   if (!qs().get('plan')) {
     setError(
       'Missing URL param: plan\n\n' +
