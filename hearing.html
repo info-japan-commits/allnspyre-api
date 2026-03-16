@@ -633,4 +633,86 @@
     state.plan = btn.dataset.plan === "connoisseur" ? "connoisseur" : "explorer";
 
     const limit = maxPref();
-    if (state.prefectures.length > limit) stat
+    if (state.prefectures.length > limit) state.prefectures = state.prefectures.slice(0, limit);
+
+    state.selectedAreas = [];
+    state.areasByPref = {};
+    resetDownstream();
+    state.loadingAreas = false;
+    setErr(""); setWhoErr(""); setVibeErr("");
+
+    const u = new URL(location.href);
+    u.searchParams.set("plan", state.plan);
+    history.replaceState({}, "", u.toString());
+
+    renderAll();
+  });
+
+  function getOrCreateClientId(){
+    const key = "aiinspyre_ga_cid";
+    const saved = localStorage.getItem(key);
+    if (saved) return saved;
+    const cid = `${Math.floor(Date.now()/1000)}.${Math.floor(Math.random()*1e9)}`;
+    localStorage.setItem(key, cid);
+    return cid;
+  }
+
+  continueBtn.addEventListener("click", async () => {
+    if (!ready() || state.loadingCheckout) {
+      if (!state.who) setWhoErr("Please choose who you are eating with.");
+      if (state.vibes.length === 0) setVibeErr("Choose at least 1 vibe.");
+      return;
+    }
+
+    const ga_client_id = getOrCreateClientId();
+
+    // GA4イベント送信
+    if (typeof gtag === "function") {
+      gtag("event", "hearing_submit", {
+        plan: state.plan,
+        who: state.who,
+        vibes: state.vibes.join(","),
+        areas: state.selectedAreas.join(","),
+      });
+    }
+
+    const payload = {
+      plan: state.plan,
+      prefectures: state.prefectures,
+      area_groups: state.selectedAreas,
+      who: state.who,
+      vibes: state.vibes,
+      friction: state.friction,
+      no_preference: state.noPreference,
+      source: "hearing.html",
+      ga_client_id,
+    };
+
+    try{
+      state.loadingCheckout = true;
+      renderFooter();
+
+      const res = await fetch("/api/checkout", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("checkout failed");
+      const json = await res.json();
+      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
+      if (!checkoutUrl) throw new Error("no url returned");
+      location.href = checkoutUrl;
+    }catch(e){
+      alert("Checkout not ready yet. Implement /api/checkout next.");
+    }finally{
+      state.loadingCheckout = false;
+      renderFooter();
+    }
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
