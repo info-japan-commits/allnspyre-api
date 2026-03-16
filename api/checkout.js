@@ -29,23 +29,22 @@ function pickPriceId(plan) {
   return requireEnv("STRIPE_PRICE_EXPLORER");
 }
 
-// hearing からの入力を metadata に詰める（壊れないよう “あるものだけ”）
-function buildMetadata(body, plan) {
+function buildMetadata(body, plan, ref) {
   const md = {};
   md.plan = String(plan || "").toLowerCase().trim() || "explorer";
 
   const who = body?.who ?? body?.prefs ?? body?.with ?? "";
   const vibes = body?.vibes ?? body?.vibe ?? "";
   const areas = body?.area_groups ?? body?.areas ?? body?.area_group ?? "";
-
-  // ✅ 追加：GA client_id（Measurement Protocol 用）
   const gaClientId = body?.ga_client_id ?? body?.gaClientId ?? "";
 
   if (who) md.who = String(who);
   if (vibes) md.vibes = Array.isArray(vibes) ? vibes.join(",") : String(vibes);
   if (areas) md.area_groups = Array.isArray(areas) ? areas.join(",") : String(areas);
-
   if (gaClientId) md.ga_client_id = String(gaClientId);
+
+  // アフィリエイト ref を追加
+  if (ref) md.affiliate_id = String(ref);
 
   return md;
 }
@@ -95,9 +94,17 @@ module.exports = async (req, res) => {
     const plan = String(req.query?.plan || (req.body?.plan ?? "")).toLowerCase().trim() || "explorer";
     const priceId = pickPriceId(plan);
 
+    // refパラメータ取得（GETクエリ or POSTボディ）
+    const ref = String(
+      req.query?.ref || req.body?.ref || ""
+    ).trim().toLowerCase();
+
     let metadata = { plan };
     if (req.method === "POST") {
-      metadata = buildMetadata(req.body || {}, plan);
+      metadata = buildMetadata(req.body || {}, plan, ref);
+    } else {
+      // GETの場合もrefを含める
+      if (ref) metadata.affiliate_id = ref;
     }
 
     const baseUrl = getBaseUrl(req);
