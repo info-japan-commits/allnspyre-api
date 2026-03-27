@@ -543,7 +543,14 @@
           const data=await fetchAreasMulti(state.prefectures);
           state.areasByPref=data.areasByPrefecture||{};
         }catch(e){ setErr("Could not load areas. Please try again."); }
-        finally{ state.loadingAreas=false; renderAll(); }
+        finally{
+          state.loadingAreas=false; renderAll();
+          // エリアパネルへスクロール（スマホ: 720px以下のみ）
+          if(window.innerWidth < 720){
+            const areaPanel = document.querySelector(".twoCol .panel:last-child");
+            scrollToSection(areaPanel, 80);
+          }
+        }
       });
       prefGrid.appendChild(btn);
     });
