@@ -82,6 +82,14 @@
 
     .wrap{max-width:860px;margin:0 auto;padding:90px 18px 120px;}
 
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:12px;color:var(--muted);text-decoration:none;
+      margin-bottom:6px;
+      transition:color .15s;
+    }
+    .back-btn:hover{color:var(--text);}
+
     /* ── TOP ── */
     .top{
       display:flex;align-items:center;justify-content:space-between;
@@ -292,6 +300,7 @@
   <!-- TOP -->
   <div class="top">
     <div>
+      <a href="https://allnspyre-api.vercel.app/start" class="back-btn">← Back</a>
       <div class="brand">Allnspyre <b>·</b> Find Your Spot</div>
     </div>
     <div class="plan-badge" id="planPill">plan: explorer</div>
