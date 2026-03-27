@@ -557,6 +557,16 @@
     state.selectedAreas=[...state.selectedAreas,area];
   }
 
+  // プログレスバーの高さ分オフセットしてスクロール
+  function scrollToSection(el, delay=120){
+    if(!el) return;
+    setTimeout(()=>{
+      const barH = document.querySelector(".progress-bar-wrap")?.offsetHeight || 70;
+      const top = el.getBoundingClientRect().top + window.scrollY - barH - 16;
+      window.scrollTo({top, behavior:"smooth"});
+    }, delay);
+  }
+
   function renderAreas(){
     if(state.prefectures.length===0){
       areasWrap.className="hint"; areasWrap.innerHTML="← Pick a prefecture first."; return;
@@ -581,6 +591,10 @@
         const on=state.selectedAreas.includes(area);
         const btn=makeOpt("📍",area,"",on,()=>{
           setErr(""); toggleArea(area); resetDownstream(); renderAll();
+          // エリア選択完了したらStep2へ
+          if(state.selectedAreas.length===needAreas()){
+            scrollToSection(stepWho);
+          }
         });
         grid.appendChild(btn);
       });
@@ -604,7 +618,7 @@
       const btn=makeOpt(w.icon,w.label,w.sub,on,()=>{
         state.who=w.slug; state.vibes=[]; state.friction=[]; state.noPreference=false;
         renderAll();
-        setTimeout(()=>stepVibe.scrollIntoView({behavior:"smooth",block:"start"}),80);
+        scrollToSection(stepVibe);
       });
       whoGrid.appendChild(btn);
     });
@@ -623,7 +637,7 @@
           state.vibes=[...state.vibes,v.slug];
         }
         renderAll();
-        if(state.vibes.length>0) setTimeout(()=>stepFriction.scrollIntoView({behavior:"smooth",block:"start"}),80);
+        if(state.vibes.length>0) scrollToSection(stepFriction);
       });
       vibeGrid.appendChild(btn);
     });
