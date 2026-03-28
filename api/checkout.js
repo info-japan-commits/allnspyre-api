@@ -117,6 +117,7 @@ module.exports = async (req, res) => {
       success_url: successUrl,
       cancel_url: cancelUrl,
       billing_address_collection: "auto",
+      allow_promotion_codes: "true",  // クーポンコード入力欄を表示
 
       // metadata[*]
       ...Object.fromEntries(Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])),
