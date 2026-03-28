@@ -233,6 +233,14 @@
     }
     .danger{color:var(--danger);font-size:12px;margin-top:10px;display:none;font-weight:600;}
     .note{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic;}
+    .why-hint{
+      font-size:12px;color:var(--muted);
+      margin-bottom:14px;line-height:1.6;
+      padding:8px 12px;
+      background:rgba(194,65,12,.06);
+      border-left:3px solid var(--accent);
+      border-radius:0 8px 8px 0;
+    }
 
     /* ── FOOTER ── */
     .footerBar{
@@ -350,6 +358,7 @@
       <div class="panel">
         <div class="panel-title">Area — choose exactly <span id="needAreas">1</span></div>
         <div class="hint">These match <b>area_group</b> in your results exactly.</div>
+        <div class="why-hint">We pick spots locals actually go in this area — not the tourist version of it.</div>
         <div class="divider"></div>
         <div id="areasWrap" class="hint">← Pick a prefecture first.</div>
         <div class="danger" id="err"></div>
@@ -364,6 +373,7 @@
       <div class="section-num">2</div>
       <div class="section-title">🍜 Who's eating with you?</div>
     </div>
+    <div class="why-hint">We match places based on who you're with. Solo = counter spots. Friends = lively izakaya.</div>
     <div class="grid" id="whoGrid"></div>
     <div class="danger" id="whoErr"></div>
   </div>
@@ -377,6 +387,7 @@
         <span class="badge" id="vibeTag">0/2</span>
       </div>
     </div>
+    <div class="why-hint">This filters by atmosphere — quiet counters, loud izakaya, hidden local joints. Your picks will feel different depending on what you choose.</div>
     <div class="grid" id="vibeGrid"></div>
     <div class="danger" id="vibeErr"></div>
   </div>
