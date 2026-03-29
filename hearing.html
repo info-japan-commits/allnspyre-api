@@ -204,7 +204,10 @@
     }
     .plan-price{font-size:22px;font-weight:900;color:var(--accent);}
     .plan-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px;}
-    .plan-check{
+    .plan-justify{
+      font-size:11px;color:var(--gold);font-style:italic;
+      margin-top:4px;letter-spacing:.02em;
+    }
       position:absolute;top:12px;right:12px;
       width:22px;height:22px;border-radius:50%;
       background:var(--accent);color:#fff;font-size:12px;font-weight:900;
@@ -327,6 +330,7 @@
         <div class="plan-name">Explorer</div>
         <div class="plan-price">$19</div>
         <div class="plan-desc">1 area · 7 hand-picked local spots.<br>Perfect for a quick trip.</div>
+        <div class="plan-justify">Less than one tourist trap meal</div>
       </button>
       <button class="opt--plan" type="button" data-plan="connoisseur" aria-pressed="false">
         <div class="plan-check">✓</div>
@@ -334,6 +338,7 @@
         <div class="plan-name">Connoisseur</div>
         <div class="plan-price">$39</div>
         <div class="plan-desc">4 areas · 28 picks total.<br>Built for longer stays.</div>
+        <div class="plan-justify">Save 1 hour of research + avoid bad meals</div>
       </button>
     </div>
     <div class="note" id="planNote"></div>
