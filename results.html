@@ -49,6 +49,11 @@
       padding:5px 10px;border-radius:4px;
       white-space:nowrap;font-style:italic;letter-spacing:.02em;
     }
+    .chip--gps{
+      background:rgba(202,138,4,.08);
+      border-color:rgba(202,138,4,.3);
+      color:#92400e;
+    }
     .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .btn{
       border:1px solid var(--line);background:#fff;
@@ -64,20 +69,10 @@
     .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 
     /* HEADER */
-    .page-header{
-      text-align:center;
-      margin-bottom:20px;
-      position:relative;
-    }
-    .page-header__lantern-row{
-      display:flex;align-items:center;gap:10px;margin-bottom:16px;
-    }
-    .page-header__line{
-      flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-light));
-    }
-    .page-header__line-r{
-      flex:1;height:1px;background:linear-gradient(90deg,var(--gold-light),transparent);
-    }
+    .page-header{text-align:center;margin-bottom:20px;position:relative;}
+    .page-header__lantern-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+    .page-header__line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-light));}
+    .page-header__line-r{flex:1;height:1px;background:linear-gradient(90deg,var(--gold-light),transparent);}
     h1{
       font-family:ui-serif,Georgia,"Times New Roman",Times,serif;
       font-size:52px;letter-spacing:-.03em;
@@ -95,11 +90,7 @@
     .dot{width:6px;height:6px;border-radius:999px;background:var(--gold-light);}
     .dot.active{background:var(--gold-dark);}
     .hint{color:var(--muted);font-size:12px;}
-    .kbd{
-      font-size:12px;color:var(--muted);
-      border:1px solid var(--gold-light);background:#fff;
-      padding:4px 8px;border-radius:6px;
-    }
+    .kbd{font-size:12px;color:var(--muted);border:1px solid var(--gold-light);background:#fff;padding:4px 8px;border-radius:6px;}
 
     /* ALERT */
     .alert{
@@ -120,7 +111,6 @@
       overflow:hidden;
       position:relative;
     }
-    /* 右上装飾 */
     .card::after{
       content:"";position:absolute;top:-30px;right:-30px;
       width:140px;height:140px;border-radius:50%;
@@ -129,111 +119,48 @@
     }
 
     /* 提灯ライン */
-    .card-lantern-row{
-      display:flex;align-items:center;gap:8px;padding:16px 20px 0;
-    }
+    .card-lantern-row{display:flex;align-items:center;gap:8px;padding:16px 20px 0;}
     .card-lantern-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-light));}
     .card-lantern-line-r{flex:1;height:1px;background:linear-gradient(90deg,var(--gold-light),transparent);}
 
-    .hero{
-      position:relative;width:100%;height:200px;
-      background:#f5f0e8;
-      margin-top:12px;
-    }
+    .hero{position:relative;width:100%;height:200px;background:#f5f0e8;margin-top:12px;}
     .hero img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05);}
-    .hero .overlay{
-      position:absolute;inset:0;
-      background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,0) 55%,rgba(0,0,0,.08));
-      pointer-events:none;
-    }
+    .hero .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,0) 55%,rgba(0,0,0,.08));pointer-events:none;}
 
     .body{padding:18px 22px 16px;position:relative;}
 
-    .titleRow{
-      display:flex;justify-content:space-between;align-items:flex-start;
-      gap:12px;flex-wrap:wrap;margin-bottom:8px;
-    }
-    .card-meta{
-      font-size:10px;letter-spacing:.16em;text-transform:uppercase;
-      color:var(--gold);margin:0 0 8px;font-weight:500;
-    }
-    .name{
-      font-family:ui-serif,Georgia,"Times New Roman",Times,serif;
-      font-size:32px;margin:0;line-height:1.1;letter-spacing:-.02em;
-      color:var(--text);font-weight:300;
-    }
+    .titleRow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+    .card-meta{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;font-weight:500;}
+    .name{font-family:ui-serif,Georgia,"Times New Roman",Times,serif;font-size:32px;margin:0;line-height:1.1;letter-spacing:-.02em;color:var(--text);font-weight:300;}
     .pill-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-    .mascot{
-      width:48px;height:48px;border-radius:50%;
-      border:1.5px solid var(--gold);object-fit:cover;object-position:center top;
-    }
-    .pill{
-      border:1px solid var(--gold-light);background:transparent;color:var(--gold-dark);
-      font-size:11px;padding:5px 10px;border-radius:999px;
-      white-space:nowrap;font-weight:500;letter-spacing:.04em;
-    }
+    .mascot{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--gold);object-fit:cover;object-position:center top;}
+    .pill{border:1px solid var(--gold-light);background:transparent;color:var(--gold-dark);font-size:11px;padding:5px 10px;border-radius:999px;white-space:nowrap;font-weight:500;letter-spacing:.04em;}
 
-    .card-divider{
-      height:1px;
-      background:linear-gradient(90deg,var(--gold),var(--gold-light) 40%,transparent);
-      margin:14px 0;opacity:.6;
-    }
+    .card-divider{height:1px;background:linear-gradient(90deg,var(--gold),var(--gold-light) 40%,transparent);margin:14px 0;opacity:.6;}
 
     .section{margin-top:14px;}
-    .label{
-      font-size:10px;letter-spacing:.16em;text-transform:uppercase;
-      color:var(--gold);margin:0 0 7px;font-weight:500;
-    }
+    .label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 7px;font-weight:500;}
     .copy{margin:0;font-size:13.5px;line-height:1.85;color:var(--text);font-weight:400;}
     .copy strong{font-weight:650}
 
     .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
-    .tag{
-      font-size:11px;color:var(--gold-dark);font-style:italic;letter-spacing:.02em;
-      border:1px solid var(--gold-light);background:transparent;
-      padding:5px 12px;border-radius:4px;
-    }
+    .tag{font-size:11px;color:var(--gold-dark);font-style:italic;letter-spacing:.02em;border:1px solid var(--gold-light);background:transparent;padding:5px 12px;border-radius:4px;}
 
     .footer{
       padding:13px 22px;border-top:1px solid var(--gold-light);
       display:flex;justify-content:space-between;align-items:center;
       gap:10px;flex-wrap:wrap;background:#f5f0e8;
     }
-    .maps-btn{
-      display:inline-flex;align-items:center;gap:6px;
-      font-size:12px;font-weight:500;letter-spacing:.04em;
-      text-decoration:none;color:var(--gold-dark);
-      border:none;background:none;cursor:pointer;padding:0;
-      transition:opacity .15s;
-    }
+    .maps-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;letter-spacing:.04em;text-decoration:none;color:var(--gold-dark);border:none;background:none;cursor:pointer;padding:0;transition:opacity .15s;}
     .maps-btn:hover{opacity:.7;}
-    .counter{
-      display:flex;align-items:center;gap:6px;
-      font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.06em;
-    }
+    .counter{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.06em;}
 
     /* SKELETON */
-    .skeleton{
-      width:min(720px,100%);height:480px;
-      border:1px solid var(--gold-light);border-radius:var(--radius);
-      background:linear-gradient(90deg,#faf7f2 0%,#f0e8d8 50%,#faf7f2 100%);
-      background-size:200% 200%;
-      animation:shimmer 1.4s infinite linear;
-      box-shadow:var(--shadow);
-    }
+    .skeleton{width:min(720px,100%);height:480px;border:1px solid var(--gold-light);border-radius:var(--radius);background:linear-gradient(90deg,#faf7f2 0%,#f0e8d8 50%,#faf7f2 100%);background-size:200% 200%;animation:shimmer 1.4s infinite linear;box-shadow:var(--shadow);}
     @keyframes shimmer{0%{background-position:0% 0%}100%{background-position:100% 0%}}
 
-    @media(max-width:720px){
-      h1{font-size:38px}
-      .hero{height:170px}
-      .name{font-size:26px}
-    }
-    @media(max-width:420px){
-      h1{font-size:32px}
-      .hero{height:150px}
-      .body{padding:14px 16px}
-      .footer{padding:12px 16px}
-    }
+    @media(max-width:720px){h1{font-size:38px}.hero{height:170px}.name{font-size:26px}}
+    @media(max-width:420px){h1{font-size:32px}.hero{height:150px}.body{padding:14px 16px}.footer{padding:12px 16px}}
   </style>
 </head>
 
@@ -249,11 +176,10 @@
         <button class="btn" id="prevBtn">←</button>
         <button class="btn" id="nextBtn">→</button>
         <button class="btn" id="retryBtn">Retry</button>
-        <button class="btn" id="backBtn">Back to Hearing</button>
+        <button class="btn" id="backBtn">← Back</button>
       </div>
     </div>
 
-    <!-- ヘッダー -->
     <div class="page-header">
       <div class="page-header__lantern-row">
         <div class="page-header__line"></div>
@@ -286,7 +212,7 @@
       <strong>Failed</strong>
       <div id="alertMsg" style="margin-top:6px;"></div>
       <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn" href="/hearing.html">Go to Hearing</a>
+        <a class="btn" id="alertBackBtn" href="/hearing_area.html">Go back</a>
         <button class="btn" id="useLastBtn" style="display:none;">Use last successful session</button>
       </div>
     </div>
@@ -297,23 +223,35 @@
   </div>
 
 <script>
-  const stage = document.getElementById("stage");
-  const alertBox = document.getElementById("alertBox");
-  const alertMsg = document.getElementById("alertMsg");
-  const chips = document.getElementById("chips");
-  const retryBtn = document.getElementById("retryBtn");
-  const backBtn  = document.getElementById("backBtn");
-  const prevBtn  = document.getElementById("prevBtn");
-  const nextBtn  = document.getElementById("nextBtn");
-  const useLastBtn = document.getElementById("useLastBtn");
-  const progressText = document.getElementById("progressText");
-  const dotbar = document.getElementById("dotbar");
+  const stage       = document.getElementById("stage");
+  const alertBox    = document.getElementById("alertBox");
+  const alertMsg    = document.getElementById("alertMsg");
+  const alertBackBtn= document.getElementById("alertBackBtn");
+  const chips       = document.getElementById("chips");
+  const retryBtn    = document.getElementById("retryBtn");
+  const backBtn     = document.getElementById("backBtn");
+  const prevBtn     = document.getElementById("prevBtn");
+  const nextBtn     = document.getElementById("nextBtn");
+  const useLastBtn  = document.getElementById("useLastBtn");
+  const progressText= document.getElementById("progressText");
+  const dotbar      = document.getElementById("dotbar");
 
   let shopsCache = [];
   let idx = 0;
 
-  const MASCOT_URL = "https://storage.googleapis.com/studio-design-asset-files/projects/xNWY906NWl/s-400x400_webp_85e0c86b-9fdd-48ac-b84b-0d12911b64a0.png";
+  // URLパラメータからsourceを取得（hearing_gps or hearing_area）
+  const urlParams = new URL(location.href).searchParams;
+  const source = urlParams.get("source") || "hearing_area";
+  const isGps = source === "hearing_gps";
 
+  // Backボタンのリンク先をsourceに応じて切り替え
+  const backHref = isGps
+    ? "https://allnspyre-api.vercel.app/hearing_gps.html"
+    : `https://allnspyre-api.vercel.app/hearing_area.html?plan=${urlParams.get("plan") || "explorer"}`;
+  backBtn.addEventListener("click", () => { location.href = backHref; });
+  alertBackBtn.href = backHref;
+
+  const MASCOT_URL = "https://storage.googleapis.com/studio-design-asset-files/projects/xNWY906NWl/s-400x400_webp_85e0c86b-9fdd-48ac-b84b-0d12911b64a0.png";
   const LANTERN_SMALL = `<svg width="10" height="13" viewBox="0 0 10 13" fill="none">
     <rect x="1" y="1" width="8" height="1.2" rx="0.6" fill="#d4b896"/>
     <ellipse cx="5" cy="7" rx="4" ry="4.5" fill="#c0392b" opacity=".8"/>
@@ -321,9 +259,7 @@
     <rect x="1" y="10.8" width="8" height="1.2" rx="0.6" fill="#d4b896"/>
   </svg>`;
 
-  function gaSafeEvent(name, params){
-    try{ if(typeof window.gtag==="function") window.gtag("event",name,params||{}); }catch(_){}
-  }
+  function gaSafeEvent(name, params){ try{ if(typeof window.gtag==="function") window.gtag("event",name,params||{}); }catch(_){} }
   function setError(message){ alertMsg.textContent=message||"Unknown error"; alertBox.style.display="block"; }
   function clearError(){ alertBox.style.display="none"; alertMsg.textContent=""; }
   function setLoading(){
@@ -332,28 +268,28 @@
     if(dotbar) dotbar.innerHTML="";
     prevBtn.disabled=true; nextBtn.disabled=true;
   }
-  function setChips(plan,prefs,areas){
+
+  function setChips(plan, prefs, areas){
+    // GPS版は「📍 Near you」を表示
+    const areasLabel = isGps ? "📍 Near you" : (areas || "—");
+    const areaClass = isGps ? "chip chip--gps" : "chip";
     chips.innerHTML=`
       <span class="chip">PLAN: ${plan||"—"}</span>
       <span class="chip">PREFS: ${prefs||"—"}</span>
-      <span class="chip">AREAS: ${areas||"—"}</span>
+      <span class="${areaClass}">AREA: ${areasLabel}</span>
+      ${isGps ? `<span class="chip chip--gps">📍 GPS</span>` : ""}
     `;
   }
-  function escapeHtml(s){
-    return String(s??"").replace(/[&<>"']/g,(m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-  }
+
+  function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g,(m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m])); }
   function toArray(v){
     if(Array.isArray(v)) return v.filter(Boolean);
     if(typeof v==="string"&&v.trim()) return v.split(",").map(s=>s.trim()).filter(Boolean);
     return [];
   }
-  function titleCase(s){
-    const x=(s??"").toString().trim();
-    if(!x) return "";
-    return x.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-  }
+  function titleCase(s){ const x=(s??"").toString().trim(); if(!x) return ""; return x.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase()); }
   function buildTags(shop){
     const tier=Array.isArray(shop.tier)?shop.tier:(shop.tier?[shop.tier]:[]);
     const slot=shop.time_slot?[shop.time_slot]:[];
@@ -363,19 +299,15 @@
     return [...new Set(tags)].slice(0,10);
   }
   function getNote(shop){
-    const n=(shop.note_en||"").toString().trim();
-    if(n) return n;
-    const sd2=(shop["short_desc 2"]||shop.short_desc_2||shop.short_desc2||"").toString().trim();
-    if(sd2) return sd2;
+    const n=(shop.note_en||"").toString().trim(); if(n) return n;
+    const sd2=(shop["short_desc 2"]||shop.short_desc_2||shop.short_desc2||"").toString().trim(); if(sd2) return sd2;
     return (shop.short_desc||"").toString().trim();
   }
   function getWhy(shop){
-    const w=(shop.why_en||"").toString().trim();
-    if(w) return w;
+    const w=(shop.why_en||"").toString().trim(); if(w) return w;
     const tier=Array.isArray(shop.tier)?shop.tier:(shop.tier?[shop.tier]:[]);
     const slot=(shop.time_slot||"").toString().trim();
-    const bw=toArray(shop.best_with);
-    const bv=toArray(shop.best_vibe);
+    const bw=toArray(shop.best_with); const bv=toArray(shop.best_vibe);
     const lines=[];
     if(slot) lines.push(`Best time: ${titleCase(slot)}.`);
     if(bw.length) lines.push(`Best with: ${bw.slice(0,3).map(titleCase).join(", ")}.`);
@@ -399,10 +331,8 @@
     const imgUrl=escapeHtml(shop.photo_url||shop.image_url||shop.image||"");
     const mapsUrl=mapsUrlFor(shop);
     const total=shopsCache.length;
-
     return `
       <article class="card" aria-label="result-card">
-        <!-- 提灯ライン -->
         <div class="card-lantern-row">
           <div class="card-lantern-line"></div>
           <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
@@ -420,14 +350,7 @@
           </svg>
           <div class="card-lantern-line-r"></div>
         </div>
-
-        ${hasImg ? `
-          <div class="hero">
-            <img src="${imgUrl}" alt="${name}" loading="lazy">
-            <div class="overlay"></div>
-          </div>
-        ` : ``}
-
+        ${hasImg?`<div class="hero"><img src="${imgUrl}" alt="${name}" loading="lazy"><div class="overlay"></div></div>`:""}
         <div class="body">
           <div class="titleRow">
             <div>
@@ -452,57 +375,34 @@
             </div>
           </div>
         </div>
-
         <div class="footer">
           <a class="maps-btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps →</a>
-          <div class="counter">
-            ${LANTERN_SMALL}
-            ${idx+1} / ${total}
-            ${LANTERN_SMALL}
-          </div>
+          <div class="counter">${LANTERN_SMALL} ${idx+1} / ${total} ${LANTERN_SMALL}</div>
         </div>
       </article>
     `;
   }
 
-  function renderDots(){
-    if(!dotbar) return;
-    dotbar.innerHTML=shopsCache.map((_,i)=>
-      `<span class="dot ${i===idx?"active":""}"></span>`
-    ).join("");
-  }
+  function renderDots(){ if(!dotbar) return; dotbar.innerHTML=shopsCache.map((_,i)=>`<span class="dot ${i===idx?"active":""}"></span>`).join(""); }
   function render(){
-    if(!shopsCache.length){
-      stage.innerHTML="";
-      setError("No shops returned.");
-      if(progressText) progressText.textContent="0 / 0";
-      if(dotbar) dotbar.innerHTML="";
-      prevBtn.disabled=true; nextBtn.disabled=true;
-      return;
-    }
+    if(!shopsCache.length){ stage.innerHTML=""; setError("No shops returned."); if(progressText) progressText.textContent="0 / 0"; if(dotbar) dotbar.innerHTML=""; prevBtn.disabled=true; nextBtn.disabled=true; return; }
     stage.innerHTML=cardHtml(shopsCache[idx]);
     const total=shopsCache.length;
     if(progressText) progressText.textContent=`${idx+1} / ${total}`;
-    renderDots();
-    prevBtn.disabled=(idx===0);
-    nextBtn.disabled=(idx===total-1);
+    renderDots(); prevBtn.disabled=(idx===0); nextBtn.disabled=(idx===total-1);
   }
   function next(){ if(idx<shopsCache.length-1){ idx++; render(); } }
   function prev(){ if(idx>0){ idx--; render(); } }
 
   function getSessionIdFromUrl(){ return new URL(location.href).searchParams.get("session_id"); }
-  function setSessionIdInUrl(sessionId){
-    const u=new URL(location.href);
-    u.searchParams.set("session_id",sessionId);
-    history.replaceState({},"",u.toString());
-  }
+  function setSessionIdInUrl(sessionId){ const u=new URL(location.href); u.searchParams.set("session_id",sessionId); history.replaceState({},"",u.toString()); }
 
   async function load(){
     clearError(); setLoading();
     let sessionId=getSessionIdFromUrl();
     if(!sessionId){
       const last=localStorage.getItem("last_session_id")||"";
-      if(last){ useLastBtn.style.display="inline-flex"; setError("Missing session_id. You can use the last successful session, or go back to Hearing."); }
+      if(last){ useLastBtn.style.display="inline-flex"; setError("Missing session_id. You can use the last successful session, or go back."); }
       else{ setError("Missing session_id. Please complete checkout and return to this page automatically."); }
       stage.innerHTML=""; setChips("—","—","—"); return;
     }
@@ -522,7 +422,7 @@
         const onceKey=`ga_view_results_sent_${sessionId}`;
         if(!sessionStorage.getItem(onceKey)){
           const areasCount=new Set(shops.map(s=>s.area_group).filter(Boolean)).size||undefined;
-          gaSafeEvent("view_results",{ session_id:sessionId, plan:plan, shops_count:shops.length, areas_count:areasCount });
+          gaSafeEvent("view_results",{ session_id:sessionId, plan, shops_count:shops.length, areas_count:areasCount, source });
           sessionStorage.setItem(onceKey,"1");
         }
       }catch(_){}
@@ -530,25 +430,15 @@
   }
 
   retryBtn.addEventListener("click",load);
-  backBtn.addEventListener("click",()=>{
-    const u=new URL(location.href);
-    const plan=(u.searchParams.get("plan")||"");
-    location.href=`/hearing.html${plan?"?plan="+encodeURIComponent(plan):""}`;
-  });
   nextBtn.addEventListener("click",next);
   prevBtn.addEventListener("click",prev);
   useLastBtn.addEventListener("click",()=>{
     const last=localStorage.getItem("last_session_id")||"";
     if(!last) return;
-    setSessionIdInUrl(last);
-    useLastBtn.style.display="none";
-    load();
+    setSessionIdInUrl(last); useLastBtn.style.display="none"; load();
   });
 
-  window.addEventListener("keydown",(e)=>{
-    if(e.key==="ArrowRight") next();
-    if(e.key==="ArrowLeft") prev();
-  });
+  window.addEventListener("keydown",(e)=>{ if(e.key==="ArrowRight") next(); if(e.key==="ArrowLeft") prev(); });
 
   let startX=null;
   stage.addEventListener("touchstart",(e)=>{ startX=e.touches?.[0]?.clientX??null; },{passive:true});
