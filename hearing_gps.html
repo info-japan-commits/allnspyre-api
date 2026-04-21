@@ -13,172 +13,149 @@
   </script>
   <style>
     :root{
-      --bg:#faf7f2;
-      --text:#1a1208;
-      --muted:#8a6840;
-      --gold:#b8966e;
-      --gold-light:#d4b896;
-      --gold-dark:#8a6840;
-      --line:#e8ddd0;
-      --red:#c0392b;
-      --danger:#c62828;
-      --radius:18px;
+      --bg:#f7f6f3;
+      --card:#ffffff;
+      --text:#111111;
+      --muted:#666666;
+      --line:#e4e0d8;
       --accent:#c2410c;
+      --accent2:#9a3412;
+      --danger:#c62828;
+      --radius:16px;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{
-      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      color:var(--text);background:var(--bg);
-    }
+    body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:var(--bg);}
+
     /* ── PROGRESS BAR ── */
     .progress-bar-wrap{
       position:fixed;top:0;left:0;right:0;z-index:1000;
-      background:rgba(26,18,8,.96);
-      backdrop-filter:blur(12px);
-      padding:12px 20px;
-      display:flex;align-items:center;gap:16px;
-      border-bottom:1px solid #6b5533;
+      background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+      padding:10px 20px;display:flex;align-items:center;gap:16px;
+      border-bottom:1px solid var(--line);
     }
-    .progress-left{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
-    .progress-step{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,184,150,.5);}
-    .progress-pct-big{font-size:28px;font-weight:900;letter-spacing:-.02em;color:#c9a06a;line-height:1;transition:color .3s;}
-    .progress-pct-big.done{color:#4ade80;}
-    .progress-bar-track{flex:1;height:10px;background:rgba(212,184,150,.12);border-radius:999px;overflow:hidden;}
+    .progress-left{display:flex;flex-direction:column;gap:1px;flex-shrink:0;}
+    .progress-step{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#aaa;}
+    .progress-pct-big{font-size:26px;font-weight:900;letter-spacing:-.02em;color:var(--accent);line-height:1;transition:color .3s;}
+    .progress-pct-big.done{color:#16a34a;}
+    .progress-bar-track{flex:1;height:8px;background:#f0ede8;border-radius:999px;overflow:hidden;}
     .progress-bar-fill{
       height:100%;border-radius:999px;
-      background:linear-gradient(90deg,#c9a06a,#c2410c);
-      width:0%;transition:width .5s cubic-bezier(.34,1.2,.64,1);position:relative;
+      background:linear-gradient(90deg,#f59e0b,#c2410c);
+      width:0%;transition:width .5s cubic-bezier(.34,1.2,.64,1);
     }
-    .progress-bar-fill::after{
-      content:"";position:absolute;top:0;right:0;width:30px;height:100%;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.4));border-radius:999px;
-    }
-    .progress-msg{font-size:12px;color:rgba(212,184,150,.6);white-space:nowrap;font-style:italic;flex-shrink:0;}
-    @media(max-width:520px){.progress-msg{display:none;}.progress-pct-big{font-size:22px;}}
+    .progress-msg{font-size:12px;color:#aaa;white-space:nowrap;font-style:italic;flex-shrink:0;}
+    @media(max-width:520px){.progress-msg{display:none;}.progress-pct-big{font-size:20px;}}
 
-    .wrap{max-width:860px;margin:0 auto;padding:90px 18px 120px;}
+    .wrap{max-width:720px;margin:0 auto;padding:80px 18px 120px;}
 
-    .back-btn{
-      display:inline-flex;align-items:center;gap:6px;
-      font-size:12px;color:var(--muted);text-decoration:none;
-      margin-bottom:6px;transition:color .15s;
-    }
+    .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:8px;transition:color .15s;}
     .back-btn:hover{color:var(--text);}
 
-    .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:36px;}
-    .brand{font-family:ui-serif,Georgia,serif;font-size:22px;font-weight:300;letter-spacing:-.02em;color:var(--text);}
-    .brand b{font-weight:700;color:var(--accent);}
-    .plan-badge{
-      border:1px solid var(--gold-light);border-radius:999px;
-      padding:8px 16px;font-size:12px;color:var(--muted);
-      background:rgba(212,184,150,.1);font-style:italic;letter-spacing:.04em;
-    }
+    .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:32px;}
+    .brand{font-size:18px;font-weight:700;letter-spacing:-.3px;color:var(--text);}
+    .brand span{color:var(--accent);}
 
-    /* ── GPS SECTION ── */
+    /* ── PLAN CARD ── */
+    .plan-card{
+      background:var(--card);border:1.5px solid var(--line);
+      border-radius:var(--radius);padding:18px 20px;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      margin-bottom:20px;
+      box-shadow:0 2px 12px rgba(0,0,0,.05);
+    }
+    .plan-card-left{display:flex;align-items:center;gap:14px;}
+    .plan-card-icon{font-size:28px;}
+    .plan-card-name{font-size:17px;font-weight:800;color:var(--text);margin-bottom:2px;}
+    .plan-card-desc{font-size:12px;color:var(--muted);line-height:1.4;}
+    .plan-card-justify{font-size:11px;color:var(--accent);font-style:italic;margin-top:3px;}
+    .plan-card-price{font-size:28px;font-weight:900;color:var(--accent);flex-shrink:0;}
+
+    /* ── SECTION ── */
+    .section{margin-top:24px;}
+    .section-label{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .section-num{
+      width:26px;height:26px;border-radius:50%;
+      background:var(--text);color:#fff;
+      font-size:12px;font-weight:800;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .section-title{font-size:17px;font-weight:800;letter-spacing:-.2px;color:var(--text);}
+    .section-title small{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px;}
+    .section-badges{margin-left:auto;display:flex;gap:6px;}
+    .badge{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--muted);background:#fff;white-space:nowrap;}
+
+    /* ── GPS CARD ── */
     .gps-card{
       background:linear-gradient(135deg,#1a1208,#2d1f0e 50%,#1a1208);
-      border:1px solid #6b5533;border-radius:22px;
-      padding:28px 24px;position:relative;overflow:hidden;
-    }
-    .gps-card::before{
-      content:"";position:absolute;inset:0;
-      background:radial-gradient(ellipse at 30% 50%,rgba(194,65,12,.2),transparent 65%);
+      border-radius:20px;padding:24px 22px;
+      position:relative;overflow:hidden;
     }
     .gps-card::after{
       content:"";position:absolute;top:0;left:0;right:0;height:2px;
       background:linear-gradient(90deg,transparent,#c2410c 30%,#e8933a 70%,transparent);
     }
     .gps-card-inner{position:relative;}
-    .gps-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#e8933a;margin-bottom:8px;}
-    .gps-title{font-size:20px;font-weight:900;color:#f5ede0;margin-bottom:6px;line-height:1.2;}
-    .gps-desc{font-size:13px;color:rgba(245,237,224,.6);line-height:1.5;margin-bottom:20px;}
+    .gps-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#e8933a;margin-bottom:8px;opacity:.9;}
+    .gps-title{font-size:18px;font-weight:900;color:#f5ede0;margin-bottom:6px;line-height:1.2;}
+    .gps-desc{font-size:13px;color:rgba(245,237,224,.55);line-height:1.5;margin-bottom:18px;}
     .gps-btn{
       display:flex;align-items:center;justify-content:center;gap:10px;
-      width:100%;padding:16px 24px;border-radius:14px;border:none;
+      width:100%;padding:15px 24px;border-radius:12px;border:none;
       background:linear-gradient(135deg,#c2410c,#9a3412);
-      color:#fff;font-size:16px;font-weight:900;cursor:pointer;
-      box-shadow:0 6px 24px rgba(194,65,12,.5);
+      color:#fff;font-size:15px;font-weight:900;cursor:pointer;
+      box-shadow:0 4px 20px rgba(194,65,12,.45);
       transition:filter .18s,transform .18s;
     }
     .gps-btn:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px);}
-    .gps-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    .gps-btn:disabled{opacity:.5;cursor:not-allowed;}
     .gps-pin{display:inline-block;animation:gpsPulse 1.8s ease-in-out infinite;}
-    @keyframes gpsPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.25);}}
-    .gps-status{
-      margin-top:16px;padding:12px 16px;border-radius:12px;
-      font-size:13px;font-weight:600;line-height:1.5;
-      display:none;
-    }
-    .gps-status.loading{
-      background:rgba(212,184,150,.1);border:1px solid rgba(212,184,150,.2);
-      color:rgba(245,237,224,.7);display:block;
-    }
-    .gps-status.success{
-      background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);
-      color:#4ade80;display:block;
-    }
-    .gps-status.error{
-      background:rgba(198,40,40,.1);border:1px solid rgba(198,40,40,.3);
-      color:#f87171;display:block;
-    }
-    .gps-coords{
-      margin-top:8px;font-size:11px;color:rgba(212,184,150,.5);
-      font-family:ui-monospace,monospace;font-style:italic;
-    }
-
-    /* ── SECTION ── */
-    .section{margin-top:20px;}
-    .section-label{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-    .section-num{
-      width:28px;height:28px;border-radius:50%;
-      background:var(--text);color:#fff;
-      font-size:13px;font-weight:800;
-      display:flex;align-items:center;justify-content:center;flex-shrink:0;
-    }
-    .section-title{font-size:19px;font-weight:800;letter-spacing:-.3px;color:var(--text);}
-    .section-title small{font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0;margin-left:6px;}
-    .section-badges{margin-left:auto;display:flex;gap:6px;}
-    .badge{border:1px solid var(--gold-light);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--muted);background:rgba(212,184,150,.08);white-space:nowrap;}
+    @keyframes gpsPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+    .gps-status{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.5;display:none;}
+    .gps-status.loading{background:rgba(212,184,150,.1);border:1px solid rgba(212,184,150,.2);color:rgba(245,237,224,.7);display:block;}
+    .gps-status.success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:#4ade80;display:block;}
+    .gps-status.error{background:rgba(198,40,40,.1);border:1px solid rgba(198,40,40,.3);color:#f87171;display:block;}
+    .gps-coords{margin-top:6px;font-size:11px;color:rgba(212,184,150,.4);font-family:ui-monospace,monospace;}
 
     /* ── OPTION BUTTONS ── */
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-    @media(min-width:580px){.grid{grid-template-columns:repeat(3,1fr);}}
+    @media(min-width:560px){.grid{grid-template-columns:repeat(4,1fr);}}
 
     .opt{
-      border:2px solid var(--line);border-radius:14px;
-      padding:16px 14px;cursor:pointer;background:#fff;
-      display:flex;flex-direction:column;gap:6px;
+      border:1.5px solid var(--line);border-radius:12px;
+      padding:14px 12px;cursor:pointer;background:var(--card);
+      display:flex;flex-direction:column;gap:5px;
       text-align:left;color:var(--text);
       transition:transform .15s cubic-bezier(.34,1.56,.64,1),border-color .15s,box-shadow .15s,background .15s;
       position:relative;overflow:hidden;
     }
-    .opt::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,90,39,.06),transparent);opacity:0;transition:opacity .15s;}
-    .opt:hover{border-color:var(--gold);transform:translateY(-3px) scale(1.01);box-shadow:0 8px 24px rgba(180,140,80,.18);}
-    .opt:hover::after{opacity:1;}
-    .opt[aria-pressed="true"]{border-color:var(--accent);background:linear-gradient(135deg,#fff8f5,#fdf3ee);box-shadow:0 6px 20px rgba(194,65,12,.15);transform:translateY(-2px);}
-    .opt[aria-pressed="true"]::after{opacity:1;}
+    .opt:hover{border-color:#ccc;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08);}
+    .opt[aria-pressed="true"]{
+      border-color:var(--accent);
+      background:linear-gradient(135deg,#fff8f5,#fdf3ee);
+      box-shadow:0 4px 16px rgba(194,65,12,.12);
+    }
     .opt:active{transform:scale(.98);}
-    .opt-icon{font-size:24px;line-height:1;}
-    .opt-label{font-size:14px;font-weight:700;color:var(--text);}
-    .opt-sub{font-size:12px;color:var(--muted);line-height:1.4;}
+    .opt-icon{font-size:22px;line-height:1;}
+    .opt-label{font-size:13px;font-weight:700;color:var(--text);}
+    .opt-sub{font-size:11px;color:var(--muted);line-height:1.3;}
     .opt-check{
-      position:absolute;top:10px;right:10px;
-      width:20px;height:20px;border-radius:50%;
+      position:absolute;top:8px;right:8px;
+      width:18px;height:18px;border-radius:50%;
       background:var(--accent);color:#fff;
-      font-size:11px;font-weight:900;
+      font-size:10px;font-weight:900;
       display:flex;align-items:center;justify-content:center;
       opacity:0;transform:scale(0);
       transition:opacity .2s,transform .25s cubic-bezier(.34,1.56,.64,1);
     }
     .opt[aria-pressed="true"] .opt-check{opacity:1;transform:scale(1);}
 
-    .danger{color:var(--danger);font-size:12px;margin-top:10px;display:none;font-weight:600;}
-    .note{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic;}
+    .danger{color:var(--danger);font-size:12px;margin-top:8px;display:none;font-weight:600;}
+    .note{font-size:12px;color:var(--muted);margin-top:8px;font-style:italic;}
     .why-hint{
       font-size:12px;color:var(--muted);
-      margin-bottom:14px;line-height:1.6;
+      margin-bottom:12px;line-height:1.6;
       padding:8px 12px;
-      background:rgba(194,65,12,.06);
+      background:rgba(194,65,12,.05);
       border-left:3px solid var(--accent);
       border-radius:0 8px 8px 0;
     }
@@ -186,35 +163,25 @@
     /* ── FOOTER ── */
     .footerBar{
       position:fixed;left:0;right:0;bottom:0;
-      background:#1a1208;border-top:2px solid #6b5533;padding:14px 20px;
+      background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);padding:12px 20px;
     }
-    .footerInner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+    .footerInner{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;}
     .status{display:flex;align-items:center;gap:8px;}
-    .status-dot{width:8px;height:8px;border-radius:50%;background:#6b5533;transition:background .3s;}
-    .status-dot.ready{background:#4ade80;}
-    .status-text{font-size:13px;color:rgba(212,184,150,.7);font-style:italic;}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:background .3s;}
+    .status-dot.ready{background:#16a34a;}
+    .status-text{font-size:13px;color:var(--muted);font-style:italic;}
     .primary{
       background:linear-gradient(135deg,#c2410c,#9a3412);
-      color:#fff;border:none;border-radius:999px;padding:14px 28px;cursor:pointer;
-      font-size:15px;font-weight:800;letter-spacing:.02em;
-      box-shadow:0 4px 20px rgba(194,65,12,.4);
-      transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .15s,filter .15s;
+      color:#fff;border:none;border-radius:999px;padding:13px 26px;cursor:pointer;
+      font-size:14px;font-weight:800;
+      box-shadow:0 4px 16px rgba(194,65,12,.35);
+      transition:transform .15s cubic-bezier(.34,1.56,.64,1),filter .15s;
     }
-    .primary:hover:not(:disabled){transform:translateY(-2px) scale(1.02);box-shadow:0 8px 28px rgba(194,65,12,.55);filter:brightness(1.08);}
-    .primary:active:not(:disabled){transform:scale(.98);}
+    .primary:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08);}
     .primary:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-    .spin{
-      width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
-      border-top-color:#fff;border-radius:999px;display:inline-block;
-      animation:sp 1s linear infinite;vertical-align:-2px;margin-right:8px;
-    }
+    .spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:999px;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px;}
     @keyframes sp{to{transform:rotate(360deg)}}
-    @keyframes popIn{
-      0%{transform:translateY(-2px) scale(1.01)}
-      50%{transform:translateY(-5px) scale(1.03)}
-      100%{transform:translateY(-2px) scale(1.01)}
-    }
-    .opt[aria-pressed="true"]{animation:popIn .25s ease;}
   </style>
 </head>
 <body>
@@ -232,13 +199,24 @@
 
 <div class="wrap">
 
-  <!-- TOP -->
   <div class="top">
     <div>
       <a href="https://aiinspyre.com/start" class="back-btn">← Back</a>
-      <div class="brand">Allnspyre <b>·</b> Find Spots Near You</div>
+      <div class="brand">Allnspyre <span>·</span> Find Spots Near You</div>
     </div>
-    <div class="plan-badge">📍 GPS · Explorer $19</div>
+  </div>
+
+  <!-- PLAN CARD -->
+  <div class="plan-card">
+    <div class="plan-card-left">
+      <div class="plan-card-icon">🗺️</div>
+      <div>
+        <div class="plan-card-name">Explorer Plan</div>
+        <div class="plan-card-desc">1 area · 7 hand-picked local spots</div>
+        <div class="plan-card-justify">Less than one tourist trap meal</div>
+      </div>
+    </div>
+    <div class="plan-card-price">$19</div>
   </div>
 
   <!-- STEP 1: GPS -->
@@ -249,7 +227,7 @@
     </div>
     <div class="gps-card">
       <div class="gps-card-inner">
-        <div class="gps-eyebrow">GPS Mode — Explorer $19</div>
+        <div class="gps-eyebrow">GPS Mode</div>
         <div class="gps-title">We'll find local spots near you</div>
         <div class="gps-desc">No planning needed. Share your location and we'll surface the closest spots locals actually go back to.</div>
         <button class="gps-btn" id="gpsBtn" type="button">
@@ -341,16 +319,9 @@
   const NP = [{label:"Just pick for me",slug:"no_preference",icon:"🎯",sub:"Surprise me"}];
 
   const state = {
-    plan: "explorer",
-    lat: null,
-    lng: null,
-    gpsReady: false,
-    who: null,
-    vibes: [],
-    friction: [],
-    noPreference: false,
-    loadingGps: false,
-    loadingCheckout: false,
+    plan:"explorer",lat:null,lng:null,gpsReady:false,
+    who:null,vibes:[],friction:[],noPreference:false,
+    loadingGps:false,loadingCheckout:false,
   };
 
   const gpsBtn       = document.getElementById("gpsBtn");
@@ -406,70 +377,59 @@
   function scrollToSection(el, delay=120){
     if(!el) return;
     setTimeout(()=>{
-      const barH = document.querySelector(".progress-bar-wrap")?.offsetHeight || 70;
+      const barH = document.querySelector(".progress-bar-wrap")?.offsetHeight || 60;
       const top = el.getBoundingClientRect().top + window.scrollY - barH - 16;
       window.scrollTo({top, behavior:"smooth"});
     }, delay);
   }
 
-  // ── GPS取得 ──────────────────────────────────────────────────
   gpsBtn.addEventListener("click", () => {
     if(!navigator.geolocation){
       gpsStatus.className="gps-status error";
       gpsStatus.textContent="❌ Geolocation is not supported by your browser.";
       return;
     }
-    state.loadingGps = true;
-    gpsBtn.disabled = true;
-    gpsBtn.innerHTML = `<span class="spin"></span>Getting your location…`;
+    state.loadingGps=true;
+    gpsBtn.disabled=true;
+    gpsBtn.innerHTML=`<span class="spin"></span>Getting your location…`;
     gpsStatus.className="gps-status loading";
     gpsStatus.textContent="📡 Detecting your location…";
     gpsCoords.textContent="";
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        state.lat = pos.coords.latitude;
-        state.lng = pos.coords.longitude;
-        state.gpsReady = true;
-        state.loadingGps = false;
-
-        gpsBtn.innerHTML = `✓ Location confirmed`;
-        gpsBtn.style.background = "linear-gradient(135deg,#166534,#14532d)";
-        gpsBtn.style.boxShadow = "0 6px 24px rgba(74,222,128,.3)";
-
+        state.lat=pos.coords.latitude;
+        state.lng=pos.coords.longitude;
+        state.gpsReady=true;
+        state.loadingGps=false;
+        gpsBtn.innerHTML=`✓ Location confirmed`;
+        gpsBtn.style.background="linear-gradient(135deg,#166534,#14532d)";
+        gpsBtn.style.boxShadow="0 4px 16px rgba(74,222,128,.25)";
         gpsStatus.className="gps-status success";
         gpsStatus.textContent="✓ Location detected! Now tell us a bit more below.";
         gpsCoords.textContent=`${state.lat.toFixed(5)}, ${state.lng.toFixed(5)}`;
-
         renderAll();
         scrollToSection(stepWho);
       },
       (err) => {
-        state.loadingGps = false;
-        gpsBtn.disabled = false;
-        gpsBtn.innerHTML = `<span class="gps-pin">📍</span>Try again`;
-
+        state.loadingGps=false;
+        gpsBtn.disabled=false;
+        gpsBtn.innerHTML=`<span class="gps-pin">📍</span>Try again`;
         gpsStatus.className="gps-status error";
-        const msgs = {
-          1: "❌ Location access denied. Please allow location access and try again.",
-          2: "❌ Location unavailable. Please check your connection.",
-          3: "❌ Location request timed out. Please try again.",
-        };
-        gpsStatus.textContent = msgs[err.code] || "❌ Could not get your location.";
+        const msgs={1:"❌ Location access denied. Please allow location access and try again.",2:"❌ Location unavailable. Please check your connection.",3:"❌ Location request timed out. Please try again."};
+        gpsStatus.textContent=msgs[err.code]||"❌ Could not get your location.";
       },
-      { timeout: 10000, maximumAge: 60000 }
+      {timeout:10000,maximumAge:60000}
     );
   });
 
-  // ── RENDER ──────────────────────────────────────────────────
   function renderWho(){
     whoGrid.innerHTML=""; setWhoErr("");
     WHO.forEach(w=>{
       const on=state.who===w.slug;
       const btn=makeOpt(w.icon,w.label,w.sub,on,()=>{
         state.who=w.slug; state.vibes=[]; state.friction=[]; state.noPreference=false;
-        renderAll();
-        scrollToSection(stepVibe);
+        renderAll(); scrollToSection(stepVibe);
       });
       whoGrid.appendChild(btn);
     });
@@ -477,7 +437,6 @@
 
   function renderVibes(){
     vibeGrid.innerHTML=""; setVibeErr("");
-    vibeTag.textContent=`${state.vibes.length}/2`;
     VIBES.forEach(v=>{
       const on=state.vibes.includes(v.slug);
       const btn=makeOpt(v.icon,v.label,v.sub,on,()=>{
@@ -519,61 +478,49 @@
   }
 
   function updateProgress(){
-    let pct = 0;
-    let step = 0;
-    if(state.gpsReady){ pct = 30; step = 1; }
-    if(state.who){ pct = 60; step = 2; }
-    if(state.vibes.length > 0){ pct = 100; step = 3; }
-    pct = Math.min(pct, 100);
-
-    progressFill.style.width = pct + "%";
-    progressPct.textContent = pct + "%";
-    progressStep.textContent = `STEP ${step} / 3`;
-    progressMsg.textContent = PROGRESS_MSGS[step] || PROGRESS_MSGS[0];
-
-    if(pct === 100){
-      progressFill.style.background = "linear-gradient(90deg,#c9a06a,#4ade80)";
-      progressPct.className = "progress-pct-big done";
+    let pct=0, step=0;
+    if(state.gpsReady){ pct=30; step=1; }
+    if(state.who){ pct=60; step=2; }
+    if(state.vibes.length>0){ pct=100; step=3; }
+    progressFill.style.width=pct+"%";
+    progressPct.textContent=pct+"%";
+    progressStep.textContent=`STEP ${step} / 3`;
+    progressMsg.textContent=PROGRESS_MSGS[step]||PROGRESS_MSGS[0];
+    if(pct===100){
+      progressFill.style.background="linear-gradient(90deg,#f59e0b,#16a34a)";
+      progressPct.className="progress-pct-big done";
     } else {
-      progressFill.style.background = "linear-gradient(90deg,#c9a06a,#c2410c)";
-      progressPct.className = "progress-pct-big";
+      progressFill.style.background="linear-gradient(90deg,#f59e0b,#c2410c)";
+      progressPct.className="progress-pct-big";
     }
   }
 
-  function ready(){
-    return state.gpsReady && !!state.who && state.vibes.length > 0;
-  }
+  function ready(){ return state.gpsReady&&!!state.who&&state.vibes.length>0; }
 
   function renderFooter(){
     updateProgress();
-    const ok = ready();
-    statusTag.textContent = ok ? "Ready! Let's find your spot 🏮" : !state.gpsReady ? "Share your location first" : "Answer the questions above";
-    statusDot.className = "status-dot" + (ok ? " ready" : "");
-    continueBtn.disabled = !ok || state.loadingCheckout;
-    continueBtn.innerHTML = state.loadingCheckout
-      ? `<span class="spin"></span>Redirecting…`
-      : `Find my spots →`;
+    const ok=ready();
+    statusTag.textContent=ok?"Ready! Let's find your spot 🏮":!state.gpsReady?"Share your location first":"Answer the questions above";
+    statusDot.className="status-dot"+(ok?" ready":"");
+    continueBtn.disabled=!ok||state.loadingCheckout;
+    continueBtn.innerHTML=state.loadingCheckout?`<span class="spin"></span>Redirecting…`:`Find my spots →`;
   }
 
   function renderAll(){
     if(state.gpsReady){
       stepWho.style.display=""; renderWho();
     } else {
-      stepWho.style.display="none";
-      stepVibe.style.display="none";
-      stepFriction.style.display="none";
-      stepNp.style.display="none";
+      stepWho.style.display="none"; stepVibe.style.display="none";
+      stepFriction.style.display="none"; stepNp.style.display="none";
       renderFooter(); return;
     }
     if(state.who){
       stepVibe.style.display=""; renderVibes();
     } else {
-      stepVibe.style.display="none";
-      stepFriction.style.display="none";
-      stepNp.style.display="none";
-      renderFooter(); return;
+      stepVibe.style.display="none"; stepFriction.style.display="none";
+      stepNp.style.display="none"; renderFooter(); return;
     }
-    if(state.vibes.length > 0){
+    if(state.vibes.length>0){
       stepFriction.style.display=""; stepNp.style.display="";
       renderFriction(); renderNoPreference();
     } else {
@@ -591,48 +538,33 @@
   }
 
   continueBtn.addEventListener("click", async () => {
-    if(!ready() || state.loadingCheckout){
+    if(!ready()||state.loadingCheckout){
       if(!state.who) setWhoErr("Please choose who you're eating with.");
       if(state.vibes.length===0) setVibeErr("Choose at least 1 vibe.");
       return;
     }
-    const ga_client_id = getOrCreateClientId();
+    const ga_client_id=getOrCreateClientId();
     if(typeof gtag==="function"){
-      gtag("event","hearing_submit",{
-        plan: "explorer",
-        who: state.who,
-        vibes: state.vibes.join(","),
-        lat: state.lat,
-        lng: state.lng,
-      });
+      gtag("event","hearing_submit",{plan:"explorer",who:state.who,vibes:state.vibes.join(","),lat:state.lat,lng:state.lng});
     }
-    const payload = {
-      plan: "explorer",
-      lat: state.lat,
-      lng: state.lng,
-      who: state.who,
-      vibes: state.vibes,
-      friction: state.friction,
-      no_preference: state.noPreference,
-      source: "hearing_gps.html",
-      ga_client_id,
+    const payload={
+      plan:"explorer",lat:state.lat,lng:state.lng,
+      who:state.who,vibes:state.vibes,friction:state.friction,
+      no_preference:state.noPreference,
+      source:"hearing_gps.html",ga_client_id,
     };
-    try {
-      state.loadingCheckout = true; renderFooter();
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
-      });
+    try{
+      state.loadingCheckout=true; renderFooter();
+      const res=await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       if(!res.ok) throw new Error("checkout failed");
-      const json = await res.json();
-      const checkoutUrl = json.url || json.checkout_url || json.checkoutUrl;
+      const json=await res.json();
+      const checkoutUrl=json.url||json.checkout_url||json.checkoutUrl;
       if(!checkoutUrl) throw new Error("no url");
-      location.href = checkoutUrl;
-    } catch(e) {
+      location.href=checkoutUrl;
+    }catch(e){
       alert("Checkout not ready yet. Implement /api/checkout next.");
-    } finally {
-      state.loadingCheckout = false; renderFooter();
+    }finally{
+      state.loadingCheckout=false; renderFooter();
     }
   });
 
