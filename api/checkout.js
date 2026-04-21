@@ -16,7 +16,6 @@ function requireEnv(name) {
 
 function getBaseUrl(req) {
   if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, "");
-
   const proto =
     (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim() || "https";
   const host = (req.headers["x-forwarded-host"] || req.headers.host || "").toString();
@@ -33,18 +32,24 @@ function buildMetadata(body, plan, ref) {
   const md = {};
   md.plan = String(plan || "").toLowerCase().trim() || "explorer";
 
-  const who = body?.who ?? body?.prefs ?? body?.with ?? "";
-  const vibes = body?.vibes ?? body?.vibe ?? "";
-  const areas = body?.area_groups ?? body?.areas ?? body?.area_group ?? "";
+  const who        = body?.who ?? body?.prefs ?? body?.with ?? "";
+  const vibes      = body?.vibes ?? body?.vibe ?? "";
+  const areas      = body?.area_groups ?? body?.areas ?? body?.area_group ?? "";
   const gaClientId = body?.ga_client_id ?? body?.gaClientId ?? "";
+  // ① sourceを引き継ぎ（hearing_gps or hearing_area）
+  const source     = body?.source ?? "";
+  // ② GPS座標を保存（後で距離計算に使用）
+  const lat        = body?.lat ?? "";
+  const lng        = body?.lng ?? "";
 
-  if (who) md.who = String(who);
-  if (vibes) md.vibes = Array.isArray(vibes) ? vibes.join(",") : String(vibes);
-  if (areas) md.area_groups = Array.isArray(areas) ? areas.join(",") : String(areas);
+  if (who)        md.who        = String(who);
+  if (vibes)      md.vibes      = Array.isArray(vibes) ? vibes.join(",") : String(vibes);
+  if (areas)      md.area_groups = Array.isArray(areas) ? areas.join(",") : String(areas);
   if (gaClientId) md.ga_client_id = String(gaClientId);
-
-  // アフィリエイト ref を追加
-  if (ref) md.affiliate_id = String(ref);
+  if (ref)        md.affiliate_id = String(ref);
+  if (source)     md.source     = String(source);
+  if (lat !== "" && lat !== null && lat !== undefined) md.lat = String(lat);
+  if (lng !== "" && lng !== null && lng !== undefined) md.lng = String(lng);
 
   return md;
 }
@@ -69,9 +74,7 @@ async function stripePostForm(path, token, params) {
 
   const text = await r.text();
   let data = {};
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch (_) {}
+  try { data = text ? JSON.parse(text) : {}; } catch (_) {}
 
   if (!r.ok) {
     const msg = data?.error?.message || `Stripe error (${r.status})`;
@@ -94,35 +97,38 @@ module.exports = async (req, res) => {
     const plan = String(req.query?.plan || (req.body?.plan ?? "")).toLowerCase().trim() || "explorer";
     const priceId = pickPriceId(plan);
 
-    // refパラメータ取得（GETクエリ or POSTボディ）
-    const ref = String(
-      req.query?.ref || req.body?.ref || ""
-    ).trim().toLowerCase();
+    const ref = String(req.query?.ref || req.body?.ref || "").trim().toLowerCase();
+
+    // ① sourceをbodyまたはqueryから取得
+    const source = String(req.body?.source || req.query?.source || "hearing_area").trim();
+    const isGps  = source === "hearing_gps";
 
     let metadata = { plan };
     if (req.method === "POST") {
       metadata = buildMetadata(req.body || {}, plan, ref);
     } else {
-      // GETの場合もrefを含める
       if (ref) metadata.affiliate_id = ref;
+      if (source) metadata.source = source;
     }
 
     const baseUrl = getBaseUrl(req);
 
-    const successUrl = `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(plan)}`;
-    const cancelUrl = `${baseUrl}/hearing.html?plan=${encodeURIComponent(plan)}`;
+    // ② successUrl/cancelUrlをsourceに応じて切り替え
+    const successUrl = isGps
+      ? `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}&source=hearing_gps`
+      : `${baseUrl}/results.html?session_id={CHECKOUT_SESSION_ID}&source=hearing_area&plan=${encodeURIComponent(plan)}`;
+
+    const cancelUrl = isGps
+      ? `${baseUrl}/hearing_gps.html`
+      : `${baseUrl}/hearing_area.html?plan=${encodeURIComponent(plan)}`;
 
     const params = {
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       billing_address_collection: "auto",
-      allow_promotion_codes: "true",  // クーポンコード入力欄を表示
-
-      // metadata[*]
+      allow_promotion_codes: "true",
       ...Object.fromEntries(Object.entries(metadata).map(([k, v]) => [`metadata[${k}]`, v])),
-
-      // line_items[0]
       "line_items[0][price]": priceId,
       "line_items[0][quantity]": 1,
     };
