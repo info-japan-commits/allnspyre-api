@@ -107,10 +107,16 @@
     .gps-btn:disabled{opacity:.5;cursor:not-allowed;}
     .gps-pin{display:inline-block;animation:gpsPulse 1.8s ease-in-out infinite;}
     @keyframes gpsPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+    .gps-areas{margin-bottom:16px;padding:10px 14px;background:rgba(202,138,4,.06);border:1px solid rgba(202,138,4,.2);border-radius:10px;}
+    .gps-areas-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#92400e;margin-bottom:6px;}
+    .gps-areas-list{font-size:12px;color:#555;line-height:1.6;}
     .gps-status{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.5;display:none;}
     .gps-status.loading{background:rgba(202,138,4,.08);border:1px solid rgba(202,138,4,.2);color:#92400e;display:block;}
     .gps-status.success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:#16a34a;display:block;}
     .gps-status.error{background:rgba(198,40,40,.1);border:1px solid rgba(198,40,40,.3);color:#c62828;display:block;}
+    .gps-pref-badge{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:800;line-height:1.4;}
+    .gps-pref-badge.found{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:#166534;}
+    .gps-pref-badge.notfound{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#92400e;}
     .gps-coords{margin-top:6px;font-size:11px;color:#aaa;font-family:ui-monospace,monospace;}
 
     /* ── OPTION BUTTONS ── */
@@ -227,11 +233,16 @@
         <div class="gps-eyebrow">GPS Mode</div>
         <div class="gps-title">We'll find local spots near you</div>
         <div class="gps-desc">No planning needed. Share your location and we'll surface the closest spots locals actually go back to.</div>
+        <div class="gps-areas">
+          <div class="gps-areas-label">Supported Areas</div>
+          <div class="gps-areas-list">Tokyo · Osaka · Kyoto · Kanagawa · Hyogo · Fukuoka · Hiroshima · Hokkaido (Sapporo · Hakodate)</div>
+        </div>
         <button class="gps-btn" id="gpsBtn" type="button">
           <span class="gps-pin">📍</span>
           Use my location
         </button>
         <div class="gps-status" id="gpsStatus"></div>
+        <div id="gpsPrefBadge"></div>
         <div class="gps-coords" id="gpsCoords"></div>
       </div>
     </div>
@@ -375,6 +386,23 @@
     }, delay);
   }
 
+  // 座標から都道府県を判定（results.jsと同じロジック）
+  function getPrefectureFromCoords(lat, lng) {
+    if (lat > 42.8 && lat < 43.3 && lng > 141.0 && lng < 141.6) return "Hokkaido (Sapporo)";
+    if (lat > 41.6 && lat < 41.9 && lng > 140.5 && lng < 141.0) return "Hokkaido (Hakodate)";
+    if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido (Sapporo)";
+    if (lat > 35.5 && lat < 35.85 && lng > 139.4 && lng < 139.95) return "Tokyo";
+    if (lat > 35.1 && lat < 35.6 && lng > 139.3 && lng < 139.8) return "Kanagawa";
+    if (lat > 34.9 && lat < 35.2 && lng > 135.6 && lng < 135.9) return "Kyoto";
+    if (lat > 34.3 && lat < 34.9 && lng > 135.2 && lng < 135.8) return "Osaka";
+    if (lat > 34.5 && lat < 35.0 && lng > 134.8 && lng < 135.4) return "Hyogo";
+    if (lat > 34.2 && lat < 34.6 && lng > 132.2 && lng < 132.6) return "Hiroshima";
+    if (lat > 33.4 && lat < 33.8 && lng > 130.2 && lng < 130.6) return "Fukuoka";
+    return null;
+  }
+
+  const gpsPrefBadge = document.getElementById("gpsPrefBadge");
+
   gpsBtn.addEventListener("click", () => {
     if(!navigator.geolocation){
       gpsStatus.className="gps-status error";
@@ -398,7 +426,16 @@
         gpsBtn.style.background="linear-gradient(135deg,#166534,#14532d)";
         gpsBtn.style.boxShadow="0 4px 16px rgba(74,222,128,.25)";
         gpsStatus.className="gps-status success";
-        gpsStatus.textContent="✓ Location detected! Now tell us a bit more below.";
+        gpsStatus.textContent="✓ Location detected!";
+
+        // 都道府県判定してバッジ表示
+        const pref = getPrefectureFromCoords(state.lat, state.lng);
+        if (pref) {
+          gpsPrefBadge.innerHTML=`<div class="gps-pref-badge found">📍 Searching in ${pref}</div>`;
+        } else {
+          gpsPrefBadge.innerHTML=`<div class="gps-pref-badge notfound">⚠️ Your location is outside our supported areas. Results may be from a different location.</div>`;
+        }
+
         gpsCoords.textContent=`${state.lat.toFixed(5)}, ${state.lng.toFixed(5)}`;
         renderAll();
         scrollToSection(stepWho);
