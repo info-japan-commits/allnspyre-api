@@ -111,7 +111,6 @@ async function upsertPurchaseBySessionId(sessionId, fields) {
   }
 }
 
-// アフィリエイト報酬を更新する関数
 async function updateAffiliateOnPurchase(affiliateId, plan) {
   const baseId = process.env.AIRTABLE_BASE_ID;
   const token = process.env.AIRTABLE_TOKEN;
@@ -122,10 +121,8 @@ async function updateAffiliateOnPurchase(affiliateId, plan) {
   const _fetch = await getFetch();
   if (!_fetch) return;
 
-  // 報酬額を決定
   const reward = plan.toLowerCase() === "connoisseur" ? 12 : 5;
 
-  // affiliateレコードを検索
   const formula = encodeURIComponent(`{affiliate_id}="${affiliateId}"`);
   const url = `https://api.airtable.com/v0/${baseId}/${affiliatesTableId}?filterByFormula=${formula}&maxRecords=1`;
 
@@ -144,7 +141,6 @@ async function updateAffiliateOnPurchase(affiliateId, plan) {
   const newPurchases = (Number(current.total_purchases) || 0) + 1;
   const newEarnings = (Number(current.total_earnings) || 0) + reward;
 
-  // 更新
   const updateUrl = `https://api.airtable.com/v0/${baseId}/${affiliatesTableId}/${record.id}`;
   await _fetch(updateUrl, {
     method: "PATCH",
@@ -287,25 +283,32 @@ module.exports = async (req, res) => {
       ""
     );
 
-    const areaGroups = safeString(md.area_groups || md.areaGroups || "");
-    const who = safeString(md.who || "");
-    const vibes = safeString(md.vibes || "");
-    const gaClientId = safeString(md.ga_client_id || md.gaClientId || "");
+    const areaGroups  = safeString(md.area_groups || md.areaGroups || "");
+    const who         = safeString(md.who || "");
+    const vibes       = safeString(md.vibes || "");
+    const gaClientId  = safeString(md.ga_client_id || md.gaClientId || "");
     const affiliateId = safeString(md.affiliate_id || "");
+    // GPS追加フィールド
+    const source      = safeString(md.source || "");
+    const lat         = safeString(md.lat || "");
+    const lng         = safeString(md.lng || "");
 
     // Airtable upsert
     await upsertPurchaseBySessionId(sessionId, {
       payment_status: paymentStatus,
-      amount_total: amountTotalCents,
+      amount_total:   amountTotalCents,
       currency,
       plan,
-      created_at: createdAt,
+      created_at:     createdAt,
       customer_email: customerEmail,
-      area_groups: areaGroups,
+      area_groups:    areaGroups,
       who,
       vibes,
-      ga_client_id: gaClientId,
-      affiliate_id: affiliateId,
+      ga_client_id:   gaClientId,
+      affiliate_id:   affiliateId,
+      source,
+      lat,
+      lng,
     });
 
     // アフィリエイト報酬更新
