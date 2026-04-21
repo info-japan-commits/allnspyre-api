@@ -188,7 +188,7 @@
 
 <div class="progress-bar-wrap">
   <div class="progress-left">
-    <span class="progress-step" id="progressStep">STEP 0 / 3</span>
+    <span class="progress-step" id="progressStep">STEP 0 / 4</span>
     <span class="progress-pct-big" id="progressPct">0%</span>
   </div>
   <div class="progress-bar-track">
@@ -269,20 +269,14 @@
   <div class="section" id="step-friction" style="display:none">
     <div class="section-label">
       <div class="section-num">4</div>
-      <div class="section-title">🙅 Anything to skip? <small>(optional)</small></div>
+      <div class="section-title">🙅 Anything to skip?</div>
     </div>
+    <div class="why-hint">Pick at least one — this helps us filter out spots that don't fit your night.</div>
     <div class="grid" id="frictionGrid"></div>
-    <div class="note">A quiet filter — won't affect your vibe picks.</div>
+    <div class="danger" id="frictionErr"></div>
   </div>
 
-  <!-- STEP 5: NO PREF -->
-  <div class="section" id="step-np" style="display:none">
-    <div class="section-label">
-      <div class="section-num">5</div>
-      <div class="section-title">🎲 Not sure? Leave it to us.</div>
-    </div>
-    <div class="grid" id="npGrid"></div>
-  </div>
+
 
 </div>
 
@@ -350,6 +344,7 @@
     "Share your location to get started",
     "Nice! Who's joining you? 🍜",
     "Almost there — pick a vibe ✨",
+    "One more — what to skip? 🙅",
     "You're ready! 🏮",
   ];
 
@@ -455,6 +450,8 @@
     vibeTag.textContent=`${state.vibes.length}/2`;
   }
 
+  const frictionErr = document.getElementById("frictionErr");
+
   function renderFriction(){
     frictionGrid.innerHTML="";
     FRICTION.forEach(f=>{
@@ -468,23 +465,39 @@
     });
   }
 
-  function renderNoPreference(){
-    npGrid.innerHTML="";
-    const on=state.noPreference;
-    const btn=makeOpt(NP[0].icon,NP[0].label,NP[0].sub,on,()=>{
-      state.noPreference=!state.noPreference; renderAll();
-    });
-    npGrid.appendChild(btn);
+  function renderAll(){
+    if(state.gpsReady){
+      stepWho.style.display=""; renderWho();
+    } else {
+      stepWho.style.display="none"; stepVibe.style.display="none";
+      stepFriction.style.display="none";
+      renderFooter(); return;
+    }
+    if(state.who){
+      stepVibe.style.display=""; renderVibes();
+    } else {
+      stepVibe.style.display="none"; stepFriction.style.display="none";
+      renderFooter(); return;
+    }
+    if(state.vibes.length>0){
+      stepFriction.style.display=""; renderFriction();
+    } else {
+      stepFriction.style.display="none";
+    }
+    renderFooter();
   }
+
+  function setFrictionErr(msg){ frictionErr.style.display=msg?"":"none"; frictionErr.textContent=msg||""; }
 
   function updateProgress(){
     let pct=0, step=0;
-    if(state.gpsReady){ pct=30; step=1; }
-    if(state.who){ pct=60; step=2; }
-    if(state.vibes.length>0){ pct=100; step=3; }
+    if(state.gpsReady){ pct=25; step=1; }
+    if(state.who){ pct=50; step=2; }
+    if(state.vibes.length>0){ pct=75; step=3; }
+    if(state.friction.length>0){ pct=100; step=4; }
     progressFill.style.width=pct+"%";
     progressPct.textContent=pct+"%";
-    progressStep.textContent=`STEP ${step} / 3`;
+    progressStep.textContent=`STEP ${step} / 4`;
     progressMsg.textContent=PROGRESS_MSGS[step]||PROGRESS_MSGS[0];
     if(pct===100){
       progressFill.style.background="linear-gradient(90deg,#f59e0b,#16a34a)";
@@ -495,39 +508,18 @@
     }
   }
 
-  function ready(){ return state.gpsReady&&!!state.who&&state.vibes.length>0; }
+  function ready(){ return state.gpsReady&&!!state.who&&state.vibes.length>0&&state.friction.length>0; }
 
   function renderFooter(){
     updateProgress();
     const ok=ready();
-    statusTag.textContent=ok?"Ready! Let's find your spot 🏮":!state.gpsReady?"Share your location first":"Answer the questions above";
+    statusTag.textContent=ok?"Ready! Let's find your spot 🏮":!state.gpsReady?"Share your location first":!state.who?"Who's eating with you?":state.vibes.length===0?"Pick a vibe":"Pick at least one thing to skip";
     statusDot.className="status-dot"+(ok?" ready":"");
     continueBtn.disabled=!ok||state.loadingCheckout;
     continueBtn.innerHTML=state.loadingCheckout?`<span class="spin"></span>Redirecting…`:`Find my spots →`;
   }
 
-  function renderAll(){
-    if(state.gpsReady){
-      stepWho.style.display=""; renderWho();
-    } else {
-      stepWho.style.display="none"; stepVibe.style.display="none";
-      stepFriction.style.display="none"; stepNp.style.display="none";
-      renderFooter(); return;
-    }
-    if(state.who){
-      stepVibe.style.display=""; renderVibes();
-    } else {
-      stepVibe.style.display="none"; stepFriction.style.display="none";
-      stepNp.style.display="none"; renderFooter(); return;
-    }
-    if(state.vibes.length>0){
-      stepFriction.style.display=""; stepNp.style.display="";
-      renderFriction(); renderNoPreference();
-    } else {
-      stepFriction.style.display="none"; stepNp.style.display="none";
-    }
-    renderFooter();
-  }
+
 
   function getOrCreateClientId(){
     const key="aiinspyre_ga_cid";
@@ -541,6 +533,7 @@
     if(!ready()||state.loadingCheckout){
       if(!state.who) setWhoErr("Please choose who you're eating with.");
       if(state.vibes.length===0) setVibeErr("Choose at least 1 vibe.");
+      if(state.friction.length===0) setFrictionErr("Pick at least one thing to skip.");
       return;
     }
     const ga_client_id=getOrCreateClientId();
