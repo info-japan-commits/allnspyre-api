@@ -285,31 +285,47 @@ async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total
   return picks;
 }
 
-// GPS版: 全店舗を取得してユーザー座標から近い順に返す
-async function getAllShops({ baseId, shopsTableId, token }) {
+// GPS版: 都道府県判定 → Who/Vibe絞り込み → 距離順7件
+
+// ① GPS座標 → Airtableのprefecture値を返す
+function getPrefectureFromCoords(lat, lng) {
+  if (lat > 42.8 && lat < 43.3 && lng > 141.0 && lng < 141.6) return "Hokkaido (Sapporo)";
+  if (lat > 41.6 && lat < 41.9 && lng > 140.5 && lng < 141.0) return "Hokkaido (Hakodate)";
+  if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido (Sapporo)";
+  if (lat > 35.5 && lat < 35.85 && lng > 139.4 && lng < 139.95) return "Tokyo";
+  if (lat > 35.1 && lat < 35.6 && lng > 139.3 && lng < 139.8) return "Kanagawa";
+  if (lat > 34.9 && lat < 35.2 && lng > 135.6 && lng < 135.9) return "Kyoto";
+  if (lat > 34.3 && lat < 34.9 && lng > 135.2 && lng < 135.8) return "Osaka";
+  if (lat > 34.5 && lat < 35.0 && lng > 134.8 && lng < 135.4) return "Hyogo";
+  if (lat > 34.2 && lat < 34.6 && lng > 132.2 && lng < 132.6) return "Hiroshima";
+  if (lat > 33.4 && lat < 33.8 && lng > 130.2 && lng < 130.6) return "Fukuoka";
+  return null;
+}
+
+// ② 都道府県 + Who/Vibeでフィルタしてショップ取得
+async function getShopsByPrefectureAndPrefs({ baseId, shopsTableId, token, prefecture, who, vibes }) {
+  const prefSafe = String(prefecture).replace(/'/g, "\\'");
+  const whoPart = who ? `FIND("${who}", {best_with}) > 0` : "";
+  const vibeParts = vibes && vibes.length > 0
+    ? vibes.map(v => `FIND("${v}", {best_vibe}) > 0`).join(", ")
+    : "";
+
+  let formula = `FIND("${prefSafe}", {area_group}) > 0`;
+  if (whoPart) formula = `AND(${formula}, ${whoPart})`;
+  if (vibeParts) formula = `AND(${formula}, OR(${vibeParts}))`;
+
   const allShops = [];
   let offset;
 
   while (true) {
-    const query = {
-      pageSize: 100,
-      // lat/lngが入っている店舗のみ
-      filterByFormula: "AND({lat}!='', {lng}!='')",
-    };
+    const query = { pageSize: 100, maxRecords: 500, filterByFormula: formula };
     if (offset) query.offset = offset;
 
-    const data = await airtableGetRecords({
-      baseId,
-      tableId: shopsTableId,
-      token,
-      query,
-    });
-
-    const records = data.records || [];
-    for (const r of records) {
-      allShops.push({ id: r.id, ...(r.fields || {}) });
+    const data = await airtableGetRecords({ baseId, tableId: shopsTableId, token, query });
+    for (const r of (data.records || [])) {
+      const fields = r.fields || {};
+      if (fields.lat && fields.lng) allShops.push({ id: r.id, ...fields });
     }
-
     offset = data.offset;
     if (!offset) break;
   }
@@ -317,22 +333,41 @@ async function getAllShops({ baseId, shopsTableId, token }) {
   return allShops;
 }
 
-async function getShopsByGps({ baseId, shopsTableId, token, lat, lng, total = 7 }) {
-  // 全店舗取得
-  const allShops = await getAllShops({ baseId, shopsTableId, token });
+// GPS版メイン: 都道府県絞り込み → Who/Vibe絞り込み → 距離順7件
+async function getShopsByGps({ baseId, shopsTableId, token, lat, lng, who, vibes, total = 7 }) {
+  const prefecture = getPrefectureFromCoords(lat, lng);
+  let candidates = [];
 
-  // 距離計算してソート
-  const withDistance = allShops
+  if (prefecture) {
+    // Who/Vibe込みで取得
+    candidates = await getShopsByPrefectureAndPrefs({
+      baseId, shopsTableId, token, prefecture, who, vibes,
+    });
+    // 候補が少なすぎる場合はWho/Vibeを外して再取得
+    if (candidates.length < total) {
+      candidates = await getShopsByPrefectureAndPrefs({
+        baseId, shopsTableId, token, prefecture, who: "", vibes: [],
+      });
+    }
+  }
+
+  // 都道府県判定不能 or 候補0件 → 全国から近い順（フォールバック）
+  if (candidates.length === 0) {
+    const data = await airtableGetRecords({
+      baseId, tableId: shopsTableId, token,
+      query: { pageSize: 100, maxRecords: 200, filterByFormula: "AND({lat}!='', {lng}!='')" },
+    });
+    candidates = (data.records || []).map(r => ({ id: r.id, ...(r.fields || {}) }));
+  }
+
+  // ③ 距離計算して近い順にソート
+  return candidates
     .filter(s => s.lat && s.lng)
-    .map(s => ({
-      ...s,
-      _distanceKm: haversineKm(lat, lng, Number(s.lat), Number(s.lng)),
-    }))
-    .sort((a, b) => a._distanceKm - b._distanceKm);
-
-  // 上位7件を返す
-  return withDistance.slice(0, total);
+    .map(s => ({ ...s, _distanceKm: haversineKm(lat, lng, Number(s.lat), Number(s.lng)) }))
+    .sort((a, b) => a._distanceKm - b._distanceKm)
+    .slice(0, total);
 }
+
 
 module.exports = async (req, res) => {
   try {
@@ -437,6 +472,8 @@ module.exports = async (req, res) => {
           token,
           lat,
           lng,
+          who,
+          vibes: vibes ? vibes.split(",").map(s => s.trim()).filter(Boolean) : [],
           total: 7,
         });
       } catch (e) {
