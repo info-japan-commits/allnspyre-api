@@ -1,6 +1,7 @@
 // /api/results.js
 // DB優先（Airtable purchases）→ 無ければStripeでretrieve（フォールバック）→ paid以外は402
-// 7件は area_groups に分散させて抽出（偏り防止）
+// エリア版: area_groups に分散させて抽出（偏り防止）
+// GPS版: lat/lngから距離計算して近い順に7件返す
 
 const AIRTABLE_API = "https://api.airtable.com/v0";
 
@@ -66,6 +67,18 @@ function seededShuffle(arr, seedStr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// Haversine距離計算（km）
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 async function airtableGetRecords({ baseId, tableId, token, query }) {
@@ -214,7 +227,6 @@ function inferPlanFromStripeSession(session) {
   return "";
 }
 
-// 重要：statusフィールドが無いと式が死ぬので、ここでは参照しない（壊れない方を優先）
 async function getShopsByArea({ baseId, shopsTableId, token, areaGroup }) {
   const safe = String(areaGroup).replace(/'/g, "\\'");
   const formula = `{area_group}='${safe}'`;
@@ -238,15 +250,12 @@ async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total
   const areas = uniq(areaGroups);
   if (!areas.length) return [];
 
-  // エリアごとに候補取得
   const perAreaLists = {};
   for (const ag of areas) {
     perAreaLists[ag] = await getShopsByArea({ baseId, shopsTableId, token, areaGroup: ag });
-    // 再現性ある順にしておく
     perAreaLists[ag] = seededShuffle(perAreaLists[ag], `${seed}:${ag}`);
   }
 
-  // 均等割り当て（最低1）
   const baseN = Math.max(1, Math.floor(total / areas.length));
   let picks = [];
 
@@ -255,7 +264,6 @@ async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total
     picks = picks.concat(list.slice(0, baseN));
   }
 
-  // 余りをプールから埋める（重複除外）
   const pickedIds = new Set(picks.map(s => s.id).filter(Boolean));
   const pool = [];
   for (const ag of areas) {
@@ -273,9 +281,57 @@ async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total
     picks.push(s);
   }
 
-  // 最終：totalに切る（再現性維持）
   picks = picks.slice(0, total);
   return picks;
+}
+
+// GPS版: 全店舗を取得してユーザー座標から近い順に返す
+async function getAllShops({ baseId, shopsTableId, token }) {
+  const allShops = [];
+  let offset;
+
+  while (true) {
+    const query = {
+      pageSize: 100,
+      // lat/lngが入っている店舗のみ
+      filterByFormula: "AND({lat}!='', {lng}!='')",
+    };
+    if (offset) query.offset = offset;
+
+    const data = await airtableGetRecords({
+      baseId,
+      tableId: shopsTableId,
+      token,
+      query,
+    });
+
+    const records = data.records || [];
+    for (const r of records) {
+      allShops.push({ id: r.id, ...(r.fields || {}) });
+    }
+
+    offset = data.offset;
+    if (!offset) break;
+  }
+
+  return allShops;
+}
+
+async function getShopsByGps({ baseId, shopsTableId, token, lat, lng, total = 7 }) {
+  // 全店舗取得
+  const allShops = await getAllShops({ baseId, shopsTableId, token });
+
+  // 距離計算してソート
+  const withDistance = allShops
+    .filter(s => s.lat && s.lng)
+    .map(s => ({
+      ...s,
+      _distanceKm: haversineKm(lat, lng, Number(s.lat), Number(s.lng)),
+    }))
+    .sort((a, b) => a._distanceKm - b._distanceKm);
+
+  // 上位7件を返す
+  return withDistance.slice(0, total);
 }
 
 module.exports = async (req, res) => {
@@ -322,6 +378,9 @@ module.exports = async (req, res) => {
       const who = session?.metadata?.who || "";
       const vibes = session?.metadata?.vibes || "";
       const area_groups = session?.metadata?.area_groups || session?.metadata?.areas || "";
+      const source = session?.metadata?.source || "";
+      const lat = session?.metadata?.lat || "";
+      const lng = session?.metadata?.lng || "";
 
       try {
         const nowIso = new Date().toISOString();
@@ -336,6 +395,9 @@ module.exports = async (req, res) => {
           area_groups: area_groups || null,
           who: who || null,
           vibes: vibes || null,
+          source: source || null,
+          lat: lat || null,
+          lng: lng || null,
         };
         const created = await upsertPurchase({
           baseId, purchasesTableId, token,
@@ -347,7 +409,7 @@ module.exports = async (req, res) => {
         paymentStatus = "paid";
       } catch (e) {
         console.error("[/api/results] Airtable purchases self-heal save failed:", e?.message || e);
-        fields = { session_id: sessionId, payment_status: "paid", plan, who, vibes, area_groups };
+        fields = { session_id: sessionId, payment_status: "paid", plan, who, vibes, area_groups, source, lat, lng };
         paymentStatus = "paid";
       }
     }
@@ -358,28 +420,52 @@ module.exports = async (req, res) => {
     const plan = String(fields.plan || "").toLowerCase().trim() || "explorer";
     const who = fields.who || "";
     const vibes = fields.vibes || "";
-    const areaGroups = parseAreaGroups(fields.area_groups);
+    const source = String(fields.source || "").trim();
+    const isGps = source === "hearing_gps";
+    const lat = parseFloat(fields.lat || "");
+    const lng = parseFloat(fields.lng || "");
 
-    // ④ エリア分散で7件
     let shops = [];
-    try {
-      shops = await getShopsBalanced({
-        baseId,
-        shopsTableId,
-        token,
-        areaGroups,
-        total: 7,
-        seed: sessionId,
-      });
-    } catch (e) {
-      console.error("[/api/results] Airtable shops lookup failed:", e?.message || e);
-      return json(res, 500, { ok: false, error: "Server error (shops lookup)" });
+
+    // ④ GPS版 or エリア版で分岐
+    if (isGps && !isNaN(lat) && !isNaN(lng)) {
+      // GPS版: 距離順で7件
+      try {
+        shops = await getShopsByGps({
+          baseId,
+          shopsTableId,
+          token,
+          lat,
+          lng,
+          total: 7,
+        });
+      } catch (e) {
+        console.error("[/api/results] GPS shops lookup failed:", e?.message || e);
+        return json(res, 500, { ok: false, error: "Server error (GPS shops lookup)" });
+      }
+    } else {
+      // エリア版: area_groupsで分散抽出
+      const areaGroups = parseAreaGroups(fields.area_groups);
+      try {
+        shops = await getShopsBalanced({
+          baseId,
+          shopsTableId,
+          token,
+          areaGroups,
+          total: 7,
+          seed: sessionId,
+        });
+      } catch (e) {
+        console.error("[/api/results] Airtable shops lookup failed:", e?.message || e);
+        return json(res, 500, { ok: false, error: "Server error (shops lookup)" });
+      }
     }
 
     return json(res, 200, {
       ok: true,
       plan,
       who: who || vibes || "",
+      source,
       shops: Array.isArray(shops) ? shops : [],
     });
   } catch (e) {
