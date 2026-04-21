@@ -63,7 +63,6 @@
       transition:width .5s cubic-bezier(.34,1.2,.64,1);
       position:relative;
     }
-    /* 光るエフェクト */
     .progress-bar-fill::after{
       content:"";position:absolute;top:0;right:0;
       width:30px;height:100%;
@@ -208,6 +207,7 @@
       font-size:11px;color:var(--gold);font-style:italic;
       margin-top:4px;letter-spacing:.02em;
     }
+    .plan-check{
       position:absolute;top:12px;right:12px;
       width:22px;height:22px;border-radius:50%;
       background:var(--accent);color:#fff;font-size:12px;font-weight:900;
@@ -285,7 +285,6 @@
     }
     @keyframes sp{to{transform:rotate(360deg)}}
 
-    /* BOUNCE ANIMATION on select */
     @keyframes popIn{
       0%{transform:translateY(-2px) scale(1.01)}
       50%{transform:translateY(-5px) scale(1.03)}
@@ -431,7 +430,32 @@
 
 <script>
 (() => {
-  const PREFECTURES = ["Tokyo","Kanagawa","Osaka","Kyoto","Hyogo","Nara","Fukuoka","Ishikawa"];
+  // ── 新9エリア定義 ──────────────────────────────────────────────
+  const PREFECTURES = [
+    "Tokyo",
+    "Kyoto",
+    "Osaka",
+    "Kanagawa",
+    "Fukuoka",
+    "Hiroshima",
+    "Hokkaido (Sapporo)",
+    "Hokkaido (Hakodate)",
+    "Hyogo",
+  ];
+
+  // Airtableのprefecture値と完全一致させること
+  const PREF_ICONS = {
+    "Tokyo":              "🌆",
+    "Kyoto":              "⛩️",
+    "Osaka":              "🏙️",
+    "Kanagawa":           "🌊",
+    "Fukuoka":            "🍜",
+    "Hiroshima":          "🕊️",
+    "Hokkaido (Sapporo)": "❄️",
+    "Hokkaido (Hakodate)": "🦑",
+    "Hyogo":              "🏯",
+  };
+  // ──────────────────────────────────────────────────────────────
 
   const WHO = [
     {label:"Solo",slug:"solo",icon:"🧍",sub:"Just me"},
@@ -451,11 +475,6 @@
     {label:"Very noisy",slug:"very_noisy",icon:"🔊",sub:"Keep it calm"},
   ];
   const NP = [{label:"Just pick for me",slug:"no_preference",icon:"🎯",sub:"Surprise me"}];
-
-  const PREF_ICONS = {
-    Tokyo:"🌆",Kanagawa:"🌊",Osaka:"🏙️",Kyoto:"⛩️",
-    Hyogo:"🏯",Nara:"🦌",Fukuoka:"🍜",Ishikawa:"🌿"
-  };
 
   const qs = new URLSearchParams(location.search);
   const initialPlan = (qs.get("plan")||"explorer").toLowerCase();
@@ -563,7 +582,6 @@
         state.selectedAreas=[]; state.areasByPref={};
         resetDownstream(); renderAll();
         if(state.prefectures.length===0) return;
-        // API待ち前にすぐスクロール
         if(window.innerWidth < 720){
           const areaPanel = document.querySelector(".twoCol .panel:last-child");
           scrollToSection(areaPanel, 0);
@@ -589,7 +607,6 @@
     state.selectedAreas=[...state.selectedAreas,area];
   }
 
-  // プログレスバーの高さ分オフセットしてスクロール
   function scrollToSection(el, delay=120){
     if(!el) return;
     setTimeout(()=>{
@@ -623,7 +640,6 @@
         const on=state.selectedAreas.includes(area);
         const btn=makeOpt("📍",area,"",on,()=>{
           setErr(""); toggleArea(area); resetDownstream(); renderAll();
-          // エリア選択完了したらStep2へ
           if(state.selectedAreas.length===needAreas()){
             scrollToSection(stepWho);
           }
