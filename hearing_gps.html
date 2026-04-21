@@ -67,6 +67,7 @@
     .plan-card-icon{font-size:28px;}
     .plan-card-name{font-size:17px;font-weight:800;color:var(--text);margin-bottom:2px;}
     .plan-card-desc{font-size:12px;color:var(--muted);line-height:1.4;}
+    /* ① 損失回避コピーに変更 */
     .plan-card-justify{font-size:11px;color:#92400e;font-style:italic;margin-top:3px;}
     .plan-card-price{font-size:28px;font-weight:900;color:#92400e;flex-shrink:0;}
 
@@ -93,11 +94,13 @@
     }
     .gps-card-inner{position:relative;}
     .gps-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#92400e;margin-bottom:8px;}
-    .gps-title{font-size:18px;font-weight:900;color:#111;margin-bottom:6px;line-height:1.2;}
+    /* ① コピーをベネフィット化 */
+    .gps-title{font-size:20px;font-weight:900;color:#111;margin-bottom:6px;line-height:1.2;}
     .gps-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:18px;}
+    /* ② ボタンを結果ベースに + 通常状態 */
     .gps-btn{
-      display:flex;align-items:center;justify-content:center;gap:10px;
-      width:100%;padding:15px 24px;border-radius:999px;border:none;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      width:auto;padding:14px 28px;border-radius:999px;border:none;
       background:linear-gradient(135deg,#c2410c,#9a3412);
       color:#fff;font-size:15px;font-weight:900;cursor:pointer;
       box-shadow:0 4px 20px rgba(194,65,12,.35);
@@ -209,14 +212,15 @@
     </div>
   </div>
 
-  <!-- PLAN CARD -->
+  <!-- PLAN CARD：④ 損失回避コピーに変更 -->
   <div class="plan-card">
     <div class="plan-card-left">
       <div class="plan-card-icon">🗺️</div>
       <div>
         <div class="plan-card-name">Explorer Plan</div>
         <div class="plan-card-desc">1 area · 7 hand-picked local spots</div>
-        <div class="plan-card-justify">Less than one tourist trap meal</div>
+        <!-- ④ 損失回避 -->
+        <div class="plan-card-justify">$19 — cheaper than one bad tourist meal</div>
       </div>
     </div>
     <div class="plan-card-price">$19</div>
@@ -231,15 +235,17 @@
     <div class="gps-card">
       <div class="gps-card-inner">
         <div class="gps-eyebrow">GPS Mode</div>
-        <div class="gps-title">We'll find local spots near you</div>
-        <div class="gps-desc">No planning needed. Share your location and we'll surface the closest spots locals actually go back to.</div>
+        <!-- ① コピーをベネフィット化 -->
+        <div class="gps-title">Skip tourist traps near you — instantly</div>
+        <div class="gps-desc">No planning needed. Share your location and we'll surface real local spots within walking distance.</div>
         <div class="gps-areas">
           <div class="gps-areas-label">Supported Areas</div>
           <div class="gps-areas-list">Tokyo · Osaka · Kyoto · Kanagawa · Hyogo · Fukuoka · Hiroshima · Hokkaido (Sapporo · Hakodate)</div>
         </div>
+        <!-- ② ボタンを結果ベースに変更 -->
         <button class="gps-btn" id="gpsBtn" type="button">
           <span class="gps-pin">📍</span>
-          Use my location
+          Find spots near me →
         </button>
         <div class="gps-status" id="gpsStatus"></div>
         <div id="gpsPrefBadge"></div>
@@ -284,11 +290,9 @@
     <div class="danger" id="frictionErr"></div>
   </div>
 
-
-
 </div>
 
-<!-- FOOTER -->
+<!-- FOOTER：③ GPS押したら即有効化 -->
 <div class="footerBar">
   <div class="footerInner">
     <div class="status">
@@ -318,7 +322,6 @@
     {label:"Tourist-heavy",slug:"tourist_heavy",icon:"📸",sub:"Skip the crowds"},
     {label:"Very noisy",slug:"very_noisy",icon:"🔊",sub:"Keep it calm"},
   ];
-  const NP = [{label:"Just pick for me",slug:"no_preference",icon:"🎯",sub:"Surprise me"}];
 
   const state = {
     plan:"explorer",lat:null,lng:null,gpsReady:false,
@@ -329,6 +332,7 @@
   const gpsBtn       = document.getElementById("gpsBtn");
   const gpsStatus    = document.getElementById("gpsStatus");
   const gpsCoords    = document.getElementById("gpsCoords");
+  const gpsPrefBadge = document.getElementById("gpsPrefBadge");
   const stepWho      = document.getElementById("step-who");
   const whoGrid      = document.getElementById("whoGrid");
   const whoErr       = document.getElementById("whoErr");
@@ -338,8 +342,7 @@
   const vibeTag      = document.getElementById("vibeTag");
   const stepFriction = document.getElementById("step-friction");
   const frictionGrid = document.getElementById("frictionGrid");
-  const stepNp       = document.getElementById("step-np");
-  const npGrid       = document.getElementById("npGrid");
+  const frictionErr  = document.getElementById("frictionErr");
   const statusTag    = document.getElementById("statusTag");
   const statusDot    = document.getElementById("statusDot");
   const continueBtn  = document.getElementById("continueBtn");
@@ -362,6 +365,7 @@
 
   function setWhoErr(msg){ whoErr.style.display=msg?"":"none"; whoErr.textContent=msg||""; }
   function setVibeErr(msg){ vibeErr.style.display=msg?"":"none"; vibeErr.textContent=msg||""; }
+  function setFrictionErr(msg){ frictionErr.style.display=msg?"":"none"; frictionErr.textContent=msg||""; }
 
   function makeOpt(icon, label, sub, isOn, onClick){
     const btn=document.createElement("button");
@@ -386,14 +390,12 @@
     }, delay);
   }
 
-  // 座標から都道府県を判定（results.jsと同じロジック）
   function getPrefectureFromCoords(lat, lng) {
     if (lat > 42.8 && lat < 43.3 && lng > 141.0 && lng < 141.6) return "Hokkaido (Sapporo)";
     if (lat > 41.6 && lat < 41.9 && lng > 140.5 && lng < 141.0) return "Hokkaido (Hakodate)";
     if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido (Sapporo)";
     if (lat > 35.5 && lat < 35.85 && lng > 139.4 && lng < 139.95) return "Tokyo";
     if (lat > 35.1 && lat < 35.6 && lng > 139.3 && lng < 139.8) return "Kanagawa";
-    // 大阪を先に判定（KyotoやHyogoより前）
     if (lat > 34.3 && lat < 35.1 && lng > 135.2 && lng < 135.9) return "Osaka";
     if (lat > 34.9 && lat < 35.3 && lng > 135.6 && lng < 136.0) return "Kyoto";
     if (lat > 34.5 && lat < 35.0 && lng > 134.6 && lng < 135.3) return "Hyogo";
@@ -401,8 +403,6 @@
     if (lat > 33.3 && lat < 33.9 && lng > 130.1 && lng < 130.7) return "Fukuoka";
     return null;
   }
-
-  const gpsPrefBadge = document.getElementById("gpsPrefBadge");
 
   gpsBtn.addEventListener("click", () => {
     if(!navigator.geolocation){
@@ -412,7 +412,7 @@
     }
     state.loadingGps=true;
     gpsBtn.disabled=true;
-    gpsBtn.innerHTML=`<span class="spin"></span>Getting your location…`;
+    gpsBtn.innerHTML=`<span class="spin"></span>Detecting your location…`;
     gpsStatus.className="gps-status loading";
     gpsStatus.textContent="📡 Detecting your location…";
     gpsCoords.textContent="";
@@ -423,13 +423,17 @@
         state.lng=pos.coords.longitude;
         state.gpsReady=true;
         state.loadingGps=false;
-        gpsBtn.innerHTML=`✓ Location confirmed`;
+
+        // ③ 押した後の即フィードバック：ボタンを成功状態に
+        gpsBtn.innerHTML=`✓ Location detected`;
         gpsBtn.style.background="linear-gradient(135deg,#166534,#14532d)";
         gpsBtn.style.boxShadow="0 4px 16px rgba(74,222,128,.25)";
-        gpsStatus.className="gps-status success";
-        gpsStatus.textContent="✓ Location detected!";
 
-        // 都道府県判定してバッジ表示
+        // ③ ステータスに成功体験を見せる
+        gpsStatus.className="gps-status success";
+        gpsStatus.textContent="✓ Location confirmed — loading your area…";
+
+        // 都道府県判定
         const pref = getPrefectureFromCoords(state.lat, state.lng);
         if (pref) {
           gpsPrefBadge.innerHTML=`<div class="gps-pref-badge found">📍 Searching in ${pref}</div>`;
@@ -438,15 +442,22 @@
         }
 
         gpsCoords.textContent=`${state.lat.toFixed(5)}, ${state.lng.toFixed(5)}`;
+
+        // ③ GPS確定と同時にFooterボタンの状態を更新（途中まで押せるように）
         renderAll();
         scrollToSection(stepWho);
       },
       (err) => {
         state.loadingGps=false;
         gpsBtn.disabled=false;
-        gpsBtn.innerHTML=`<span class="gps-pin">📍</span>Try again`;
+        // ② エラー時もボタンテキストを結果ベースに戻す
+        gpsBtn.innerHTML=`<span class="gps-pin">📍</span>Find spots near me →`;
         gpsStatus.className="gps-status error";
-        const msgs={1:"❌ Location access denied. Please allow location access and try again.",2:"❌ Location unavailable. Please check your connection.",3:"❌ Location request timed out. Please try again."};
+        const msgs={
+          1:"❌ Location access denied. Please allow location access and try again.",
+          2:"❌ Location unavailable. Please check your connection.",
+          3:"❌ Location request timed out. Please try again."
+        };
         gpsStatus.textContent=msgs[err.code]||"❌ Could not get your location.";
       },
       {timeout:10000,maximumAge:60000}
@@ -485,8 +496,6 @@
     vibeTag.textContent=`${state.vibes.length}/2`;
   }
 
-  const frictionErr = document.getElementById("frictionErr");
-
   function renderFriction(){
     frictionGrid.innerHTML="";
     FRICTION.forEach(f=>{
@@ -522,8 +531,6 @@
     renderFooter();
   }
 
-  function setFrictionErr(msg){ frictionErr.style.display=msg?"":"none"; frictionErr.textContent=msg||""; }
-
   function updateProgress(){
     let pct=0, step=0;
     if(state.gpsReady){ pct=25; step=1; }
@@ -548,13 +555,22 @@
   function renderFooter(){
     updateProgress();
     const ok=ready();
-    statusTag.textContent=ok?"Ready! Let's find your spot 🏮":!state.gpsReady?"Share your location first":!state.who?"Who's eating with you?":state.vibes.length===0?"Pick a vibe":"Pick at least one thing to skip";
+    // ③ ステータステキストを段階的に
+    if(!state.gpsReady){
+      statusTag.textContent="Share your location first";
+    } else if(!state.who){
+      statusTag.textContent="✓ Location detected — who's with you?";
+    } else if(state.vibes.length===0){
+      statusTag.textContent="Pick a vibe ✨";
+    } else if(state.friction.length===0){
+      statusTag.textContent="Almost there — what to skip?";
+    } else {
+      statusTag.textContent="Ready! Let's find your spot 🏮";
+    }
     statusDot.className="status-dot"+(ok?" ready":"");
     continueBtn.disabled=!ok||state.loadingCheckout;
     continueBtn.innerHTML=state.loadingCheckout?`<span class="spin"></span>Redirecting…`:`Find my spots →`;
   }
-
-
 
   function getOrCreateClientId(){
     const key="aiinspyre_ga_cid";
