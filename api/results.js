@@ -294,11 +294,12 @@ function getPrefectureFromCoords(lat, lng) {
   if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido (Sapporo)";
   if (lat > 35.5 && lat < 35.85 && lng > 139.4 && lng < 139.95) return "Tokyo";
   if (lat > 35.1 && lat < 35.6 && lng > 139.3 && lng < 139.8) return "Kanagawa";
-  if (lat > 34.9 && lat < 35.2 && lng > 135.6 && lng < 135.9) return "Kyoto";
-  if (lat > 34.3 && lat < 34.9 && lng > 135.2 && lng < 135.8) return "Osaka";
-  if (lat > 34.5 && lat < 35.0 && lng > 134.8 && lng < 135.4) return "Hyogo";
-  if (lat > 34.2 && lat < 34.6 && lng > 132.2 && lng < 132.6) return "Hiroshima";
-  if (lat > 33.4 && lat < 33.8 && lng > 130.2 && lng < 130.6) return "Fukuoka";
+  // 大阪を先に判定（KyotoやHyogoより前）
+  if (lat > 34.3 && lat < 35.1 && lng > 135.2 && lng < 135.9) return "Osaka";
+  if (lat > 34.9 && lat < 35.3 && lng > 135.6 && lng < 136.0) return "Kyoto";
+  if (lat > 34.5 && lat < 35.0 && lng > 134.6 && lng < 135.3) return "Hyogo";
+  if (lat > 34.2 && lat < 34.6 && lng > 132.2 && lng < 132.8) return "Hiroshima";
+  if (lat > 33.3 && lat < 33.9 && lng > 130.1 && lng < 130.7) return "Fukuoka";
   return null;
 }
 
