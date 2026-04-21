@@ -7,9 +7,8 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   // supports ?prefecture=Tokyo  OR  ?prefectures=Tokyo,Osaka
-  const one = (req.query.prefecture || "").toString().trim();
+  const one  = (req.query.prefecture  || "").toString().trim();
   const many = (req.query.prefectures || "").toString().trim();
-
   const prefs = (many ? many.split(",") : (one ? [one] : []))
     .map(s => s.trim())
     .filter(Boolean);
@@ -17,8 +16,8 @@ export default async function handler(req, res) {
   if (prefs.length === 0) return res.status(400).json({ error: "Missing prefecture(s)" });
 
   const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-  const BASE_ID = process.env.AIRTABLE_BASE_ID;
-  const TABLE_ID = process.env.AIRTABLE_TABLE_ID;
+  const BASE_ID        = process.env.AIRTABLE_BASE_ID;
+  const TABLE_ID       = process.env.AIRTABLE_TABLE_ID;
 
   if (!AIRTABLE_TOKEN || !BASE_ID || !TABLE_ID) {
     return res.status(500).json({ error: "Missing Airtable env vars" });
@@ -26,21 +25,21 @@ export default async function handler(req, res) {
 
   const FIELD_AREA_GROUP = "area_group";
 
-  // Hyogo has "Kobe ..." in your actual options
+  // 新9エリア対応 — Airtableの area_group 値のprefixと完全一致させること
   const PREFIX_MAP = {
-    Tokyo: ["Tokyo"],
-    Kanagawa: ["Kanagawa"],
-    Osaka: ["Osaka"],
-    Kyoto: ["Kyoto"],
-    Hyogo: ["Hyogo", "Kobe"],
-    Nara: ["Nara"],
-    Fukuoka: ["Fukuoka"],
-    Ishikawa: ["Ishikawa"],
+    "Tokyo":               ["Tokyo"],
+    "Kyoto":               ["Kyoto"],
+    "Osaka":               ["Osaka"],
+    "Kanagawa":            ["Kanagawa"],
+    "Fukuoka":             ["Fukuoka"],
+    "Hiroshima":           ["Hiroshima"],
+    "Hokkaido (Sapporo)":  ["Hokkaido (Sapporo)", "Sapporo"],
+    "Hokkaido (Hakodate)": ["Hokkaido (Hakodate)", "Hakodate"],
+    "Hyogo":               ["Hyogo", "Kobe"],
   };
 
   const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
   const headers = { Authorization: `Bearer ${AIRTABLE_TOKEN}` };
-
   const all = new Set();
   let offset;
 
@@ -62,18 +61,17 @@ export default async function handler(req, res) {
         const v = rec.fields?.[FIELD_AREA_GROUP];
         if (typeof v === "string" && v.trim()) all.add(v.trim());
       }
-
       offset = data.offset;
       if (!offset) break;
     }
 
     const allAreas = [...all];
-
     const areasByPrefecture = {};
+
     for (const p of prefs) {
       const prefixes = PREFIX_MAP[p] || [p];
       areasByPrefecture[p] = allAreas
-        .filter(v => prefixes.some(px => v.startsWith(px + " ")))
+        .filter(v => prefixes.some(px => v.startsWith(px + " ") || v === px))
         .sort((a, b) => a.localeCompare(b, "en"));
     }
 
