@@ -25,17 +25,18 @@ export default async function handler(req, res) {
 
   const FIELD_AREA_GROUP = "area_group";
 
-  // 新9エリア対応 — Airtableの area_group 値のprefixと完全一致させること
+  // 新エリア対応 — Airtableの area_group 値のprefixと完全一致させること
   const PREFIX_MAP = {
-    "Tokyo":               ["Tokyo"],
-    "Kyoto":               ["Kyoto"],
-    "Osaka":               ["Osaka"],
-    "Kanagawa":            ["Kanagawa"],
-    "Fukuoka":             ["Fukuoka"],
-    "Hiroshima":           ["Hiroshima"],
-    "Hokkaido (Sapporo)":  ["Hokkaido (Sapporo)", "Sapporo"],
-    "Hokkaido (Hakodate)": ["Hokkaido (Hakodate)", "Hakodate"],
-    "Hyogo":               ["Hyogo", "Kobe"],
+    "Tokyo":               ["Tokyo Urban", "Tokyo Suburban"],
+    "Kyoto":               ["Kyoto Urban", "Kyoto Suburban"],
+    "Osaka":               ["Osaka Urban", "Osaka Suburban"],
+    "Kanagawa":            ["Kanagawa Urban", "Kanagawa Suburban"],
+    "Fukuoka":             ["Fukuoka Urban", "Fukuoka Suburban"],
+    "Hiroshima City":      ["Hiroshima Urban"],
+    "Hiroshima Day Trip":  ["Hiroshima Suburban"],
+    "Hokkaido (Sapporo)":  ["Hokkaido Urban"],
+    "Hokkaido (Hakodate)": ["Hokkaido Urban"],
+    "Hyogo (Kobe)":        ["Hyogo Urban"],
   };
 
   const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
