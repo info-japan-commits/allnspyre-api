@@ -324,6 +324,7 @@
     const name=escapeHtml(shop.shop_name||shop.shop||"Untitled");
     const area=escapeHtml(shop.area_group||"");
     const detail=escapeHtml(shop.area_detail||"");
+    const genre=escapeHtml(shop.genre||"");
     const tags=buildTags(shop);
     const why=escapeHtml(getWhy(shop));
     const note=escapeHtml(getNote(shop));
@@ -354,7 +355,7 @@
         <div class="body">
           <div class="titleRow">
             <div>
-              <p class="card-meta">${area}${detail?" / "+detail:""}</p>
+              <p class="card-meta">${genre ? genre + ' · ' : ''}${area}${detail?" / "+detail:""}</p>
               <h2 class="name">${name}</h2>
             </div>
             <div class="pill-wrap">
