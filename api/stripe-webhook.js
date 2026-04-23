@@ -290,8 +290,10 @@ module.exports = async (req, res) => {
     const affiliateId = safeString(md.affiliate_id || "");
     // GPS追加フィールド
     const source      = safeString(md.source || "");
-    const lat         = safeString(md.lat || "");
-    const lng         = safeString(md.lng || "");
+    const latRaw      = md.lat ? parseFloat(md.lat) : null;
+    const lngRaw      = md.lng ? parseFloat(md.lng) : null;
+    const lat         = !isNaN(latRaw) ? latRaw : null;
+    const lng         = !isNaN(lngRaw) ? lngRaw : null;
 
     // Airtable upsert
     await upsertPurchaseBySessionId(sessionId, {
