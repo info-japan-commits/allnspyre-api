@@ -287,11 +287,11 @@ async function getShopsBalanced({ baseId, shopsTableId, token, areaGroups, total
 
 // GPS版: 都道府県判定 → Who/Vibe絞り込み → 距離順7件
 
-// ① GPS座標 → Airtableのprefecture値を返す
+// ① GPS座標 → Airtableのarea_groupのprefixを返す
 function getPrefectureFromCoords(lat, lng) {
-  if (lat > 42.8 && lat < 43.3 && lng > 141.0 && lng < 141.6) return "Hokkaido (Sapporo)";
-  if (lat > 41.6 && lat < 41.9 && lng > 140.5 && lng < 141.0) return "Hokkaido (Hakodate)";
-  if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido (Sapporo)";
+  if (lat > 42.8 && lat < 43.3 && lng > 141.0 && lng < 141.6) return "Hokkaido";
+  if (lat > 41.6 && lat < 41.9 && lng > 140.5 && lng < 141.0) return "Hokkaido";
+  if (lat > 41.3 && lat < 45.6 && lng > 139.3 && lng < 145.9) return "Hokkaido";
   if (lat > 35.5 && lat < 35.85 && lng > 139.4 && lng < 139.95) return "Tokyo";
   if (lat > 35.1 && lat < 35.6 && lng > 139.3 && lng < 139.8) return "Kanagawa";
   // 大阪を先に判定（KyotoやHyogoより前）
