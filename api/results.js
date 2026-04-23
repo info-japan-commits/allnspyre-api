@@ -415,8 +415,10 @@ module.exports = async (req, res) => {
       const vibes = session?.metadata?.vibes || "";
       const area_groups = session?.metadata?.area_groups || session?.metadata?.areas || "";
       const source = session?.metadata?.source || "";
-      const lat = session?.metadata?.lat || "";
-      const lng = session?.metadata?.lng || "";
+      const latRaw = session?.metadata?.lat ? parseFloat(session.metadata.lat) : null;
+      const lngRaw = session?.metadata?.lng ? parseFloat(session.metadata.lng) : null;
+      const lat = latRaw !== null && !isNaN(latRaw) ? latRaw : null;
+      const lng = lngRaw !== null && !isNaN(lngRaw) ? lngRaw : null;
 
       try {
         const nowIso = new Date().toISOString();
@@ -432,8 +434,8 @@ module.exports = async (req, res) => {
           who: who || null,
           vibes: vibes || null,
           source: source || null,
-          lat: lat || null,
-          lng: lng || null,
+          lat: lat,
+          lng: lng,
         };
         const created = await upsertPurchase({
           baseId, purchasesTableId, token,
