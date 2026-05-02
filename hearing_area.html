@@ -114,6 +114,28 @@
     .note{font-size:12px;color:var(--muted);margin-top:10px;font-style:italic;}
     .why-hint{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;padding:8px 12px;background:rgba(194,65,12,.06);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;}
 
+    /* ── LOADING AREAS ── */
+    .loading-areas{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:14px;padding:32px 16px;
+    }
+    .loading-spinner{
+      width:36px;height:36px;border-radius:50%;
+      border:3px solid rgba(184,150,110,.2);
+      border-top-color:#b8966e;
+      animation:spin 0.9s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-dots{display:flex;gap:6px;align-items:center;}
+    .loading-dot{
+      width:7px;height:7px;border-radius:50%;background:#b8966e;
+      animation:dotPulse 1.2s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2){animation-delay:.2s;}
+    .loading-dot:nth-child(3){animation-delay:.4s;}
+    @keyframes dotPulse{0%,80%,100%{transform:scale(.6);opacity:.4;}40%{transform:scale(1);opacity:1;}}
+    .loading-text{font-size:13px;color:var(--muted);font-style:italic;letter-spacing:.04em;}
+
     .footerBar{position:fixed;left:0;right:0;bottom:0;background:#1a1208;border-top:2px solid #6b5533;padding:14px 20px;}
     .footerInner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;}
     .status{display:flex;align-items:center;gap:8px;}
@@ -447,7 +469,19 @@
       areasWrap.className="hint"; areasWrap.innerHTML="← Pick a prefecture first."; return;
     }
     if(state.loadingAreas){
-      areasWrap.className="hint"; areasWrap.innerHTML="Loading areas…"; return;
+      areasWrap.className="";
+      areasWrap.innerHTML=`
+        <div class="loading-areas">
+          <div class="loading-spinner"></div>
+          <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+          <div class="loading-text">Loading areas…</div>
+        </div>
+      `;
+      return;
     }
     const container=document.createElement("div");
     state.prefectures.forEach(p=>{
