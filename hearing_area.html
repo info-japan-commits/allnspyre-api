@@ -162,7 +162,7 @@
         <div class="plan-check">✓</div>
         <div class="plan-emoji">🗺️</div>
         <div class="plan-name">Explorer</div>
-        <div class="plan-price">$19</div>
+        <div class="plan-price">$14</div>
         <div class="plan-desc">1 area · 7 hand-picked local spots.<br>Perfect for a quick trip.</div>
         <div class="plan-justify">Less than one tourist trap meal</div>
       </button>
@@ -170,7 +170,7 @@
         <div class="plan-check">✓</div>
         <div class="plan-emoji">🏮</div>
         <div class="plan-name">Connoisseur</div>
-        <div class="plan-price">$39</div>
+        <div class="plan-price">$27</div>
         <div class="plan-desc">4 areas · 28 picks total.<br>Built for longer stays.</div>
         <div class="plan-justify">Save 1 hour of research + avoid bad meals</div>
       </button>
@@ -263,47 +263,21 @@
 
 <script>
 (() => {
-  // ── エリア定義 ──────────────────────────────────────────────
   const PREFECTURES = [
-    "Tokyo",
-    "Kyoto",
-    "Osaka",
-    "Kanagawa",
-    "Fukuoka",
-    "Hiroshima City",
-    "Hiroshima Day Trip",
-    "Hokkaido (Sapporo)",
-    "Hokkaido (Hakodate)",
-    "Hyogo (Kobe)",
+    "Tokyo","Kyoto","Osaka","Kanagawa","Fukuoka",
+    "Hiroshima City","Hiroshima Day Trip",
+    "Hokkaido (Sapporo)","Hokkaido (Hakodate)","Hyogo (Kobe)",
   ];
-
   const PREF_ICONS = {
-    "Tokyo":               "🌆",
-    "Kyoto":               "⛩️",
-    "Osaka":               "🏙️",
-    "Kanagawa":            "🌊",
-    "Fukuoka":             "🍜",
-    "Hiroshima City":      "🕊️",
-    "Hiroshima Day Trip":  "⛴️",
-    "Hokkaido (Sapporo)":  "❄️",
-    "Hokkaido (Hakodate)": "🦑",
-    "Hyogo (Kobe)":        "🏯",
+    "Tokyo":"🌆","Kyoto":"⛩️","Osaka":"🏙️","Kanagawa":"🌊","Fukuoka":"🍜",
+    "Hiroshima City":"🕊️","Hiroshima Day Trip":"⛴️",
+    "Hokkaido (Sapporo)":"❄️","Hokkaido (Hakodate)":"🦑","Hyogo (Kobe)":"🏯",
   };
-
-  // prefecture選択 → /api/areas に渡すprefecture値のマッピング
   const PREF_TO_API_KEY = {
-    "Tokyo":               "Tokyo",
-    "Kyoto":               "Kyoto",
-    "Osaka":               "Osaka",
-    "Kanagawa":            "Kanagawa",
-    "Fukuoka":             "Fukuoka",
-    "Hiroshima City":      "Hiroshima City",
-    "Hiroshima Day Trip":  "Hiroshima Day Trip",
-    "Hokkaido (Sapporo)":  "Hokkaido (Sapporo)",
-    "Hokkaido (Hakodate)": "Hokkaido (Hakodate)",
-    "Hyogo (Kobe)":        "Hyogo (Kobe)",
+    "Tokyo":"Tokyo","Kyoto":"Kyoto","Osaka":"Osaka","Kanagawa":"Kanagawa","Fukuoka":"Fukuoka",
+    "Hiroshima City":"Hiroshima City","Hiroshima Day Trip":"Hiroshima Day Trip",
+    "Hokkaido (Sapporo)":"Hokkaido (Sapporo)","Hokkaido (Hakodate)":"Hokkaido (Hakodate)","Hyogo (Kobe)":"Hyogo (Kobe)",
   };
-  // ──────────────────────────────────────────────────────────────
 
   const WHO = [
     {label:"Solo",slug:"solo",icon:"🧍",sub:"Just me"},
@@ -371,12 +345,10 @@
   function setVibeErr(msg){ vibeErr.style.display=msg?"":"none"; vibeErr.textContent=msg||""; }
 
   async function fetchAreasMulti(prefs){
-    // PREF_TO_API_KEYでAPIに渡すキーに変換
     const apiKeys = prefs.map(p => PREF_TO_API_KEY[p] || p);
     const res=await fetch(`/api/areas?prefectures=${encodeURIComponent(apiKeys.join(","))}`);
     if(!res.ok) throw new Error("Failed");
     const data = await res.json();
-    // APIレスポンスのキーを表示用prefに戻す
     const mapped = {};
     prefs.forEach((p, i) => {
       mapped[p] = data.areasByPrefecture?.[apiKeys[i]] || [];
@@ -580,8 +552,7 @@
   ];
 
   function updateProgress(){
-    let pct = 10;
-    let step = 0;
+    let pct = 10, step = 0;
     if(state.selectedAreas.length === needAreas()){ pct += 30; step = 1; }
     if(state.who){ pct += 20; step = 2; }
     if(state.vibes.length > 0){ pct += 30; step = 3; }
